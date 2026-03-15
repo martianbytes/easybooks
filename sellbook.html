@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sell Book | EasyBooks</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <!-- NAVBAR (same as homepage) -->
+    <nav class="navbar">
+      <div class="container">
+        <div class="navbar-inner">
+          <div class="navbar-logo"><em>EasyBooks</em></div>
+
+          <ul class="navbar-nav">
+            <li><a href="#">Browse</a></li>
+            <li><a href="#">New Arrival</a></li>
+            <li><a href="#">BestSellers</a></li>
+            <li><a href="#">Genres</a></li>
+            <li><a href="#">Authors</a></li>
+            <li><a href="#">Sell</a></li>
+          </ul>
+
+          <div class="navbar-actions">
+            <div class="search-bar">
+              <input type="text" placeholder="Search books, authors..." />
+            </div>
+
+            <button class="btn-nav-cta">Sign In</button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- PAGE HEADER -->
+    <section class="sell-header">
+      <div class="container">
+        <div class="sell-header-inner">
+          <h1 class="sell-title">Sell Your Book</h1>
+          <p class="sell-subtitle">
+            List your used book and help other readers discover great reads at
+            affordable prices.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SELL BOOK FORM -->
+    <section class="sell-form-section">
+      <div class="container">
+        <div class="sell-form-card">
+          <form class="sell-form">
+
+            <div class="form-group">
+              <label>Book Title</label>
+              <input type="text" placeholder="Enter book title" />
+            </div>
+
+            
+            <div class="form-group">
+              <label>Author Name</label>
+              <input type="text" placeholder="Enter author name" />
+            </div>
+
+            
+            <div class="form-group">
+              <label>Category</label>
+              <select>
+                <option>Select category</option>
+                <option>Fiction</option>
+                <option>Fantasy</option>
+                <option>Motivation</option>
+                <option>Biography</option>
+                <option>Technology</option>
+              </select>
+            </div>
+
+            
+            <div class="form-group">
+              <label>Book Condition</label>
+              <select>
+                <option>Select condition</option>
+                <option>New</option>
+                <option>Like New</option>
+                <option>Good</option>
+                <option>Acceptable</option>
+              </select>
+            </div>
+
+            
+            <div class="form-group">
+              <label>Price (Rs)</label>
+              <input type="number" placeholder="Enter price" />
+            </div>
+
+            
+            <div class="form-group">
+              <label>Contact Email / Phone</label>
+              <input type="text" placeholder="Enter contact information" />
+            </div>
+
+            
+            <div class="form-group">
+              <label>Upload Book Image</label>
+              <input type="file" />
+            </div>
+
+            
+            <div class="form-group full">
+              <label>Description</label>
+              <textarea
+                placeholder="Write short description about the book"
+              ></textarea>
+            </div>
+
+            
+            <div class="form-actions">
+              <button class="btn btn-submit">Submit Book</button>
+              <button type="reset" class="btn btn-cancel">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>

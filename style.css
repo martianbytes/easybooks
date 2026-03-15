@@ -474,7 +474,7 @@ a {
   border-radius: 5px;
 }
 
-/* .cart-badge {
+.cart-badge {
   position: absolute;
   top: -4px;
   right: -4px;
@@ -489,7 +489,7 @@ a {
   align-items: center;
   justify-content: center;
   border: 2px solid var(--bg-nav);
-} */
+}
 
 .btn-nav-cta {
   padding: var(--space-2) var(--space-4);
@@ -502,6 +502,7 @@ a {
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
 .btn-nav-cta:hover {

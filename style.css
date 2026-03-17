@@ -858,6 +858,7 @@ a {
 
 .cta-secondary-button {
   font-weight: var(--weight-semibold);
+  background-color: #fff;
 }
 
 /* --NEWS LETTER SECTION */
@@ -998,6 +999,12 @@ a {
   padding-bottom: var(--space-2);
 }
 
+.footer-bottom p {
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
 /* --ABOUT US -- */
 
 .about-us-section {
@@ -1037,9 +1044,9 @@ a {
 .social-container {
   display: flex;
   gap: 1rem;
-  margin-top: 10px;
+  margin-top: 20px;
 }
 
 .social-icon {
-  width: 20px;
+  width: 30px;
 }

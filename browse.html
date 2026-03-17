@@ -1,155 +1,387 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EasyBooks</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EasyBooks</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-
-<body>
-  <!-- Navbar -->
-  <nav class="navbar">
-    <div class="container">
-      <div class="navbar-inner">
-        <div class="navbar-logo">
-          <em>EasyBooks</em>
-        </div>
-        <ul class="navbar-nav">
-          <li><a href="#">Browse</a></li>
-          <li><a href="#">New Arrival</a></li>
-          <li><a href="#">BestSellers</a></li>
-          <li><a href="#">Genres</a></li>
-          <li><a href="#">Authors</a></li>
-          <li><a href="#">Sell</a></li>
-        </ul>
-        <div class="navbar-actions">
-          <div class="search-bar">
-            <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="2">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" />
-            </svg>
-            <input type="text" placeholder="Search books, authors..." />
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="container">
+        <div class="navbar-inner">
+          <div class="navbar-logo">
+            <em>EasyBooks</em>
           </div>
-          <a class="btn-icon">
-            <svg width="800px" height="800px" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M5.33331 6H19.8672C20.4687 6 20.9341 6.52718 20.8595 7.12403L20.1095 13.124C20.0469 13.6245 19.6215 14 19.1172 14H16.5555H9.44442H7.99998"
-                stroke="#ffffff" stroke-linejoin="round" />
-              <path
-                d="M2 4H4.23362C4.68578 4 5.08169 4.30341 5.19924 4.74003L8.30076 16.26C8.41831 16.6966 8.81422 17 9.26638 17H19"
-                stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" />
-              <circle cx="10" cy="20" r="1" stroke="#ffffff" stroke-linejoin="round" />
-              <circle cx="17.5" cy="20" r="1" stroke="#ffffff" stroke-linejoin="round" />
-            </svg>
-            <span class="cart-badge">3</span>
-          </a>
-          <a class="btn-nav-cta">Sign In</a>
+          <ul class="navbar-nav">
+            <li><a href="#">Browse</a></li>
+            <li><a href="#">New Arrival</a></li>
+            <li><a href="#">BestSellers</a></li>
+            <li><a href="#">Genres</a></li>
+            <li><a href="#">Authors</a></li>
+            <li><a href="#">Sell</a></li>
+          </ul>
+          <div class="navbar-actions">
+            <div class="search-bar">
+              <svg
+                class="search-icon"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+              <input type="text" placeholder="Search books, authors..." />
+            </div>
+            <a class="btn-icon">
+              <svg width="800px" height="800px" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M5.33331 6H19.8672C20.4687 6 20.9341 6.52718 20.8595 7.12403L20.1095 13.124C20.0469 13.6245 19.6215 14 19.1172 14H16.5555H9.44442H7.99998"
+                  stroke="#ffffff"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M2 4H4.23362C4.68578 4 5.08169 4.30341 5.19924 4.74003L8.30076 16.26C8.41831 16.6966 8.81422 17 9.26638 17H19"
+                  stroke="#ffffff"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <circle
+                  cx="10"
+                  cy="20"
+                  r="1"
+                  stroke="#ffffff"
+                  stroke-linejoin="round"
+                />
+                <circle
+                  cx="17.5"
+                  cy="20"
+                  r="1"
+                  stroke="#ffffff"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <span class="cart-badge">3</span>
+            </a>
+            <a class="btn-nav-cta">Sign In</a>
+          </div>
         </div>
       </div>
-    </div>
-  </nav>
+    </nav>
 
-  <!-- Browse Header -->
-  <section class="browse-header">
-    <div class="container">
-      <div class="browse-header-inner">
-        <!-- <span class="browse-eyebrow">All Books</span>
+    <!-- Browse Header -->
+    <section class="browse-header">
+      <div class="container">
+        <div class="browse-header-inner">
+          <!-- <span class="browse-eyebrow">All Books</span>
           <h1 class="browse-title">Browse our <em>collection.</em></h1>
           <p class="browse-subtitle">
             Thousands of pre-loved books waiting for their next readers. Use
             search and filter to find your perfect match.
           </p> -->
-        <div class="browse-search-wrap">
-          <div class="browse-search-bar">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" />
-            </svg>
-            <input type="text" placeholder="Search by title, author, or ISBN" />
-            <a href="#" class="btn browse-search-btn">Search</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Browse body -->
-  <div class="browse-body">
-    <div class="container">
-      <div class="browse-layout">
-        <!-- sidebar -->
-        <div class="filter-sidebar-sticky">
-          <div class="filter-sidebar">
-            <div class="filter-sidebar-title">
-              <span>Filters</span>
-              <button class="filter-clear-btn">Clear all</button>
-            </div>
-
-            <div class="filter-group">
-              <p class="filter-group-label">Genre</p>
-              <div class="genre-pills">
-                <button class="genre-pill active">All</button><button class="genre-pill">Fiction</button><button
-                  class="genre-pill">Non-Fiction</button><button class="genre-pill">Mystery</button><button
-                  class="genre-pill">Fantasy</button><button class="genre-pill">Biography</button><button
-                  class="genre-pill">Science</button><button class="genre-pill">Motivation</button><button
-                  class="genre-pill">History</button><button class="genre-pill">Romance</button><button
-                  class="genre-pill">Thriller</button>
-              </div>
-            </div>
-
-            <div class="filter-group">
-              <p class="filter-group-label">Condition</p>
-              <div class="condition-list">
-                <div class="condition-item">
-                  <input type="checkbox" name="cond-like-new" id="cond-like-new" checked />
-                  <label for="cond-like-new">Like New</label>
-                </div>
-                <div class="condition-item">
-                  <input type="checkbox" name="cond-good" id="cond-good" />
-                  <label for="cond-good">Good</label>
-                </div>
-                <div class="condition-item">
-                  <input type="checkbox" name="cond-fair" id="cond-fair" />
-                  <label for="cond-fair">Fair</label>
-                </div>
-                <div class="condition-item">
-                  <input type="checkbox" name="cond-acceptable" id="cond-acceptable" />
-                  <label for="cond-acceptable">Acceptable</label>
-                </div>
-              </div>
-            </div>
-
-            <div class="filter-group">
-              <p class="filter-group-label">Availability</p>
-              <div class="condition-list">
-                <div class="condition-item"><input type="checkbox" name="avail-in-stock" id="avail-in-stock"><label
-                    for="avail-in-stock">In Stock</label></input></div>
-                <div class="condition-item"><input type="checkbox" name="avail-pre-order" id="avail-pre-order"><label
-                    for="avail-in-order">Pre-Order</label></input></div>
-              </div>
-            </div>
-
-            <div class="filter-group">
-              <p class="filter-group-label">Language</p>
-              <div class="genre-pills">
-                <button class="genre-pill active">English</button>
-                <button class="genre-pill">Nepali</button>
-                <button class="genre-pill">Hindi</button>
-                <button class="genre-pill">Other</button>
-              </div>
-
+          <div class="browse-search-wrap">
+            <div class="browse-search-bar">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search by title, author, or ISBN"
+              />
+              <a href="#" class="btn browse-search-btn">Search</a>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <!-- Book Grid -->
-   
-</body>
+    <!-- Browse body -->
+    <section class="browse-body">
+      <div class="container">
+        <div class="browse-layout">
+          <!-- sidebar -->
+          <div class="filter-sidebar-sticky">
+            <div class="filter-sidebar">
+              <div class="filter-sidebar-title">
+                <span>Filters</span>
+                <button class="filter-clear-btn">Clear all</button>
+              </div>
 
+              <div class="filter-group">
+                <p class="filter-group-label">Genre</p>
+                <div class="genre-pills">
+                  <button class="genre-pill active">All</button
+                  ><button class="genre-pill">Fiction</button
+                  ><button class="genre-pill">Non-Fiction</button
+                  ><button class="genre-pill">Mystery</button
+                  ><button class="genre-pill">Fantasy</button
+                  ><button class="genre-pill">Biography</button
+                  ><button class="genre-pill">Science</button
+                  ><button class="genre-pill">Motivation</button
+                  ><button class="genre-pill">History</button
+                  ><button class="genre-pill">Romance</button
+                  ><button class="genre-pill">Thriller</button>
+                </div>
+              </div>
+              <div class="filter-group">
+                <p class="filter-group-label">Price Range (Rs.)</p>
+                <div class="price-range-row">
+                  <input class="price-input" type="number" placeholder="Min" min="0" />
+                  <span class="price-range-sep">—</span>
+                  <input class="price-input" type="number" placeholder="Max" min="0" />
+                </div>
+              </div>
+              <div class="filter-group">
+                <p class="filter-group-label">Condition</p>
+                <div class="condition-list">
+                  <div class="condition-item">
+                    <input
+                      type="checkbox"
+                      name="cond-like-new"
+                      id="cond-like-new"
+                      checked
+                    />
+                    <label for="cond-like-new">Like New</label>
+                  </div>
+                  <div class="condition-item">
+                    <input type="checkbox" name="cond-good" id="cond-good" />
+                    <label for="cond-good">Good</label>
+                  </div>
+                  <div class="condition-item">
+                    <input type="checkbox" name="cond-fair" id="cond-fair" />
+                    <label for="cond-fair">Fair</label>
+                  </div>
+                  <div class="condition-item">
+                    <input
+                      type="checkbox"
+                      name="cond-acceptable"
+                      id="cond-acceptable"
+                    />
+                    <label for="cond-acceptable">Acceptable</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="filter-group">
+                <p class="filter-group-label">Availability</p>
+                <div class="condition-list">
+                  <div class="condition-item">
+                    <input
+                      type="checkbox"
+                      name="avail-in-stock"
+                      id="avail-in-stock"
+                    /><label for="avail-in-stock">In Stock</label>
+                  </div>
+                  <div class="condition-item">
+                    <input
+                      type="checkbox"
+                      name="avail-pre-order"
+                      id="avail-pre-order"
+                    /><label for="avail-in-order">Pre-Order</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="filter-group">
+                <p class="filter-group-label">Language</p>
+                <div class="genre-pills">
+                  <button class="genre-pill active">English</button>
+                  <button class="genre-pill">Nepali</button>
+                  <button class="genre-pill">Hindi</button>
+                  <button class="genre-pill">Other</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- BOOK GRID -->
+          <div>
+            <div class="active-filters">
+              <div class="active-filter-chip">
+                All Genres
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+              </div>
+              <div class="active-filter-chip">
+                Like New
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+              </div>
+              <div class="active-filter-chip">
+                Good
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+              </div>
+              <div class="active-filter-chip">
+                English
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+              </div>
+            </div>
+            <div class="browse-grid-header">
+              <p class="browse-result-count">Showing<strong>48</strong>books</p>
+              <select name="sort-select" id="sort-select" class="sort-select">
+                <option value="relevance">Sort: Relevance</option>
+                <option value="price-low-to-high">Price: Low to High</option>
+                <option value="price-high-to-low">Price: High to Low</option>
+                <option value="newest-first">Newest First</option>
+                <option value="most-popular">Most Popular</option>
+              </select>
+            </div>
+            <div class="browse-grid">
+              <div class="card">
+                <span class="card-condition-badge">Like New</span>
+                <div class="card-content">
+                  <img
+                    src="https://covers.openlibrary.org/b/isbn/9780735211292-L.jpg"
+                    alt="Atomic Habits"
+                    class="cover-img"
+                  />
+                  <h1 class="book-title">Atomic Habits</h1>
+                  <p class="author-name">James Clear</p>
+                  <p class="price">Rs. 200</p>
+                  <a class="feature-btn-buy-now">Buy Now</a>
+                </div>
+              </div>
+              <div class="card">
+                <span class="card-condition-badge">Like New</span>
+                <div class="card-content">
+                  <img
+                    src="https://covers.openlibrary.org/b/isbn/9780735211292-L.jpg"
+                    alt="Atomic Habits"
+                    class="cover-img"
+                  />
+                  <h1 class="book-title">Atomic Habits</h1>
+                  <p class="author-name">James Clear</p>
+                  <p class="price">Rs. 200</p>
+                  <a class="feature-btn-buy-now">Buy Now</a>
+                </div>
+              </div>
+              <div class="card">
+                <span class="card-condition-badge">Like New</span>
+                <div class="card-content">
+                  <img
+                    src="https://covers.openlibrary.org/b/isbn/9780735211292-L.jpg"
+                    alt="Atomic Habits"
+                    class="cover-img"
+                  />
+                  <h1 class="book-title">Atomic Habits</h1>
+                  <p class="author-name">James Clear</p>
+                  <p class="price">Rs. 200</p>
+                  <a class="feature-btn-buy-now">Buy Now</a>
+                </div>
+              </div>
+              <div class="card">
+                <span class="card-condition-badge">Like New</span>
+                <div class="card-content">
+                  <img
+                    src="https://covers.openlibrary.org/b/isbn/9780735211292-L.jpg"
+                    alt="Atomic Habits"
+                    class="cover-img"
+                  />
+                  <h1 class="book-title">Atomic Habits</h1>
+                  <p class="author-name">James Clear</p>
+                  <p class="price">Rs. 200</p>
+                  <a class="feature-btn-buy-now">Buy Now</a>
+                </div>
+              </div>
+            </div>
+            <div class="pagination">
+              <button class="page-btn">&#8592;</button
+              ><button class="page-btn active">1</button
+              ><button class="page-btn">2</button
+              ><button class="page-btn">3</button
+              ><button class="page-btn">4</button
+              ><button class="page-btn">…</button
+              ><button class="page-btn">12</button
+              ><button class="page-btn">&#8594;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- FOOTER -->
+    <footer class="footer-section">
+      <div class="container">
+        <div class="footer-inner">
+          <div class="footer-top">
+            <div class="easybooks-intro">
+              <h1 class="footer-easybooks-logo">Easy<span>Books</span></h1>
+              <p class="footer-easybooks-description">
+                Your destination for discovering, buying, and selling books
+                you'll love. Curated with care since 2026.
+              </p>
+            </div>
+            <div class="footer-explore">
+              <h2 class="footer-list-title">Explore</h2>
+              <ul class="explore-list-items">
+                <li><a href="#">Browse All</a></li>
+                <li><a href="#">New Arrivals</a></li>
+                <li><a href="#">BestSellers</a></li>
+                <li><a href="#">Genres</a></li>
+              </ul>
+            </div>
+            <div class="footer-account">
+              <h2 class="footer-list-title">Account</h2>
+              <ul class="account-list-items">
+                <li><a href="#">Sign In</a></li>
+                <li><a href="#">Register</a></li>
+                <li><a href="#">Wishlist</a></li>
+                <li><a href="#">Orders</a></li>
+              </ul>
+            </div>
+            <div class="footer-company">
+              <h2 class="footer-list-title">Company</h2>
+              <ul class="company-list-items">
+                <li><a href="about-us.html">About Us</a></li>
+                <li><a href="#">Blog</a></li>
+                <li><a href="#">Authors</a></li>
+                <li><a href="#">Contact</a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="footer-bottom">
+            <p>© 2026 EasyBooks. All rights reserved.</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </body>
 </html>

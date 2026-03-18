@@ -493,8 +493,8 @@ a {
 
 .btn-nav-cta {
   padding: var(--space-2) var(--space-4);
-  color: #000;
-  background-color: #fff;
+  color: #fff;
+  background-color: var(--color-accent-400);
   border: none;
   cursor: pointer;
   border-radius: var(--radius-sm);
@@ -506,7 +506,7 @@ a {
 }
 
 .btn-nav-cta:hover {
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--color-accent-500);
 }
 
 /* --HERO SECTION */

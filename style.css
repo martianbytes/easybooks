@@ -1050,3 +1050,108 @@ a {
 .social-icon {
   width: 30px;
 }
+
+/* css for sellbook page  */
+
+/* PAGE HEADER */
+
+.sell-header {
+  padding: var(--space-16) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.sell-header-inner {
+  max-width: 640px;
+}
+
+.sell-title {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  margin-bottom: var(--space-3);
+}
+
+.sell-subtitle {
+  color: var(--text-secondary);
+  font-size: var(--text-md);
+}
+
+/* FORM SECTION */
+
+.sell-form-section {
+  padding: var(--space-16) 0;
+}
+
+.sell-form-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-10);
+  max-width: 800px;
+  margin: auto;
+  box-shadow: var(--shadow-lg);
+}
+
+/* FORM GRID */
+
+.sell-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.form-group.full {
+  grid-column: span 2;
+}
+
+/* LABEL */
+
+.form-group label {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+/* INPUTS */
+
+.sell-form input,
+.sell-form select,
+.sell-form textarea {
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  font-size: var(--text-sm);
+  font-family: var(--font-body);
+}
+
+.sell-form textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* BUTTONS */
+
+.form-actions {
+  grid-column: span 2;
+  display: flex;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.btn-submit {
+  background: var(--btn-primary-bg);
+  color: white;
+}
+
+.btn-submit:hover {
+  background: var(--btn-primary-bg-hover);
+}
+
+.btn-cancel {
+  background: var(--btn-secondary-bg);
+  border: 1px solid var(--btn-secondary-border);
+}

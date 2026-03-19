@@ -362,14 +362,24 @@ a {
   gap: var(--space-8);
 }
 
+
 .navbar-logo {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: var(--text-xl);
   color: #fff;
   letter-spacing: var(--tracking-tight);
 }
 
+.nav-logo-link {
+  text-decoration: none;
+}
+
 .navbar-logo em {
+  font-size: var(--text-xl);
+  color: #fff;
+}
+
+.navbar-logo span {
   font-style: italic;
   color: var(--color-accent-300);
 }
@@ -384,7 +394,7 @@ a {
 .navbar a {
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.8);
   padding: var(--space-2) var(--space-3);
   transition:
     color var(--transition-fast),
@@ -405,6 +415,10 @@ a {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+}
+
+.navbar-actions a {
+  color: #fff;
 }
 
 .search-bar {
@@ -443,7 +457,7 @@ a {
   flex-shrink: 0;
 }
 
-.btn-icon {
+.cart-btn-icon {
   width: 36px;
   height: 36px;
   display: flex;
@@ -576,6 +590,8 @@ a {
   max-width: 520px;
   padding-right: var(--space-8);
   gap: var(--space-3);
+  /* background: rgba(0, 0, 0, 0.3); */
+  padding: var(--space-4);
 }
 
 .hero-eyebrow {
@@ -863,6 +879,7 @@ a {
 
 .cta-secondary-button {
   font-weight: var(--weight-semibold);
+  background: rgba(255, 255, 255, 0.1);
   color: #fff;
 }
 

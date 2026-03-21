@@ -364,7 +364,7 @@ a {
 
 
 .navbar-logo {
-  font-family: var(--font-body);
+  font-family: var(--font-display);
   font-size: var(--text-xl);
   color: #fff;
   letter-spacing: var(--tracking-tight);

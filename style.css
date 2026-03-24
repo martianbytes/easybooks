@@ -531,13 +531,11 @@ a {
   overflow: hidden;
   border-bottom: 1px solid var(--border-subtle);
   background:
-    linear-gradient(
-      to right,
-      rgba(250, 248, 244, 1) 10%,
-      rgba(250, 248, 244, 0.8) 20%,
-      rgba(212, 160, 23, 0.15) 30%,
-      rgba(255, 255, 255, 0) 40%
-    ),
+    linear-gradient(to right,
+      rgba(250, 248, 244, 1) 20%,
+      rgba(250, 248, 244, 0.8) 30%,
+      rgba(212, 160, 23, 0.15) 50%,
+      rgba(255, 255, 255, 0) 60%),
     url(images/main.png);
   background-repeat: no-repeat;
   background-size: cover;
@@ -560,12 +558,10 @@ a {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    90deg,
-    var(--color-linen-50) 40%,
-    rgba(250, 248, 244, 0.6) 70%,
-    rgba(250, 248, 244, 0)
-  );
+  background: linear-gradient(90deg,
+      var(--color-linen-50) 40%,
+      rgba(250, 248, 244, 0.6) 70%,
+      rgba(250, 248, 244, 0));
   pointer-events: none;
 }
 
@@ -573,7 +569,6 @@ a {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  /* align-items: center; */
   max-width: 520px;
   padding-right: var(--space-8);
   gap: var(--space-3);
@@ -672,8 +667,9 @@ a {
   gap: var(--space-6);
   margin-top: var(--space-6);
   font-size: var(--text-xs);
-  color: var(--text-secondary);
+  /* color: var(--text-secondary); */
   letter-spacing: 0.03em;
+  color: #000;
 }
 
 .hero-genres {
@@ -682,7 +678,8 @@ a {
   gap: var(--space-3);
   margin-top: var(--space-10);
   padding-top: var(--space-5);
-  border-top: 1px solid var(--border-default);
+  border-top: 1px solid #000;
+  /* border-top: 1px solid var(--border-default); */
   font-size: var(--text-sm);
   flex-wrap: nowrap;
 }
@@ -693,7 +690,8 @@ a {
 }
 
 .hero-genres a {
-  color: var(--text-secondary);
+  /* color: var(--text-secondary); */
+  color: #000;
   padding: var(--space-1) var(--space-3);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-full);
@@ -1608,8 +1606,7 @@ a {
   z-index: 1;
 }
 
-.card-condition-badge.badge-good
-.card-condition-badge.badge-fair {
+.card-condition-badge.badge-good .card-condition-badge.badge-fair {
   background: var(--color-accent-100);
   color: var(--color-accent-600);
 }
@@ -1650,4 +1647,96 @@ a {
   background-color: var(--color-primary-600);
   border-color: var(--color-primary-600);
   color: #fff;
+}
+
+
+/* --------------------------------*/
+/*|         SIGN IN SECTION       |*/
+/* --------------------------------*/
+
+.signin-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.signin-form {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 400px;
+}
+
+.signin-form h2 {
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.signin-form p {
+  margin-bottom: 24px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.input-group {
+  margin-bottom: 16px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 1rem;
+  border: 1px solid #d1d5db;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: 1.5px solid var(--border-default);
+  ;
+  box-shadow: var(--shadow-lg);
+}
+
+.form-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  font-size: 0.86rem;
+}
+
+.btn-signin {
+  width: 100%;
+  padding: 12px;
+  background: var(--color-accent-600);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.btn-signin:hover {
+  background-color: var(--color-accent-500);
+}
+
+.signup-link {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 0.9rem;
+}
+
+.signup-link a,
+.forget-password {
+  color: var(--color-accent-500);
+  font-weight: 600;
 }

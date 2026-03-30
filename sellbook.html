@@ -105,62 +105,92 @@
       <div class="container">
         <div class="sell-form-card">
           <form class="sell-form">
-
             <div class="form-group">
               <label>Book Title</label>
               <input type="text" placeholder="Enter book title" />
             </div>
 
-            
             <div class="form-group">
               <label>Author Name</label>
               <input type="text" placeholder="Enter author name" />
             </div>
 
-            
             <div class="form-group">
               <label>Category</label>
-              <select>
-                <option>Select category</option>
-                <option>Fiction</option>
-                <option>Fantasy</option>
-                <option>Motivation</option>
-                <option>Biography</option>
-                <option>Technology</option>
-              </select>
+
+              <div class="checkbox-container">
+                <label
+                  ><input type="checkbox" name="category" value="Fiction" />
+                  Fiction</label
+                >
+                <label
+                  ><input type="checkbox" name="category" value="Fantasy" />
+                  Fantasy</label
+                >
+                <label
+                  ><input type="checkbox" name="category" value="Motivation" />
+                  Motivation</label
+                >
+                <label
+                  ><input type="checkbox" name="category" value="Biography" />
+                  Biography</label
+                >
+                <label
+                  ><input type="checkbox" name="category" value="Technology" />
+                  Technology</label
+                >
+                <label
+                  ><input type="checkbox" name="category" value="Science" />
+                  Science</label
+                >
+                <label
+                  ><input type="checkbox" name="category" value="History" />
+                  History</label
+                >
+              </div>
             </div>
 
-            
+            <div class="form-group">
+              <label>Langauge</label>
+              <input type="text" placeholder="Text langauge" />
+            </div>
+
             <div class="form-group">
               <label>Book Condition</label>
               <select>
                 <option>Select condition</option>
-                <option>New</option>
                 <option>Like New</option>
+                <option>Fair</option>
                 <option>Good</option>
                 <option>Acceptable</option>
               </select>
             </div>
 
-            
+            <div class="form-group">
+              <label>Number of Page</label>
+              <input type="number" placeholder="pages" />
+            </div>
+
             <div class="form-group">
               <label>Price (Rs)</label>
               <input type="number" placeholder="Enter price" />
             </div>
 
-            
             <div class="form-group">
               <label>Contact Email / Phone</label>
               <input type="text" placeholder="Enter contact information" />
             </div>
 
-            
             <div class="form-group">
-              <label>Upload Book Image</label>
+              <label>Book Cover Image</label>
               <input type="file" />
             </div>
 
-            
+            <div class="form-group">
+              <label>Upload Book Images</label>
+              <input type="file" />
+            </div>
+
             <div class="form-group full">
               <label>Description</label>
               <textarea
@@ -168,7 +198,13 @@
               ></textarea>
             </div>
 
-            
+            <div class="form-group full">
+              <label>Damage Description</label>
+              <textarea
+                placeholder="Please, share the damage area in the book "
+              ></textarea>
+            </div>
+
             <div class="form-actions">
               <button class="btn btn-submit">Submit Book</button>
               <button type="reset" class="btn btn-cancel">Cancel</button>

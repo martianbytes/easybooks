@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout | EasyBooks</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="container">
+        <div class="navbar-inner">
+          <div class="navbar-logo">
+            <a href="./index.html" class="nav-logo-link"
+              ><em>Easy<span>Books</span></em></a
+            >
+          </div>
+          <ul class="navbar-nav">
+            <li><a href="./browse.html">Browse</a></li>
+            <li><a href="#">New Arrival</a></li>
+            <li><a href="#">BestSellers</a></li>
+            <li><a href="#">Genres</a></li>
+            <li><a href="#">Authors</a></li>
+            <li><a href="sellbook.html">Sell</a></li>
+          </ul>
+          <div class="navbar-actions">
+            <div class="search-bar">
+              <svg
+                class="search-icon"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+              <input type="text" placeholder="Search books, authors..." />
+            </div>
+            <a href="cart.html" class="cart-btn-icon">
+              <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M5.33331 6H19.8672C20.4687 6 20.9341 6.52718 20.8595 7.12403L20.1095 13.124C20.0469 13.6245 19.6215 14 19.1172 14H16.5555H9.44442H7.99998"
+                  stroke="#ffffff"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M2 4H4.23362C4.68578 4 5.08169 4.30341 5.19924 4.74003L8.30076 16.26C8.41831 16.6966 8.81422 17 9.26638 17H19"
+                  stroke="#ffffff"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <circle
+                  cx="10"
+                  cy="20"
+                  r="1"
+                  stroke="#ffffff"
+                  stroke-linejoin="round"
+                />
+                <circle
+                  cx="17.5"
+                  cy="20"
+                  r="1"
+                  stroke="#ffffff"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <span class="cart-badge">3</span>
+            </a>
+            <a class="btn-nav-cta">Sign In</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <section class="checkout-section">
+      <div class="container">
+        <h1 class="checkout-title">Checkout</h1>
+        <p class="checkout-subtitle">
+          <a href="cart.html">Cart</a> › Checkout › Confirmation
+        </p>
+
+        <div class="checkout-layout">
+          <!-- Left side forms -->
+          <div>
+            <!-- Delivery Info -->
+            <div class="form-card">
+              <h3>Delivery Information</h3>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>First Name</label>
+                  <input type="text" placeholder="Ram" />
+                </div>
+                <div class="form-group">
+                  <label>Last Name</label>
+                  <input type="text" placeholder="Sharma" />
+                </div>
+                <div class="form-group full">
+                  <label>Email</label>
+                  <input type="email" placeholder="ram@example.com" />
+                </div>
+                <div class="form-group full">
+                  <label>Phone Number</label>
+                  <input type="tel" placeholder="+977 98XXXXXXXX" />
+                </div>
+                <div class="form-group full">
+                  <label>Address</label>
+                  <input type="text" placeholder="Street / Tole / Landmark" />
+                </div>
+                <div class="form-group">
+                  <label>City</label>
+                  <select>
+                    <option>Select city</option>
+                    <option>Kathmandu</option>
+                    <option>Lalitpur</option>
+                    <option>Bhaktapur</option>
+                    <option>Pokhara</option>
+                    <option>Chitwan</option>
+                    <option>Biratnagar</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>District</label>
+                  <input type="text" placeholder="e.g. Kathmandu" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment -->
+            <div class="form-card">
+              <h3>Payment Method</h3>
+
+              <div class="payment-option">
+                <input type="radio" name="payment" id="cod" checked />
+                <label for="cod">Cash on Delivery</label>
+              </div>
+              <div class="payment-option">
+                <input type="radio" name="payment" id="esewa" />
+                <label for="esewa">eSewa</label>
+              </div>
+              <div class="payment-option">
+                <input type="radio" name="payment" id="khalti" />
+                <label for="khalti">Khalti</label>
+              </div>
+              <div class="payment-option">
+                <input type="radio" name="payment" id="bank" />
+                <label for="bank">Bank Transfer</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Summary -->
+          <div class="summary-box">
+            <h3>Order Summary</h3>
+
+            <div class="summary-book">
+              <img
+                src="https://covers.openlibrary.org/b/isbn/9780735211292-L.jpg"
+                alt="Atomic Habits"
+              />
+              <span class="book-name">Atomic Habits</span>
+              <span class="book-price">Rs. 200</span>
+            </div>
+            <div class="summary-book">
+              <img
+                src="https://covers.openlibrary.org/b/isbn/9780062316097-L.jpg"
+                alt="Sapiens"
+              />
+              <span class="book-name">Sapiens</span>
+              <span class="book-price">Rs. 350</span>
+            </div>
+            <div class="summary-book">
+              <img
+                src="https://covers.openlibrary.org/b/isbn/9780525559474-L.jpg"
+                alt="The Midnight Library"
+              />
+              <span class="book-name">The Midnight Library</span>
+              <span class="book-price">Rs. 150</span>
+            </div>
+
+            <hr class="summary-divider" />
+
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span>Rs. 700</span>
+            </div>
+            <div class="summary-row">
+              <span>Delivery</span>
+              <span>Rs. 50</span>
+            </div>
+            <div class="summary-row">
+              <span>Discount</span>
+              <span>Rs. 0</span>
+            </div>
+            <div class="summary-row total">
+              <span>Total</span>
+              <span>Rs. 750</span>
+            </div>
+
+            <button class="btn-place-order">Place Order</button>
+            <a href="cart.html" class="back-link">← Back to Cart</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer-section">
+      <div class="container">
+        <div class="footer-inner">
+          <div class="footer-top">
+            <div class="easybooks-intro">
+              <h1 class="footer-easybooks-logo">Easy<span>Books</span></h1>
+              <p class="footer-easybooks-description">
+                Your destination for discovering, buying, and selling books
+                you'll love. Curated with care since 2026.
+              </p>
+            </div>
+            <div class="footer-explore">
+              <h2 class="footer-list-title">Explore</h2>
+              <ul class="explore-list-items">
+                <li><a href="./browse.html">Browse All</a></li>
+                <li><a href="#">New Arrivals</a></li>
+                <li><a href="#">BestSellers</a></li>
+                <li><a href="#">Genres</a></li>
+              </ul>
+            </div>
+            <div class="footer-account">
+              <h2 class="footer-list-title">Account</h2>
+              <ul class="account-list-items">
+                <li><a href="#">Sign In</a></li>
+                <li><a href="#">Register</a></li>
+                <li><a href="#">Wishlist</a></li>
+                <li><a href="#">Orders</a></li>
+              </ul>
+            </div>
+            <div class="footer-company">
+              <h2 class="footer-list-title">Company</h2>
+              <ul class="company-list-items">
+                <li><a href="about-us.html">About Us</a></li>
+                <li><a href="#">Blog</a></li>
+                <li><a href="#">Contact</a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="footer-bottom">
+            <p>© 2026 EasyBooks. All rights reserved.</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

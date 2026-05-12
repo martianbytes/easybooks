@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Sell Book | EasyBooks{% endblock %}
+
+{% block content %}
+    <!-- PAGE HEADER -->
+    <section class="sell-header">
+      <div class="container">
+        <div class="sell-header-inner">
+          <h1 class="sell-title">Sell Your Book</h1>
+          <p class="sell-subtitle">
+            List your used book and help other readers discover great reads at
+            affordable prices.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SELL BOOK FORM -->
+    <section class="sell-form-section">
+      <div class="container">
+        <div class="sell-form-card">
+          <form class="sell-form" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Display form errors -->
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                  <p>{{ error }}</p>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <!-- Book Title -->
+            <div class="form-group">
+              <label for="{{ form.title.id_for_label }}">Book Title *</label>
+              {{ form.title }}
+              {% if form.title.errors %}
+                <span class="error-text">{{ form.title.errors.0 }}</span>
+              {% endif %}
+            </div>
+
+            <!-- Authors -->
+            <div class="form-group">
+              <label for="{{ form.authors.id_for_label }}">Author(s) *</label>
+              {{ form.authors }}
+              {% if form.authors.errors %}
+                <span class="error-text">{{ form.authors.errors.0 }}</span>
+              {% endif %}
+              <small>Hold Ctrl/Cmd to select multiple authors. <a href="#">+ Add new author</a></small>
+            </div>
+
+            <!-- Subtitle -->
+            <div class="form-group">
+              <label for="{{ form.subtitle.id_for_label }}">Subtitle</label>
+              {{ form.subtitle }}
+            </div>
+
+            <!-- Category -->
+            <div class="form-group">
+              <label for="{{ form.category.id_for_label }}">Category *</label>
+              {{ form.category }}
+              {% if form.category.errors %}
+                <span class="error-text">{{ form.category.errors.0 }}</span>
+              {% endif %}
+            </div>
+
+            <!-- Language -->
+            <div class="form-group">
+              <label for="{{ form.language.id_for_label }}">Language *</label>
+              {{ form.language }}
+              {% if form.language.errors %}
+                <span class="error-text">{{ form.language.errors.0 }}</span>
+              {% endif %}
+            </div>
+
+            <!-- ISBN -->
+            <div class="form-group">
+              <label for="{{ form.isbn.id_for_label }}">ISBN (Optional)</label>
+              {{ form.isbn }}
+              <small>13-digit ISBN code</small>
+            </div>
+
+            <!-- Publisher -->
+            <div class="form-group">
+              <label for="{{ form.publisher.id_for_label }}">Publisher</label>
+              {{ form.publisher }}
+            </div>
+
+            <!-- Published Year -->
+            <div class="form-group">
+              <label for="{{ form.published_year.id_for_label }}">Published Year</label>
+              {{ form.published_year }}
+            </div>
+
+            <!-- Edition -->
+            <div class="form-group">
+              <label for="{{ form.edition.id_for_label }}">Edition</label>
+              {{ form.edition }}
+            </div>
+
+            <!-- Number of Pages -->
+            <div class="form-group">
+              <label for="{{ form.num_pages.id_for_label }}">Number of Pages</label>
+              {{ form.num_pages }}
+            </div>
+
+            <!-- Book Condition -->
+            <div class="form-group">
+              <label for="{{ form.condition.id_for_label }}">Book Condition *</label>
+              {{ form.condition }}
+              {% if form.condition.errors %}
+                <span class="error-text">{{ form.condition.errors.0 }}</span>
+              {% endif %}
+            </div>
+
+            <!-- Condition Notes -->
+            <div class="form-group full">
+              <label for="{{ form.condition_notes.id_for_label }}">Damage Description</label>
+              {{ form.condition_notes }}
+              <small>Please share any damage areas in the book</small>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group full">
+              <label for="{{ form.description.id_for_label }}">Description</label>
+              {{ form.description }}
+              <small>Write a short description about the book</small>
+            </div>
+
+            <!-- Original Price -->
+            <div class="form-group">
+              <label for="{{ form.original_price.id_for_label }}">Original Price (Rs)</label>
+              {{ form.original_price }}
+            </div>
+
+            <!-- Asking Price -->
+            <div class="form-group">
+              <label for="{{ form.asking_price.id_for_label }}">Asking Price (Rs) *</label>
+              {{ form.asking_price }}
+              {% if form.asking_price.errors %}
+                <span class="error-text">{{ form.asking_price.errors.0 }}</span>
+              {% endif %}
+            </div>
+
+            <!-- Is Negotiable -->
+            <div class="form-group">
+              <label for="{{ form.is_negotiable.id_for_label }}">
+                {{ form.is_negotiable }}
+                Price is Negotiable
+              </label>
+            </div>
+
+            <!-- City -->
+            <div class="form-group">
+              <label for="{{ form.city.id_for_label }}">City *</label>
+              {{ form.city }}
+              {% if form.city.errors %}
+                <span class="error-text">{{ form.city.errors.0 }}</span>
+              {% endif %}
+            </div>
+
+            <!-- Book Cover Image -->
+            <div class="form-group">
+              <label for="{{ form.cover_image.id_for_label }}">Book Cover Image *</label>
+              {{ form.cover_image }}
+              {% if form.cover_image.errors %}
+                <span class="error-text">{{ form.cover_image.errors.0 }}</span>
+              {% endif %}
+              <small>Upload a high-quality cover image</small>
+            </div>
+
+            <!-- Additional Images -->
+            <div class="form-group">
+              <label for="{{ form.images.id_for_label }}">Additional Images</label>
+              {{ form.images }}
+              <small>Upload multiple images showing the book condition</small>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+              <button type="submit" class="btn btn-submit">Submit Book</button>
+              <a href="{% url 'browse' %}" class="btn btn-cancel">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+{% endblock %}

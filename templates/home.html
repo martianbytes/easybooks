@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-inner">
+        <div class="hero-content">
+          <span class="hero-eyebrow">—Curated Library</span>
+          <h1 class="hero-title">
+            Give your books <br /><em>a second chapter.</em>
+          </h1>
+          <p class="hero-subtitle">
+            Discover, buy, and sell used books across every genre — all in one
+            place.
+          </p>
+          <div class="hero-action">
+            <a href="{% url 'books:browse' %}" class="btn btn-hero-primary">Browse Collections</a>
+            <a href="{% url 'books:sell' %}" class="btn btn-hero-secondary">Sell your book</a>
+          </div>
+          <div class="hero-trust">
+            <span>✓ Large number of books</span>
+            <span>✓ 30-day returns</span>
+            <span>✓ Secure checkout</span>
+          </div>
+          <div class="hero-genres">
+            <span>Popular:</span>
+            {% for genre in popular_genres %}
+              <a href="{% url 'books:browse' %}?category={{ genre.id }}">{{ genre.name }}</a>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURED SECTION -->
+  <section class="feature-section popular">
+    <div class="container">
+      <div class="feature-inner">
+        <div class="container-about">
+          <p class="container-name">Featured</p>
+          <a href="{% url 'books:browse' %}" class="view-more">View More..</a>
+        </div>
+        <div class="cards-container">
+          {% for book in featured_books %}
+          <div class="card">
+            <div class="card-content">
+              <img
+                src="{{ book.cover_image }}"
+                alt="{{ book.title }}"
+                class="cover-img"
+              />
+              <h1 class="book-title">{{ book.title }}</h1>
+              <p class="author-name">{{ book.author }}</p>
+              <p class="price">Rs.{{ book.price }}</p>
+              <a href="{% url 'books:detail' book.id %}" class="feature-btn-buy-now">Buy Now</a>
+            </div>
+          </div>
+          {% empty %}
+          <p>No featured books available.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BEST SELLING SECTION -->
+  <section class="feature-section new-arrival">
+    <div class="container">
+      <div class="feature-inner">
+        <div class="container-about">
+          <p class="container-name">Best Selling</p>
+          <a href="{% url 'books:browse' %}" class="view-more">View More..</a>
+        </div>
+        <div class="cards-container">
+          {% for book in bestselling_books %}
+          <div class="card">
+            <div class="card-content">
+              <img
+                src="{{ book.cover_image }}"
+                alt="{{ book.title }}"
+                class="cover-img"
+              />
+              <h1 class="book-title">{{ book.title }}</h1>
+              <p class="author-name">{{ book.author }}</p>
+              <p class="price">Rs.{{ book.price }}</p>
+              <a href="{% url 'books:detail' book.id %}" class="feature-btn-buy-now">Buy Now</a>
+            </div>
+          </div>
+          {% empty %}
+          <p>No bestselling books available.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RECOMMENDATION SECTION -->
+  <section class="feature-section you-might-like">
+    <div class="container">
+      <div class="feature-inner">
+        <div class="container-about">
+          <p class="container-name">Recommendation</p>
+          <a href="{% url 'books:browse' %}" class="view-more">View More..</a>
+        </div>
+        <div class="cards-container">
+          {% for book in recommended_books %}
+          <div class="card">
+            <div class="card-content">
+              <img
+                src="{{ book.cover_image }}"
+                alt="{{ book.title }}"
+                class="cover-img"
+              />
+              <h1 class="book-title">{{ book.title }}</h1>
+              <p class="author-name">{{ book.author }}</p>
+              <p class="price">Rs.{{ book.price }}</p>
+              <a href="{% url 'books:detail' book.id %}" class="feature-btn-buy-now">Buy Now</a>
+            </div>
+          </div>
+          {% empty %}
+          <p>No recommendations available.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA SECTION -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-inner">
+        <h1 class="cta-caption">
+          Learning helps improve your cognitive abilities.
+        </h1>
+        <div class="cta-actions">
+          <a href="{% url 'books:browse' %}" class="btn cta-primary-button">Browse Collections</a>
+          <a href="{% url 'books:sell' %}" class="btn cta-secondary-button">Sell your book</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NEWS LETTER -->
+  <section class="news-letter-section">
+    <div class="container">
+      <div class="nl-inner">
+        <div class="nl-discription">
+          <div class="nl-eyebrow">—Stay in the loop</div>
+          <h1 class="nl-title">Never miss a <br /><em>great read.</em></h1>
+          <p class="nl-subtitles">
+            Weekly recommendations, early access to new arrivals, and
+            exclusive member deals — straight to your inbox.
+          </p>
+        </div>
+        <div class="news-letter-subscribe">
+          <form class="email-entry-form" method="POST" action="{% url 'books:subscribe' %}">
+            {% csrf_token %}
+            <input
+              type="email"
+              placeholder="Subscribe to our newsletter...."
+              name="email"
+              class="email-nl-input"
+              required
+            />
+            <button class="btn nl-subscribe-btn" type="submit">Subscribe</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+{% endblock content %}

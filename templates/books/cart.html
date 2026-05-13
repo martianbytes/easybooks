@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart | EasyBooks</title>
+    <link rel="stylesheet" href="style.css">
+    
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-inner">
+                <div class="navbar-logo">
+                    <a href="./index.html" class="nav-logo-link"><em>Easy<span>Books</span></em></a>
+                </div>
+                <ul class="navbar-nav">
+                    <li><a href="./browse.html">Browse</a></li>
+                    <li><a href="#">New Arrival</a></li>
+                    <li><a href="#">BestSellers</a></li>
+                    <li><a href="#">Genres</a></li>
+                    <li><a href="#">Authors</a></li>
+                    <li><a href="sellbook.html">Sell</a></li>
+                </ul>
+                <div class="navbar-actions">
+                    <div class="search-bar">
+                        <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8" />
+                            <path d="m21 21-4.35-4.35" />
+                        </svg>
+                        <input type="text" placeholder="Search books, authors..." />
+                    </div>
+                    <a href="cart.html" class="cart-btn-icon">
+                        <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none">
+                            <path d="M5.33331 6H19.8672C20.4687 6 20.9341 6.52718 20.8595 7.12403L20.1095 13.124C20.0469 13.6245 19.6215 14 19.1172 14H16.5555H9.44442H7.99998" stroke="#ffffff" stroke-linejoin="round"/>
+                            <path d="M2 4H4.23362C4.68578 4 5.08169 4.30341 5.19924 4.74003L8.30076 16.26C8.41831 16.6966 8.81422 17 9.26638 17H19" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="10" cy="20" r="1" stroke="#ffffff" stroke-linejoin="round"/>
+                            <circle cx="17.5" cy="20" r="1" stroke="#ffffff" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="cart-badge">3</span>
+                    </a>
+                    <a class="btn-nav-cta">Sign In</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="cart-section">
+        <div class="container">
+            <h1 class="cart-title">Your Cart</h1>
+
+            <div class="cart-layout">
+
+                <div>
+                    <table class="cart-table">
+                        <thead>
+                            <tr>
+                                <th>Book</th>
+                                <th>Condition</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Total</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="book-info">
+                                        <img src="https://covers.openlibrary.org/b/isbn/9780735211292-L.jpg" alt="Atomic Habits">
+                                        <div>
+                                            <p class="title">Atomic Habits</p>
+                                            <p class="author">James Clear</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>Like New</td>
+                                <td class="price-text">Rs. 200</td>
+                                <td>
+                                    <div class="qty-box">
+                                        <button>-</button>
+                                        <span>1</span>
+                                        <button>+</button>
+                                    </div>
+                                </td>
+                                <td class="price-text">Rs. 200</td>
+                                <td><button class="remove-btn">×</button></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="book-info">
+                                        <img src="https://covers.openlibrary.org/b/isbn/9780062316097-L.jpg" alt="Sapiens">
+                                        <div>
+                                            <p class="title">Sapiens</p>
+                                            <p class="author">Yuval Noah Harari</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>Good</td>
+                                <td class="price-text">Rs. 350</td>
+                                <td>
+                                    <div class="qty-box">
+                                        <button>-</button>
+                                        <span>1</span>
+                                        <button>+</button>
+                                    </div>
+                                </td>
+                                <td class="price-text">Rs. 350</td>
+                                <td><button class="remove-btn">×</button></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="book-info">
+                                        <img src="https://covers.openlibrary.org/b/isbn/9780525559474-L.jpg" alt="The Midnight Library">
+                                        <div>
+                                            <p class="title">The Midnight Library</p>
+                                            <p class="author">Matt Haig</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>Fair</td>
+                                <td class="price-text">Rs. 150</td>
+                                <td>
+                                    <div class="qty-box">
+                                        <button>-</button>
+                                        <span>1</span>
+                                        <button>+</button>
+                                    </div>
+                                </td>
+                                <td class="price-text">Rs. 150</td>
+                                <td><button class="remove-btn">×</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="cart-actions">
+                        <a href="browse.html" class="btn-back">← Continue Shopping</a>
+                    </div>
+                </div>
+
+                <div class="summary-box">
+                    <h3>Order Summary</h3>
+
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span>Rs. 700</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Delivery</span>
+                        <span>Rs. 50</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Discount</span>
+                        <span>Rs. 0</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total</span>
+                        <span>Rs. 750</span>
+                    </div>
+
+                    <div class="promo-row">
+                        <input type="text" placeholder="Promo code">
+                        <button>Apply</button>
+                    </div>
+
+                    <a href="checkout.html" class="btn-checkout">Proceed to Checkout</a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer-section">
+        <div class="container">
+            <div class="footer-inner">
+                <div class="footer-top">
+                    <div class="easybooks-intro">
+                        <h1 class="footer-easybooks-logo">Easy<span>Books</span></h1>
+                        <p class="footer-easybooks-description">Your destination for discovering, buying, and selling books you'll love. Curated with care since 2026.</p>
+                    </div>
+                    <div class="footer-explore">
+                        <h2 class="footer-list-title">Explore</h2>
+                        <ul class="explore-list-items">
+                            <li><a href="./browse.html">Browse All</a></li>
+                            <li><a href="#">New Arrivals</a></li>
+                            <li><a href="#">BestSellers</a></li>
+                            <li><a href="#">Genres</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-account">
+                        <h2 class="footer-list-title">Account</h2>
+                        <ul class="account-list-items">
+                            <li><a href="#">Sign In</a></li>
+                            <li><a href="#">Register</a></li>
+                            <li><a href="#">Wishlist</a></li>
+                            <li><a href="#">Orders</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-company">
+                        <h2 class="footer-list-title">Company</h2>
+                        <ul class="company-list-items">
+                            <li><a href="about-us.html">About Us</a></li>
+                            <li><a href="#">Blog</a></li>
+                            <li><a href="#">Contact</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>© 2026 EasyBooks. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

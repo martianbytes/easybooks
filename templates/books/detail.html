@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- ═══════════════════════════════════════════
+     BREADCRUMB
+═══════════════════════════════════════════ -->
+<nav class="breadcrumb-nav">
+  <div class="container">
+    <ol class="breadcrumb">
+      <li><a href="{% url 'books:home' %}">Home</a></li>
+      <li class="sep">›</li>
+      <li><a href="{% url 'books:browse' %}">Browse</a></li>
+      <li class="sep">›</li>
+      {% if book.category %}
+        <li><a href="{% url 'books:browse' %}?category={{ book.category }}">{{ book.get_category_display }}</a></li>
+        <li class="sep">›</li>
+      {% endif %}
+      <li class="current">{{ book.title }}</li>
+    </ol>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════
+     MAIN DETAIL LAYOUT
+═══════════════════════════════════════════ -->
+<section class="detail-section">
+  <div class="container">
+    <div class="detail-layout">
+
+      <!-- ────────────────────────────────────
+           LEFT: IMAGE GALLERY
+      ──────────────────────────────────────── -->
+      <div class="detail-gallery">
+
+        <!-- Main image -->
+        <div class="gallery-main">
+          {% if book.cover_image %}
+            <img
+              id="main-img"
+              src="{{ book.cover_image }}"
+              alt="{{ book.title }} cover"
+              class="gallery-main-img"
+            />
+          {% else %}
+            <div class="gallery-placeholder">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".3">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <path d="M3 9h18M9 21V9"/>
+              </svg>
+              <p>No image available</p>
+            </div>
+          {% endif %}
+
+          {% if book.status == 'sold' %}
+            <div class="gallery-sold-overlay">SOLD</div>
+          {% elif book.status == 'reserved' %}
+            <div class="gallery-reserved-overlay">RESERVED</div>
+          {% endif %}
+        </div>
+
+        <!-- Thumbnail strip -->
+        {% if book.images.count > 1 %}
+        <div class="gallery-thumbs">
+          {% for img in book.images.all %}
+          <a
+            href="{{ img.image.url }}"
+            class="thumb-btn {% if forloop.first %}active{% endif %}"
+            title="{{ img.get_image_type_display }}"
+          >
+            <img src="{{ img.image.url }}" alt="{{ img.get_image_type_display }}" />
+          </a>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Condition indicator -->
+        <div class="condition-display">
+          <span class="condition-dot condition-{{ book.condition }}"></span>
+          <span>Condition: <strong>{{ book.get_condition_display }}</strong></span>
+        </div>
+
+      </div>
+
+      <!-- ────────────────────────────────────
+           MIDDLE: BOOK INFO
+      ──────────────────────────────────────── -->
+      <div class="detail-info">
+
+        {% if book.category %}
+          <span class="detail-category-pill">{{ book.get_category_display }}</span>
+        {% endif %}
+
+        <h1 class="detail-title">{{ book.title }}</h1>
+
+        {% if book.subtitle %}
+          <p class="detail-subtitle">{{ book.subtitle }}</p>
+        {% endif %}
+
+        <p class="detail-authors">
+          by
+          {% for author in book.authors.all %}
+            <a href="{% url 'books:browse' %}?author={{ author.id }}" class="author-link">{{ author.name }}</a>{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        </p>
+
+        <!-- Price block -->
+        <div class="detail-price-block">
+          <span class="detail-price">Rs. {{ book.asking_price }}</span>
+          {% if book.original_price %}
+            <span class="detail-price-original">Rs. {{ book.original_price }}</span>
+          {% endif %}
+          {% if book.discount_percentage %}
+            <span class="detail-discount-badge">{{ book.discount_percentage }}% OFF</span>
+          {% endif %}
+        </div>
+
+        {% if book.is_negotiable %}
+          <p class="negotiable-note">💬 Price is negotiable :) feel free to ask</p>
+        {% endif %}
+
+        <hr class="detail-divider" />
+
+        <!-- Metadata grid -->
+        <dl class="detail-meta-grid">
+          {% if book.publisher %}
+          <div class="meta-item">
+            <dt>Publisher</dt>
+            <dd>{{ book.publisher }}</dd>
+          </div>
+          {% endif %}
+          {% if book.published_year %}
+          <div class="meta-item">
+            <dt>Published</dt>
+            <dd>{{ book.published_year }}</dd>
+          </div>
+          {% endif %}
+          {% if book.edition %}
+          <div class="meta-item">
+            <dt>Edition</dt>
+            <dd>{{ book.edition }}</dd>
+          </div>
+          {% endif %}
+          {% if book.num_pages %}
+          <div class="meta-item">
+            <dt>Pages</dt>
+            <dd>{{ book.num_pages }}</dd>
+          </div>
+          {% endif %}
+          {% if book.language %}
+          <div class="meta-item">
+            <dt>Language</dt>
+            <dd>{{ book.get_language_display }}</dd>
+          </div>
+          {% endif %}
+          {% if book.isbn %}
+          <div class="meta-item">
+            <dt>ISBN</dt>
+            <dd>{{ book.isbn }}</dd>
+          </div>
+          {% endif %}
+          {% if book.city %}
+          <div class="meta-item">
+            <dt>Location</dt>
+            <dd>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              {{ book.city }}
+            </dd>
+          </div>
+          {% endif %}
+        </dl>
+
+        <hr class="detail-divider" />
+
+        <!-- Description -->
+        {% if book.description %}
+        <div class="detail-desc-block">
+          <h2 class="detail-section-title">About this book</h2>
+          <p class="detail-description">{{ book.description }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Condition notes -->
+        {% if book.condition_notes %}
+        <div class="detail-condition-notes">
+          <h2 class="detail-section-title">Condition Notes</h2>
+          <p class="condition-notes-text">{{ book.condition_notes }}</p>
+        </div>
+        {% endif %}
+
+      </div>
+
+      <!-- ────────────────────────────────────
+           RIGHT: STICKY ACTION CARD
+      ──────────────────────────────────────── -->
+      <aside class="detail-action-card">
+
+        <!-- Availability status -->
+        <div class="action-card-status action-status-{{ book.status }}">
+          {% if book.status == 'available' %}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            Available
+          {% elif book.status == 'reserved' %}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+            Reserved
+          {% else %}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+            Sold
+          {% endif %}
+        </div>
+
+        <!-- Price -->
+        <div class="action-card-price">
+          <span class="action-price-main">Rs. {{ book.asking_price }}</span>
+          {% if book.original_price %}
+            <span class="action-price-orig">Rs. {{ book.original_price }}</span>
+          {% endif %}
+        </div>
+
+        <!-- CTA buttons or unavailable notice -->
+        {% if book.status == 'available' %}
+        <div class="action-btn-group">
+          <a href="{% url 'books:checkout' book.id %}" class="btn-action-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="9" cy="21" r="1"/>
+              <circle cx="20" cy="21" r="1"/>
+              <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/>
+            </svg>
+            Buy Now
+          </a>
+          <a href="{% url 'books:contact_seller' book.id %}" class="btn-action-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+            </svg>
+            Message Seller
+          </a>
+        </div>
+        {% else %}
+        <div class="action-unavailable">
+          This book is no longer available.
+          <a href="{% url 'books:browse' %}">Browse similar →</a>
+        </div>
+        {% endif %}
+
+        <!-- Seller info -->
+        <div class="seller-card">
+          <div class="seller-avatar">{{ book.seller.username|first|upper }}</div>
+          <div class="seller-info">
+            <p class="seller-name">{{ book.seller.get_full_name|default:book.seller.username }}</p>
+            <p class="seller-meta">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              Member seller
+            </p>
+          </div>
+          <a href="{% url 'books:browse' %}?seller={{ book.seller.id }}" class="seller-listings-link">
+            All listings →
+          </a>
+        </div>
+
+        <!-- Trust signals -->
+        <ul class="action-trust-list">
+          <li>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            Secure checkout
+          </li>
+          <li>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            30-day return policy
+          </li>
+          <li>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            Buyer protection included
+          </li>
+        </ul>
+
+        <!-- View count -->
+        <p class="action-views">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          {{ book.views }} people viewed this listing
+        </p>
+
+      </aside>
+
+    </div><!-- /detail-layout -->
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     RELATED BOOKS
+═══════════════════════════════════════════ -->
+{% if related_books %}
+<section class="related-section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-header-left">
+        <span class="section-eyebrow">More like this</span>
+        <p class="container-name">Related Books</p>
+      </div>
+      <a href="{% url 'books:browse' %}?category={{ book.category }}" class="view-more">See all →</a>
+    </div>
+    <div class="cards-container">
+      {% for rel in related_books %}
+      <div class="card">
+        <div class="card-content">
+          <div class="card-img-wrap">
+            <img src="{{ rel.cover_image }}" alt="{{ rel.title }}" class="cover-img" />
+          </div>
+          <h3 class="book-title">{{ rel.title }}</h3>
+          <p class="author-name">{{ rel.author }}</p>
+          <div class="card-price-row">
+            <p class="price">Rs.{{ rel.price }}</p>
+          </div>
+          <a href="{% url 'books:detail' rel.id %}" class="feature-btn-buy-now">View Details</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% endblock content %}

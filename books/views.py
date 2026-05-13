@@ -1,7 +1,7 @@
-from django.views.generic import TemplateView, ListView, CreateView
+from django.views.generic import TemplateView, ListView, CreateView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from .models import Book
+from .models import Book, Message
 from django.http import JsonResponse
 
 class HomeView(TemplateView):
@@ -67,3 +67,30 @@ class SubscribeView(CreateView):
         email = request.POST.get('email')
         # Add your newsletter logic here
         return JsonResponse({'status': 'success'})
+
+
+class BookDetailView(DetailView):
+    model = Book
+    template_name = 'books/detail.html'
+    context_object_name = 'book'
+
+
+class CheckoutView(LoginRequiredMixin, DetailView):
+    model = Book
+    template_name = 'books/checkout.html'
+    context_object_name = 'book'
+    login_url = 'login'
+
+
+class ContactSellerView(LoginRequiredMixin, CreateView):
+    model = Message  # You'll need to create a Message model
+    template_name = 'books/contact_seller.html'
+    fields = ['message']
+    success_url = reverse_lazy('books:browse')
+    login_url = 'login'
+
+    def form_valid(self, form):
+        form.instance.buyer = self.request.user
+        form.instance.book = Book.objects.get(pk=self.kwargs['pk'])
+        form.instance.seller = form.instance.book.seller
+        return super().form_valid(form)

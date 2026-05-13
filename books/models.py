@@ -154,6 +154,11 @@ class Book(models.Model):
             
         return images[0].image.url if images else None
     
+    @property
+    def cover_image(self):
+        """Return cover image URL (used by templates as book.cover_image)."""
+        return self.get_cover_image()
+    
     def discount_percentage(self):
         if self.original_price and self.asking_price > 0:
             if self.asking_price >= self.original_price:
@@ -225,3 +230,20 @@ class Transaction(models.Model):
 
     def __str__(self):
         return f"{self.book.title} - {self.status}"
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Message
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+class Message(models.Model):
+    buyer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='messages')
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Message from {self.buyer.username} to {self.seller.username} about {self.book.title}"

@@ -69,7 +69,25 @@
               </svg>
               <span class="cart-badge">3</span>
             </a>
-            <a href="#" class="btn-nav-cta">Sign In</a>
+            
+            {% if user.is_authenticated %}
+              <div class="user-menu">
+                <a href="{% url 'accounts:profile' %}" class="user-profile-link">
+                  {% if user.profile.avatar %}
+                    <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="user-avatar-small">
+                  {% else %}
+                    <span class="user-initial">{{ user.username|first|upper }}</span>
+                  {% endif %}
+                </a>
+                <form method="post" action="{% url 'accounts:logout' %}" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-nav-cta btn-logout">Logout</button>
+                </form>
+              </div>
+            {% else %}
+              <a href="{% url 'accounts:login' %}" class="btn-nav-cta">Sign In</a>
+              <a href="{% url 'accounts:register' %}" class="btn-nav-secondary">Register</a>
+            {% endif %}
           </div>
         </div>
       </div>
@@ -102,10 +120,17 @@
             <div class="footer-account">
               <h2 class="footer-list-title account-list-title">Account</h2>
               <ul class="account-list-items">
-                <li><a href="#">Sign In</a></li>
-                <li><a href="#">Register</a></li>
-                <li><a href="#">Wishlist</a></li>
-                <li><a href="#">Orders</a></li>
+                {% if user.is_authenticated %}
+                  <li><a href="{% url 'accounts:profile' %}">My Profile</a></li>
+                  <li><a href="{% url 'accounts:logout' %}">Logout</a></li>
+                  <li><a href="#">Wishlist</a></li>
+                  <li><a href="#">Orders</a></li>
+                {% else %}
+                  <li><a href="{% url 'accounts:login' %}">Sign In</a></li>
+                  <li><a href="{% url 'accounts:register' %}">Register</a></li>
+                  <li><a href="#">Wishlist</a></li>
+                  <li><a href="#">Orders</a></li>
+                {% endif %}
               </ul>
             </div>
             <div class="footer-company">

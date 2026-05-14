@@ -74,7 +74,7 @@ class Book(models.Model):
 
     language = models.CharField(max_length=10, choices=LANGUAGE_CHOICES, default='en')
     num_pages = models.PositiveIntegerField(blank=True, null=True)
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='others')
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='other')
 
     # ======Condition==========================
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES)
@@ -128,17 +128,16 @@ class Book(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             base_slug = slugify(self.title)
-
             for _ in range(5):
                 unique_id = uuid.uuid4().hex[:6]
                 slug = f"{base_slug}-{unique_id}"
-
                 if not Book.objects.filter(slug=slug).exists():
                     self.slug = slug
                     break
-        else:
-            raise Exception("Slug genaration failed.")
-        
+            else:
+                raise Exception("Slug generation failed.")
+        # validate before saving
+        self.full_clean()
         super().save(*args, **kwargs)
 
     # ========================Helpers========================

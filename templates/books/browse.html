@@ -152,7 +152,7 @@
               <span class="card-condition-badge">{{ book.get_condition_display }}</span>
               <div class="card-content">
                 {% if book.cover_image %}
-                  <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" class="cover-img" />
+                  <img src="{{ book.cover_image }}" alt="{{ book.title }}" class="cover-img" />
                 {% else %}
                   <img src="{% static 'images/default-book.jpg' %}" alt="{{ book.title }}" class="cover-img" />
                 {% endif %}

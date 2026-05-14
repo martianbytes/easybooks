@@ -54,7 +54,7 @@
               />
               <h1 class="book-title">{{ book.title }}</h1>
               <p class="author-name">{{ book.author }}</p>
-              <p class="price">Rs.{{ book.price }}</p>
+              <p class="price">Rs.{{ book.asking_price }}</p>
               <a href="{% url 'books:detail' book.id %}" class="feature-btn-buy-now">Buy Now</a>
             </div>
           </div>

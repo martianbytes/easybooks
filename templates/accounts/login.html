@@ -1,37 +1,45 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <title>Sign In</title>
-</head>
-<body>
-    <div class="signin-container">
-        <form class="signin-form">
-            <h2>Welcome</h2>
-            <p>Please enter your detail to sign in.</p>
+{% extends "base.html" %}
+{% load static %}
 
-            <div class="input-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" placeholder="example@gmail.com" required>
-            </div>
-            <div class="input-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" placeholder="password" required>
-            </div>
-            <div class="form-option">
-                <label class="checkbox-label">
-                    <input type="checkbox"> Remember Me
-                </label>
-                <a href="#" class="forget-password">Forget Password?</a>
-            </div>
-            <button type="submit" class="btn btn-signin">Sign In</button>
+{% block title %}Sign In{% endblock %}
 
-            <p class="signup-link">
-                Don't have an account? <a href="register.html">Sign Up</a>
-            </p>
-        </form>
-    </div>
-</body>
-</html>
+{% block content %}
+<div class="signin-container">
+    <form method="post" class="signin-form" novalidate>
+        {% csrf_token %}
+        <h2>Welcome</h2>
+        <p>Please enter your details to sign in.</p>
+
+        {% if form.non_field_errors %}
+            <div class="form-errors">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <div class="input-group">
+            <label for="{{ form.username.id_for_label }}">Username</label>
+            {{ form.username }}
+            {{ form.username.errors }}
+        </div>
+
+        <div class="input-group">
+            <label for="{{ form.password.id_for_label }}">Password</label>
+            {{ form.password }}
+            {{ form.password.errors }}
+        </div>
+
+        <div class="form-option">
+            <label class="checkbox-label">
+                <input type="checkbox" name="remember_me"> Remember Me
+            </label>
+            <a href="#" class="forget-password">Forgot Password?</a>
+        </div>
+
+        <button type="submit" class="btn btn-signin">Sign In</button>
+
+        <p class="signup-link">
+            Don't have an account? <a href="{% url 'accounts:register' %}">Sign Up</a>
+        </p>
+    </form>
+</div>
+{% endblock %}

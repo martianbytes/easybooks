@@ -7,6 +7,7 @@ import binascii
 import io
 import json
 import uuid
+from django.views import View
 
 from django.contrib.auth.decorators import login_required
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -95,7 +96,7 @@ class ContactSellerView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.buyer = self.request.user
-        form.instance.book = Book.objects.get(pk=self.kwargs["pk"])
+        form.instance.book = Book.objects.get(slug=self.kwargs["slug"])
         form.instance.seller = form.instance.book.seller
         return super().form_valid(form)
 
@@ -110,21 +111,35 @@ def author_create_ajax(request):
     return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
 
 
-@login_required
-def book_create(request):
-    return _book_upsert(request, instance=None)
+class BookUpsertView(LoginRequiredMixin, View):
+    template_name = "books/sell.html"
+    login_url = "login"
 
+    def get_book(self):
+        return None
 
-@login_required
-def book_edit(request, slug):
-    book = get_object_or_404(Book, slug=slug, seller=request.user)
-    return _book_upsert(request, instance=book)
+    def get(self, request, *args, **kwargs):
+        instance = self.get_book()
+        editing = instance is not None
+        book_form = BookForm(instance=instance)
+        image_forms = BookImageFormSet(instance=instance, prefix=IMAGE_FORMSET_PREFIX)
 
+        return render(
+            request,
+            self.template_name,
+            _sell_context(
+                book_form=book_form,
+                image_forms=image_forms,
+                image_data_urls={},
+                editing=editing,
+                book=instance,
+            ),
+        )
 
-def _book_upsert(request, instance=None):
-    editing = instance is not None
+    def post(self, request, *args, **kwargs):
+        instance = self.get_book()
+        editing = instance is not None
 
-    if request.method == "POST":
         book_form = BookForm(request.POST, instance=instance)
         merged_files = _merged_image_files_from_dataurls(
             post_data=request.POST,
@@ -153,7 +168,7 @@ def _book_upsert(request, instance=None):
 
         return render(
             request,
-            "books/sell.html",
+            self.template_name,
             _sell_context(
                 book_form=book_form,
                 image_forms=image_forms,
@@ -162,21 +177,6 @@ def _book_upsert(request, instance=None):
                 book=instance,
             ),
         )
-
-    book_form = BookForm(instance=instance)
-    image_forms = BookImageFormSet(instance=instance, prefix=IMAGE_FORMSET_PREFIX)
-
-    return render(
-        request,
-        "books/sell.html",
-        _sell_context(
-            book_form=book_form,
-            image_forms=image_forms,
-            image_data_urls={},
-            editing=editing,
-            book=instance,
-        ),
-    )
 
 
 def _sell_context(*, book_form, image_forms, image_data_urls, editing, book):
@@ -245,3 +245,12 @@ def _inmemory_file_from_dataurl(*, data_url, field_name, max_bytes):
 
 def _collect_dataurl_values(post_data):
     return {k: v for k, v in post_data.items() if k.endswith("_dataurl")}
+
+class BookCreateView(BookUpsertView):
+    def get_book(self):
+        return None
+
+
+class BookEditView(BookUpsertView):
+    def get_book(self):
+        return get_object_or_404(Book, slug=self.kwargs["slug"], seller=self.request.user)

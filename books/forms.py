@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import inlineformset_factory
-from .models import Book, BookImage
+from .models import Book, BookImage,Transaction
 
 
 class BookForm(forms.ModelForm):
@@ -101,3 +101,80 @@ BookImageFormSet = inlineformset_factory(
     extra=3, 
     can_delete=True
 )
+
+# ============================================================
+# Checkout Form
+# Collects delivery info from the buyer at checkout.
+# ============================================================
+class CheckoutForm(forms.Form):
+
+    CITY_CHOICES = [
+        ('', 'Select your city'),
+        ('kathmandu', 'Kathmandu'),
+        ('lalitpur', 'Lalitpur'),
+        ('bhaktapur', 'Bhaktapur'),
+        ('pokhara', 'Pokhara'),
+        ('chitwan', 'Chitwan'),
+        ('biratnagar', 'Biratnagar'),
+        ('birgunj', 'Birgunj'),
+        ('dharan', 'Dharan'),
+        ('butwal', 'Butwal'),
+        ('other', 'Other'),
+    ]
+
+    PAYMENT_CHOICES = [
+        ('cod', 'Cash on Delivery'),
+        ('esewa', 'eSewa'),
+        ('khalti', 'Khalti'),
+        ('bank', 'Bank Transfer'),
+    ]
+
+    first_name = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Ram'
+        })
+    )
+    last_name = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Sharma'
+        })
+    )
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'ram@example.com'
+        })
+    )
+    phone = forms.CharField(
+        max_length=20,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '+977 98XXXXXXXX'
+        })
+    )
+    address = forms.CharField(
+        max_length=255,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Street / Tole / Landmark'
+        })
+    )
+    city = forms.ChoiceField(
+        choices=CITY_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    district = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'e.g. Kathmandu'
+        })
+    )
+    payment_method = forms.ChoiceField(
+        choices=PAYMENT_CHOICES,
+        widget=forms.RadioSelect(attrs={'class': 'payment-radio'})
+    )

@@ -1,0 +1,164 @@
+{% extends "base.html" %} {% block content %}
+
+<nav class="breadcrumb-nav">
+  <div class="container">
+    <ol class="breadcrumb">
+      <li><a href="{% url 'books:home' %}">Home</a></li>
+      <li class="sep">›</li>
+      <li><a href="{% url 'books:browse' %}">Browse</a></li>
+      <li class="sep">›</li>
+      <li><a href="{% url 'books:detail' book.id %}">{{ book.title }}</a></li>
+      <li class="sep">›</li>
+      <li class="current">Checkout</li>
+    </ol>
+  </div>
+</nav>
+
+<section class="checkout-section">
+  <div class="container">
+    <h1 class="checkout-title">Checkout</h1>
+    <p class="checkout-subtitle">Complete your order below</p>
+
+    {% if messages %} {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %} {% endif %}
+
+    <form method="POST" action="{% url 'books:checkout' book.id %}">
+      {% csrf_token %}
+
+      <div class="checkout-layout">
+        <div class="checkout-forms">
+          <!-- Delivery Info -->
+          <div class="form-card">
+            <h3 class="form-card-title">Delivery Information</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>First Name</label>
+                {{ form.first_name }} {% if form.first_name.errors %}
+                <span class="field-error">{{ form.first_name.errors.0 }}</span>
+                {% endif %}
+              </div>
+
+              <div class="form-group">
+                <label>Last Name</label>
+                {{ form.last_name }} {% if form.last_name.errors %}
+                <span class="field-error">{{ form.last_name.errors.0 }}</span>
+                {% endif %}
+              </div>
+
+              <div class="form-group full">
+                <label>Email</label>
+                {{ form.email }} {% if form.email.errors %}
+                <span class="field-error">{{ form.email.errors.0 }}</span>
+                {% endif %}
+              </div>
+
+              <div class="form-group full">
+                <label>Phone Number</label>
+                {{ form.phone }} {% if form.phone.errors %}
+                <span class="field-error">{{ form.phone.errors.0 }}</span>
+                {% endif %}
+              </div>
+
+              <div class="form-group full">
+                <label>Address</label>
+                {{ form.address }} {% if form.address.errors %}
+                <span class="field-error">{{ form.address.errors.0 }}</span>
+                {% endif %}
+              </div>
+
+              <div class="form-group">
+                <label>City</label>
+                {{ form.city }} {% if form.city.errors %}
+                <span class="field-error">{{ form.city.errors.0 }}</span>
+                {% endif %}
+              </div>
+
+              <div class="form-group">
+                <label>District</label>
+                {{ form.district }} {% if form.district.errors %}
+                <span class="field-error">{{ form.district.errors.0 }}</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Method -->
+          <div class="form-card">
+            <h3 class="form-card-title">Payment Method</h3>
+            {% if form.payment_method.errors %}
+            <span class="field-error">{{ form.payment_method.errors.0 }}</span>
+            {% endif %}
+            <div class="payment-options-list">
+              {% for radio in form.payment_method %}
+              <label class="payment-option" for="{{ radio.id_for_label }}">
+                {{ radio.tag }}
+                <span class="payment-label-text">{{ radio.choice_label }}</span>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Summary -->
+        <aside class="summary-box">
+          <h3 class="summary-title">Order Summary</h3>
+
+          <div class="summary-book">
+            {% if book.cover_image %}
+            <img
+              src="{{ book.cover_image }}"
+              alt="{{ book.title }}"
+              class="summary-book-img"
+            />
+            {% else %}
+            <div class="summary-book-img summary-no-img">📚</div>
+            {% endif %}
+            <div class="summary-book-info">
+              <span class="summary-book-name">{{ book.title }}</span>
+              <span class="summary-book-seller"
+                >Sold by {{
+                book.seller.get_full_name|default:book.seller.username }}</span
+              >
+              <span class="summary-book-condition"
+                >Condition: {{ book.get_condition_display }}</span
+              >
+            </div>
+            <span class="summary-book-price">Rs. {{ book.asking_price }}</span>
+          </div>
+
+          <hr class="summary-divider" />
+
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span>Rs. {{ book.asking_price }}</span>
+          </div>
+          <div class="summary-row">
+            <span>Delivery</span>
+            <span class="summary-free">Free</span>
+          </div>
+
+          <hr class="summary-divider" />
+
+          <div class="summary-row summary-total">
+            <span>Total</span>
+            <span>Rs. {{ book.asking_price }}</span>
+          </div>
+
+          <button type="submit" class="btn-place-order">Place Order</button>
+          <a href="{% url 'books:detail' book.id %}" class="back-link"
+            >← Back to book</a
+          >
+
+          <ul class="checkout-trust-list">
+            <li>✓ Secure checkout</li>
+            <li>✓ 30-day return policy</li>
+            <li>✓ Buyer protection included</li>
+          </ul>
+        </aside>
+      </div>
+    </form>
+  </div>
+</section>
+
+{% endblock content %}

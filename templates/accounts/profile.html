@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+  <div class="profile-card">
+    <div class="profile-header">
+      {% if profile.avatar %}
+        <img src="{{ profile.avatar.url }}" alt="{{ profile.full_name }}" class="profile-avatar">
+      {% else %}
+        <img src="{% static 'images/default-avatar.png' %}" alt="Default avatar" class="profile-avatar">
+      {% endif %}
+
+      <div class="profile-info">
+        <h2>{{ profile.full_name }}</h2>
+        <p>@{{ profile.user.username }}</p>
+        <p>{{ profile.user.email }}</p>
+      </div>
+    </div>
+
+    <div class="profile-body">
+      <p><strong>Bio:</strong> {{ profile.bio|default:"No bio added yet." }}</p>
+      <p><strong>Phone:</strong> {{ profile.phone|default:"Not provided" }}</p>
+      <p><strong>City:</strong> {{ profile.city|default:"Not provided" }}</p>
+      <p><strong>District:</strong> {{ profile.district|default:"Not provided" }}</p>
+      <p><strong>Seller:</strong> {% if profile.is_seller %}Yes{% else %}No{% endif %}</p>
+      <p><strong>Rating:</strong> {{ profile.average_rating|default:"No ratings yet" }}</p>
+      <p><strong>Total Listings:</strong> {{ profile.total_listings }}</p>
+      <p><strong>Total Purchases:</strong> {{ profile.total_purchases }}</p>
+      <p><strong>Reviews:</strong> {{ profile.review_count }}</p>
+    </div>
+
+    <div class="profile-actions">
+      <a href="{% url 'accounts:edit_profile' %}" class="btn btn-primary">Edit Profile</a>
+      {% if not profile.is_seller %}
+        <a href="{% url 'accounts:become_seller' %}" class="btn btn-secondary">Become Seller</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -200,7 +200,7 @@ class BookImage(models.Model):
     ]
 
     book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="images")
-    image = models.ImageField(upload_to="book_images/%Y/%m")
+    image = models.ImageField(upload_to="book_images/")
     image_type = models.CharField(
         max_length=20, choices=IMAGE_TYPE_CHOICES, default="cover"
     )

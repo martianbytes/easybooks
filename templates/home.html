@@ -52,7 +52,7 @@
                 alt="{{ book.title }}"
                 class="cover-img"
               />
-              <h1 class="book-title">{{ book.title }}</h1>
+              <h3 class="book-title">{{ book.title }}</h3>
               <p class="author-name">{{ book.author }}</p>
               <p class="price">Rs.{{ book.asking_price }}</p>
               <a href="{% url 'books:detail' book.id %}" class="feature-btn-buy-now">Buy Now</a>
@@ -83,7 +83,7 @@
                 alt="{{ book.title }}"
                 class="cover-img"
               />
-              <h1 class="book-title">{{ book.title }}</h1>
+              <h3 class="book-title">{{ book.title }}</h3>
               <p class="author-name">{{ book.author }}</p>
               <p class="price">Rs.{{ book.asking_price }}</p>
               <a href="{% url 'books:detail' book.id %}" class="feature-btn-buy-now">Buy Now</a>
@@ -114,7 +114,7 @@
                 alt="{{ book.title }}"
                 class="cover-img"
               />
-              <h1 class="book-title">{{ book.title }}</h1>
+              <h3 class="book-title">{{ book.title }}</h3>
               <p class="author-name">{{ book.author }}</p>
               <p class="price">Rs.{{ book.asking_price }}</p>
               <a href="{% url 'books:detail' book.id %}" class="feature-btn-buy-now">Buy Now</a>

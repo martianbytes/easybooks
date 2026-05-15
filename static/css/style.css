@@ -2793,11 +2793,25 @@ form .button input:hover {
   flex-shrink: 0;
 }
 
-.condition-dot.condition-new      { background: #2a6b41; }
-.condition-dot.condition-like_new { background: #3d8c5a; }
-.condition-dot.condition-good     { background: var(--color-accent-400); }
-.condition-dot.condition-fair     { background: #c0922a; }
-.condition-dot.condition-poor     { background: #b94040; }
+.condition-dot.condition-new {
+  background: #2a6b41;
+}
+
+.condition-dot.condition-like_new {
+  background: #3d8c5a;
+}
+
+.condition-dot.condition-good {
+  background: var(--color-accent-400);
+}
+
+.condition-dot.condition-fair {
+  background: #c0922a;
+}
+
+.condition-dot.condition-poor {
+  background: #b94040;
+}
 
 /* ──────────────────────────────────────────────
    4. BOOK INFO
@@ -2977,9 +2991,20 @@ form .button input:hover {
   width: fit-content;
 }
 
-.action-status-available { background: var(--color-success-bg); color: var(--color-success); }
-.action-status-reserved  { background: var(--color-accent-100); color: var(--color-accent-600); }
-.action-status-sold      { background: var(--color-gray-100);   color: var(--text-muted); }
+.action-status-available {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.action-status-reserved {
+  background: var(--color-accent-100);
+  color: var(--color-accent-600);
+}
+
+.action-status-sold {
+  background: var(--color-gray-100);
+  color: var(--text-muted);
+}
 
 /* Price */
 .action-card-price {
@@ -3208,4 +3233,429 @@ form .button input:hover {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+}
+
+
+/* 
+   CHECKOUT PAGE
+*/
+.checkout-section {
+  padding: 60px 0;
+}
+
+.checkout-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.checkout-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 32px;
+}
+
+.checkout-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 32px;
+  align-items: start;
+}
+
+.form-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.form-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group.full {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.field-error {
+  display: block;
+  color: #dc2626;
+  font-size: 0.75rem;
+  margin-top: 4px;
+}
+
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.875rem;
+}
+
+.alert-error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+.alert-success {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.payment-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.payment-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.payment-option:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.payment-label-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.summary-box {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  position: sticky;
+  top: 80px;
+}
+
+.summary-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.summary-book {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.summary-book-img {
+  width: 64px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.summary-no-img {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  background: #f3f4f6;
+}
+
+.summary-book-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.summary-book-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.summary-book-seller,
+.summary-book-condition {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.summary-book-price {
+  font-size: 0.875rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.summary-divider {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 16px 0;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.summary-free {
+  color: #16a34a;
+  font-weight: 500;
+}
+
+.summary-total {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.btn-place-order {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px;
+  margin-top: 20px;
+  background: #111827;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-place-order:hover {
+  background: #1d4ed8;
+}
+
+.back-link {
+  display: block;
+  text-align: center;
+  margin-top: 12px;
+  font-size: 0.875rem;
+  color: #6b7280;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  color: #111827;
+}
+
+.checkout-trust-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 16px;
+}
+
+.checkout-trust-list li {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+@media (max-width: 768px) {
+  .checkout-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-group.full {
+    grid-column: 1;
+  }
+}
+
+/*
+   ORDER CONFIRMED PAGE
+ */
+.confirmed-section {
+  padding: 80px 0;
+}
+
+.confirmed-card {
+  max-width: 560px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 48px 40px;
+  text-align: center;
+}
+
+.confirmed-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #f0fdf4;
+  color: #16a34a;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.confirmed-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.confirmed-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+.confirmed-details {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.confirmed-details-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  margin-bottom: 16px;
+}
+
+.confirmed-detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 0.875rem;
+}
+
+.confirmed-detail-row:last-child {
+  border-bottom: none;
+}
+
+.confirmed-detail-label {
+  color: #6b7280;
+}
+
+.confirmed-detail-value {
+  font-weight: 500;
+}
+
+.confirmed-status-badge {
+  background: #eff6ff;
+  color: #1d4ed8;
+  padding: 2px 10px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.confirmed-next-steps {
+  text-align: left;
+  margin-bottom: 32px;
+}
+
+.confirmed-next-steps h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.next-steps-list {
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.next-steps-list li {
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.confirmed-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-confirmed-browse {
+  padding: 12px 24px;
+  background: #111827;
+  color: #fff;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.btn-confirmed-browse:hover {
+  background: #1d4ed8;
+}
+
+.btn-confirmed-message {
+  padding: 12px 24px;
+  background: transparent;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+
+.btn-confirmed-message:hover {
+  border-color: #374151;
 }

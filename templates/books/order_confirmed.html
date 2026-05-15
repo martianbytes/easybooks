@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="confirmed-section">
+  <div class="container">
+    <div class="confirmed-card">
+
+      <div class="confirmed-icon">✓</div>
+
+      <h1 class="confirmed-title">Order Placed Successfully!</h1>
+      <p class="confirmed-subtitle">
+        Thank you, <strong>{{ request.user.first_name|default:request.user.username }}</strong>!
+        Your order is now pending confirmation from the seller.
+      </p>
+
+      <div class="confirmed-details">
+        <h3 class="confirmed-details-title">Order Details</h3>
+
+        <div class="confirmed-detail-row">
+          <span class="confirmed-detail-label">Order ID</span>
+          <span class="confirmed-detail-value">#{{ transaction.id }}</span>
+        </div>
+        <div class="confirmed-detail-row">
+          <span class="confirmed-detail-label">Book</span>
+          <span class="confirmed-detail-value">{{ book.title }}</span>
+        </div>
+        <div class="confirmed-detail-row">
+          <span class="confirmed-detail-label">Seller</span>
+          <span class="confirmed-detail-value">{{ book.seller.get_full_name|default:book.seller.username }}</span>
+        </div>
+        <div class="confirmed-detail-row">
+          <span class="confirmed-detail-label">Amount</span>
+          <span class="confirmed-detail-value">Rs. {{ transaction.price }}</span>
+        </div>
+        <div class="confirmed-detail-row">
+          <span class="confirmed-detail-label">Status</span>
+          <span class="confirmed-status-badge">{{ transaction.get_status_display }}</span>
+        </div>
+        <div class="confirmed-detail-row">
+          <span class="confirmed-detail-label">Date</span>
+          <span class="confirmed-detail-value">{{ transaction.created_at|date:"F j, Y" }}</span>
+        </div>
+      </div>
+
+      <div class="confirmed-next-steps">
+        <h3>What happens next?</h3>
+        <ol class="next-steps-list">
+          <li>The seller will be notified about your order.</li>
+          <li>The seller will contact you to arrange delivery.</li>
+          <li>Once you receive the book, the transaction will be marked completed.</li>
+        </ol>
+      </div>
+
+      <div class="confirmed-actions">
+        <a href="{% url 'books:browse' %}" class="btn-confirmed-browse">Continue Browsing</a>
+        <a href="{% url 'books:contact_seller' book.id %}" class="btn-confirmed-message">Message Seller</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% endblock content %}

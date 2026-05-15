@@ -152,8 +152,10 @@ class Book(models.Model):
                     break
             else:
                 raise Exception("Slug generation failed.")
-        # validate before saving
-        self.full_clean()
+        # Only run full_clean when update_fields is not specified
+        # (i.e. not a targeted partial update like status change in checkout)
+        if not kwargs.get('update_fields'):
+            self.full_clean()
         super().save(*args, **kwargs)
 
     # ========================Helpers========================
@@ -245,8 +247,23 @@ class Transaction(models.Model):
 
     price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    
+    slug = models.SlugField(max_length=300, unique=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(f"{self.book.title}-{self.buyer.username}")
+            for _ in range(5):
+                unique_id = uuid.uuid4().hex[:6]
+                slug = f"{base_slug}-{unique_id}"
+                if not Transaction.objects.filter(slug=slug).exists():
+                    self.slug = slug
+                    break
+            else:
+                raise Exception("Slug generation failed.")
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.book.title} - {self.status}"

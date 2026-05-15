@@ -1,6 +1,11 @@
 from django.views.generic import TemplateView, ListView, CreateView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
+from django.shortcuts import render,get_object_or_404,redirect
+from django.contrib import messages
+from django.views import View
+from .models import Book, Message, Transaction
+from .forms import CheckoutForm
 from django.http import JsonResponse
 import base64
 import binascii
@@ -8,6 +13,7 @@ import io
 import json
 import uuid
 from django.views import View
+from typing import cast
 
 from django.contrib.auth.decorators import login_required
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -78,13 +84,95 @@ class BookDetailView(DetailView):
     model = Book
     template_name = "books/detail.html"
     context_object_name = "book"
+    slug_field = "slug"
+    slug_url_kwarg = "slug"
+
+    def get_object(self) -> Book:
+        return cast(Book, super().get_object())
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        book = self.get_object()
+        context["related_books"] = (
+            Book.objects
+            .filter(category=book.category, status="available")
+            .exclude(pk=book.pk)
+            .select_related("seller")
+            [:4]
+        )
+        return context
 
 
-class CheckoutView(LoginRequiredMixin, DetailView):
-    model = Book
-    template_name = "books/checkout.html"
-    context_object_name = "book"
-    login_url = "login"
+class CheckoutView(LoginRequiredMixin, View):
+    
+    login_url = 'accounts:login'
+
+    def get(self, request, seller, slug):
+        book = get_object_or_404(Book, slug=slug, status='available')
+
+        if book.seller == request.user:
+            messages.error(request, "You cannot buy your own book.")
+            return redirect('books:detail', seller=book.seller.username, slug=slug)
+
+        
+        initial_data = {
+            'first_name': request.user.first_name,
+            'last_name': request.user.last_name,
+            'email': request.user.email,
+            'phone': getattr(request.user.profile, 'phone', ''),
+            'city': getattr(request.user.profile, 'city', ''),
+            'district': getattr(request.user.profile, 'district', ''),
+        }
+        form = CheckoutForm(initial=initial_data)
+
+        return render(request, 'books/checkout.html', {
+            'book': book,
+            'form': form,
+        })
+
+    def post(self, request, seller, slug):
+        book = get_object_or_404(Book, slug=slug, status='available')
+
+        if book.seller == request.user:
+            messages.error(request, "You cannot buy your own book.")
+            return redirect('books:detail', seller=book.seller.username, slug=slug)
+
+        form = CheckoutForm(request.POST)
+
+        if form.is_valid():
+            # Save the transaction to the db
+            transaction = Transaction.objects.create(
+                book=book,
+                buyer=request.user,
+                seller=book.seller,
+                price=book.asking_price,
+                status='pending',
+            )
+
+            
+            book.status = 'reserved'
+            book.save(update_fields=['status'])
+
+            # Go to confirmation page
+            return redirect('books:order_confirmed', order_slug=transaction.slug)
+
+       
+        return render(request, 'books/checkout.html', {
+            'book': book,
+            'form': form,
+        })
+
+
+class OrderConfirmedView(LoginRequiredMixin, View):
+  
+    login_url = 'accounts:login'
+
+    def get(self, request, order_slug):
+        order = get_object_or_404(Transaction, slug=order_slug, buyer=request.user)
+        return render(request, 'books/order_confirmed.html', {
+            'transaction': order,
+            'book': order.book,
+        })
 
 
 class ContactSellerView(LoginRequiredMixin, CreateView):
@@ -164,7 +252,7 @@ class BookUpsertView(LoginRequiredMixin, View):
                 image_forms.instance = book
                 image_forms.save()
 
-            return redirect("books:detail", slug=book.slug)
+            return redirect("books:detail", seller=book.seller.username, slug=book.slug)
 
         return render(
             request,

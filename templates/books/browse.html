@@ -168,7 +168,7 @@
                 {% endif %}
 
                 <p class="price">Rs. {{ book.asking_price }}</p>
-                <a href="{% url 'books:detail' book.slug %}" class="feature-btn-buy-now">View Details</a>
+                <a href="{% url 'books:detail' book.seller.username book.slug %}" class="feature-btn-buy-now">View Details</a>
               </div>
             </div>
           {% empty %}

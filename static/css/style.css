@@ -1783,16 +1783,25 @@ a {
 /* --------------------------------*/
 /*|      REGISTRATION SECTION     |*/
 /* --------------------------------*/
-body.register {
+.register-section {
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 10px;
+  /* margin-top: var(--space-50); */
+  /* margin-bottom: var(--space-5); */
+}
+
+.register-inner {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
 }
 
 .register-container {
-  max-width: 700px;
+  max-width: 500px;
   width: 100%;
   background-color: #fff;
   padding: 25px 30px;
@@ -1822,6 +1831,14 @@ body.register {
   flex-wrap: wrap;
   justify-content: space-between;
   margin: 20px 0 12px 0;
+}
+
+.already-have-account-login-link {
+  color: var(--color-accent-600);
+}
+
+.register-content p {
+  text-align: center;
 }
 
 form .user-details .input-box {

@@ -811,6 +811,7 @@ a {
   margin-top: var(--space-3);
   font-family: var(--font-display);
   color: var(--text-primary);
+  text-align: center;
 }
 
 .card-content .author-name {

@@ -1,7 +1,11 @@
 from django.views.generic import TemplateView, ListView, CreateView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from .models import Book, Message
+from django.shortcuts import render,get_object_or_404,redirect
+from django.contrib import messages
+from django.views import View
+from .models import Book, Message, Transaction
+from .forms import CheckoutForm
 from django.http import JsonResponse
 
 class HomeView(TemplateView):
@@ -75,11 +79,77 @@ class BookDetailView(DetailView):
     context_object_name = 'book'
 
 
-class CheckoutView(LoginRequiredMixin, DetailView):
-    model = Book
-    template_name = 'books/checkout.html'
-    context_object_name = 'book'
-    login_url = 'login'
+class CheckoutView(LoginRequiredMixin, View):
+    
+    login_url = 'accounts:login'
+
+    def get(self, request, pk):
+        book = get_object_or_404(Book, pk=pk, status='available')
+
+       
+        if book.seller == request.user:
+            messages.error(request, "You cannot buy your own book.")
+            return redirect('books:detail', pk=pk)
+
+        
+        initial_data = {
+            'first_name': request.user.first_name,
+            'last_name': request.user.last_name,
+            'email': request.user.email,
+            'phone': getattr(request.user.profile, 'phone', ''),
+            'city': getattr(request.user.profile, 'city', ''),
+            'district': getattr(request.user.profile, 'district', ''),
+        }
+        form = CheckoutForm(initial=initial_data)
+
+        return render(request, 'books/checkout.html', {
+            'book': book,
+            'form': form,
+        })
+
+    def post(self, request, pk):
+        book = get_object_or_404(Book, pk=pk, status='available')
+
+        if book.seller == request.user:
+            messages.error(request, "You cannot buy your own book.")
+            return redirect('books:detail', pk=pk)
+
+        form = CheckoutForm(request.POST)
+
+        if form.is_valid():
+            # Save the transaction to the db
+            transaction = Transaction.objects.create(
+                book=book,
+                buyer=request.user,
+                seller=book.seller,
+                price=book.asking_price,
+                status='pending',
+            )
+
+            
+            book.status = 'reserved'
+            book.save()
+
+            # Go to confirmation page
+            return redirect('books:order_confirmed', pk=transaction.pk)
+
+       
+        return render(request, 'books/checkout.html', {
+            'book': book,
+            'form': form,
+        })
+
+
+class OrderConfirmedView(LoginRequiredMixin, View):
+  
+    login_url = 'accounts:login'
+
+    def get(self, request, pk):
+        transaction = get_object_or_404(Transaction, pk=pk, buyer=request.user)
+        return render(request, 'books/order_confirmed.html', {
+            'transaction': transaction,
+            'book': transaction.book,
+        })
 
 
 class ContactSellerView(LoginRequiredMixin, CreateView):

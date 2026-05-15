@@ -6,63 +6,65 @@
 {% block content %}
 <section class="register-section">
   <div class="container">
-    <div class="register-container">
-      <div class="register-title">Registration</div>
-
-      <div class="register-content">
-        <form method="post" novalidate>
-          {% csrf_token %}
-
-          {% if form.non_field_errors %}
-            <div class="form-errors">
-              {{ form.non_field_errors }}
+    <div class="register-inner">
+      <div class="register-container">
+        <div class="register-title">Registration</div>
+  
+        <div class="register-content">
+          <form method="post" novalidate>
+            {% csrf_token %}
+  
+            {% if form.non_field_errors %}
+              <div class="form-errors">
+                {{ form.non_field_errors }}
+              </div>
+            {% endif %}
+  
+            <div class="user-details">
+              <div class="input-box">
+                <span class="details">Username</span>
+                {{ form.username }}
+                {{ form.username.errors }}
+              </div>
+  
+              <div class="input-box">
+                <span class="details">Email</span>
+                {{ form.email }}
+                {{ form.email.errors }}
+              </div>
+  
+              <div class="input-box">
+                <span class="details">First Name</span>
+                {{ form.first_name }}
+                {{ form.first_name.errors }}
+              </div>
+  
+              <div class="input-box">
+                <span class="details">Last Name</span>
+                {{ form.last_name }}
+                {{ form.last_name.errors }}
+              </div>
+  
+              <div class="input-box">
+                <span class="details">Password</span>
+                {{ form.password1 }}
+                {{ form.password1.errors }}
+              </div>
+  
+              <div class="input-box">
+                <span class="details">Confirm Password</span>
+                {{ form.password2 }}
+                {{ form.password2.errors }}
+              </div>
             </div>
-          {% endif %}
-
-          <div class="user-details">
-            <div class="input-box">
-              <span class="details">Username</span>
-              {{ form.username }}
-              {{ form.username.errors }}
+  
+            <div class="button">
+              <input type="submit" value="Register">
             </div>
-
-            <div class="input-box">
-              <span class="details">Email</span>
-              {{ form.email }}
-              {{ form.email.errors }}
-            </div>
-
-            <div class="input-box">
-              <span class="details">First Name</span>
-              {{ form.first_name }}
-              {{ form.first_name.errors }}
-            </div>
-
-            <div class="input-box">
-              <span class="details">Last Name</span>
-              {{ form.last_name }}
-              {{ form.last_name.errors }}
-            </div>
-
-            <div class="input-box">
-              <span class="details">Password</span>
-              {{ form.password1 }}
-              {{ form.password1.errors }}
-            </div>
-
-            <div class="input-box">
-              <span class="details">Confirm Password</span>
-              {{ form.password2 }}
-              {{ form.password2.errors }}
-            </div>
-          </div>
-
-          <div class="button">
-            <input type="submit" value="Register">
-          </div>
-        </form>
-
-        <p>Already have an account? <a href="{% url 'accounts:login' %}">Login</a></p>
+          </form>
+  
+          <p>Already have an account? <a class='already-have-account-login-link' href="{% url 'accounts:login' %}">Login</a></p>
+        </div>
       </div>
     </div>
   </div>

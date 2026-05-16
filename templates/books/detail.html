@@ -222,7 +222,7 @@
         <!-- CTA buttons or unavailable notice -->
         {% if book.status == 'available' %}
         <div class="action-btn-group">
-          <a href="{% url 'books:checkout' book.id %}" class="btn-action-primary">
+          <a href="{% url 'books:checkout' book.seller.username book.slug %}" class="btn-action-primary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="9" cy="21" r="1"/>
               <circle cx="20" cy="21" r="1"/>
@@ -230,7 +230,7 @@
             </svg>
             Buy Now
           </a>
-          <a href="{% url 'books:contact_seller' book.id %}" class="btn-action-secondary">
+          <a href="{% url 'books:contact_seller' book.seller.username book.slug %}" class="btn-action-secondary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
             </svg>
@@ -318,7 +318,7 @@
           <div class="card-price-row">
             <p class="price">Rs.{{ rel.price }}</p>
           </div>
-          <a href="{% url 'books:detail' rel.id %}" class="feature-btn-buy-now">View Details</a>
+          <a href="{% url 'books:detail' rel.seller.username rel.slug %}" class="feature-btn-buy-now">View Details</a>
         </div>
       </div>
       {% endfor %}

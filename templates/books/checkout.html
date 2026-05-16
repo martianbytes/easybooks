@@ -7,7 +7,7 @@
       <li class="sep">›</li>
       <li><a href="{% url 'books:browse' %}">Browse</a></li>
       <li class="sep">›</li>
-      <li><a href="{% url 'books:detail' book.id %}">{{ book.title }}</a></li>
+      <li><a href="{% url 'books:detail' book.seller.username book.slug %}">{{ book.title }}</a></li>
       <li class="sep">›</li>
       <li class="current">Checkout</li>
     </ol>
@@ -23,7 +23,7 @@
     <div class="alert alert-{{ message.tags }}">{{ message }}</div>
     {% endfor %} {% endif %}
 
-    <form method="POST" action="{% url 'books:checkout' book.id %}">
+    <form method="POST" action="{% url 'books:checkout' book.slug %}">
       {% csrf_token %}
 
       <div class="checkout-layout">
@@ -146,7 +146,7 @@
           </div>
 
           <button type="submit" class="btn-place-order">Place Order</button>
-          <a href="{% url 'books:detail' book.id %}" class="back-link"
+          <a href="{% url 'books:detail' book.seller.username book.slug %}" class="back-link"
             >← Back to book</a
           >
 

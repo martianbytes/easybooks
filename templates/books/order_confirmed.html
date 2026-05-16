@@ -19,7 +19,7 @@
 
         <div class="confirmed-detail-row">
           <span class="confirmed-detail-label">Order ID</span>
-          <span class="confirmed-detail-value">#{{ transaction.id }}</span>
+          <span class="confirmed-detail-value">#{{ transaction.slug }}</span>
         </div>
         <div class="confirmed-detail-row">
           <span class="confirmed-detail-label">Book</span>
@@ -54,7 +54,7 @@
 
       <div class="confirmed-actions">
         <a href="{% url 'books:browse' %}" class="btn-confirmed-browse">Continue Browsing</a>
-        <a href="{% url 'books:contact_seller' book.id %}" class="btn-confirmed-message">Message Seller</a>
+        <a href="{% url 'books:contact_seller' book.seller.username book.slug %}" class="btn-confirmed-message">Message Seller</a>
       </div>
 
     </div>

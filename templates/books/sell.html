@@ -8,712 +8,660 @@
   <div class="container">
     <div class="sell-header-inner">
       <h1 class="sell-title">{% if editing %}Edit Your Listing{% else %}Sell Your Book{% endif %}</h1>
-      <p class="sell-subtitle">
-        List your used book and help other readers discover great reads at affordable prices.
-      </p>
+      <p class="sell-subtitle">List your used book and help other readers discover great reads at affordable prices.</p>
     </div>
   </div>
 </section>
 
 <section class="sell-form-section">
   <div class="container">
-    <div class="sell-form-card">
-      <form class="sell-form" method="POST" enctype="multipart/form-data" id="sell-form" novalidate>
+
+    {# ── Errors above the card ── #}
+    {% if book_form.non_field_errors or image_formset.non_form_errors %}
+      <div class="ebf-alert">
+        {{ book_form.non_field_errors }}
+        {{ image_formset.non_form_errors }}
+      </div>
+    {% endif %}
+
+    <div class="ebf-card">
+      <form class="ebf" method="POST" enctype="multipart/form-data" id="sell-form" novalidate>
         {% csrf_token %}
-
-        {# ── Non-field errors ── #}
-        {% if book_form.non_field_errors %}
-          <div class="alert alert-danger">
-            {{ book_form.non_field_errors }}
-          </div>
-        {% endif %}
-
-        {% if image_formset.non_form_errors %}
-          <div class="alert alert-danger">
-            {{ image_formset.non_form_errors }}
-          </div>
-        {% endif %}
-
         {{ image_formset.management_form }}
 
-        {# ════════════════════════════════════
-           BOOK INFORMATION
-        ════════════════════════════════════ #}
-        <h3 class="form-section-title">Book Information</h3>
-
-        <div class="form-group full">
-          <label for="{{ book_form.title.id_for_label }}">Book Title *</label>
-          {{ book_form.title }}
-          {{ book_form.title.errors }}
-        </div>
-
-        <div class="form-group full">
-          <label for="{{ book_form.subtitle.id_for_label }}">Subtitle</label>
-          {{ book_form.subtitle }}
-          {{ book_form.subtitle.errors }}
-        </div>
-
-        {# Authors – custom tag widget; hidden <select> kept in sync by JS #}
-        <div class="form-group full">
-          <label>Author(s) *</label>
-
-          {# Visible tag UI #}
-          <div class="author-tag-wrap" id="author-tag-wrap">
-            <div class="author-tags" id="author-tags">
-              <input type="text"
-                     class="author-input"
-                     id="author-input"
-                     placeholder="Type an author name…"
-                     autocomplete="off" />
-            </div>
-            <div class="author-dropdown" id="author-dropdown" style="display:none"></div>
+        {# ════════════════════════════════ BOOK INFORMATION ════════════════════════════════ #}
+        <div class="ebf-panel">
+          <div class="ebf-panel__head">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            Book Information
           </div>
+          <div class="ebf-panel__body">
 
-          {# Hidden real select – Django validates from here #}
-          <div style="display:none">{{ book_form.authors }}</div>
-          {{ book_form.authors.errors }}
-
-          <small>Type to search or create an author.</small>
-        </div>
-
-        <div class="form-group">
-          <label for="{{ book_form.category.id_for_label }}">Category *</label>
-          {{ book_form.category }}
-          {{ book_form.category.errors }}
-        </div>
-
-        <div class="form-group">
-          <label for="{{ book_form.language.id_for_label }}">Language *</label>
-          {{ book_form.language }}
-          {{ book_form.language.errors }}
-        </div>
-
-        <div class="form-group">
-          <label for="{{ book_form.isbn.id_for_label }}">ISBN (Optional)</label>
-          {{ book_form.isbn }}
-          {{ book_form.isbn.errors }}
-          <small>13-digit ISBN code</small>
-        </div>
-
-        <div class="form-group">
-          <label for="{{ book_form.publisher.id_for_label }}">Publisher</label>
-          {{ book_form.publisher }}
-          {{ book_form.publisher.errors }}
-        </div>
-
-        <div class="form-group">
-          <label for="{{ book_form.published_year.id_for_label }}">Published Year</label>
-          {{ book_form.published_year }}
-          {{ book_form.published_year.errors }}
-        </div>
-
-        <div class="form-group">
-          <label for="{{ book_form.edition.id_for_label }}">Edition</label>
-          {{ book_form.edition }}
-          {{ book_form.edition.errors }}
-        </div>
-
-        <div class="form-group">
-          <label for="{{ book_form.num_pages.id_for_label }}">Number of Pages</label>
-          {{ book_form.num_pages }}
-          {{ book_form.num_pages.errors }}
-        </div>
-
-        <div class="form-group">
-          <label for="{{ book_form.city.id_for_label }}">City *</label>
-          {{ book_form.city }}
-          {{ book_form.city.errors }}
-        </div>
-
-        <hr>
-
-        {# ════════════════════════════════════
-           CONDITION
-        ════════════════════════════════════ #}
-        <h3 class="form-section-title">Book Condition</h3>
-
-        <div class="form-group full">
-          <label>Book Condition *</label>
-
-          {# Visual card picker – updates the hidden input below #}
-          <div class="condition-picker" id="condition-picker">
-            <div class="condition-card" data-value="new">
-              <span class="condition-icon">✨</span>
-              <span class="condition-label">New</span>
+            <div class="ebf-field">
+              <label for="{{ book_form.title.id_for_label }}">Book Title <span class="ebf-req">*</span></label>
+              {{ book_form.title }}
+              {{ book_form.title.errors }}
             </div>
-            <div class="condition-card" data-value="like_new">
-              <span class="condition-icon">⭐</span>
-              <span class="condition-label">Like New</span>
+
+            <div class="ebf-field">
+              <label for="{{ book_form.subtitle.id_for_label }}">Subtitle</label>
+              {{ book_form.subtitle }}
+              {{ book_form.subtitle.errors }}
             </div>
-            <div class="condition-card" data-value="good">
-              <span class="condition-icon">👍</span>
-              <span class="condition-label">Good</span>
-            </div>
-            <div class="condition-card" data-value="fair">
-              <span class="condition-icon">📖</span>
-              <span class="condition-label">Fair</span>
-            </div>
-            <div class="condition-card" data-value="poor">
-              <span class="condition-icon">📦</span>
-              <span class="condition-label">Poor</span>
-            </div>
-          </div>
 
-          {# Hidden input – Django validates this #}
-          {{ book_form.condition }}
-          {{ book_form.condition.errors }}
-        </div>
+            <div class="ebf-field">
+              <label>Author(s) <span class="ebf-req">*</span></label>
 
-        <div class="form-group full">
-          <label for="{{ book_form.condition_notes.id_for_label }}">Damage Description</label>
-          {{ book_form.condition_notes }}
-          {{ book_form.condition_notes.errors }}
-        </div>
+              <div class="author-tag-wrap" id="author-tag-wrap">
+                <div class="author-tags" id="author-tags">
+                  <input type="text" class="author-input" id="author-input"
+                         placeholder="Search authors..." autocomplete="off" />
+                </div>
 
-        <div class="form-group full">
-          <label for="{{ book_form.description.id_for_label }}">Description</label>
-          {{ book_form.description }}
-          {{ book_form.description.errors }}
-        </div>
-
-        <hr>
-
-        {# ════════════════════════════════════
-           PRICING
-        ════════════════════════════════════ #}
-        <h3 class="form-section-title">Pricing</h3>
-
-        <div class="form-group">
-          <label for="{{ book_form.original_price.id_for_label }}">Original Price (Rs)</label>
-          {{ book_form.original_price }}
-          {{ book_form.original_price.errors }}
-        </div>
-
-        <div class="form-group">
-          <label for="{{ book_form.asking_price.id_for_label }}">Asking Price (Rs) *</label>
-          {{ book_form.asking_price }}
-          {{ book_form.asking_price.errors }}
-        </div>
-
-        {# Live discount badge – shown when both prices are filled #}
-        <div class="form-group full" id="price-preview" style="display:none">
-          <div class="price-preview-inner">
-            <span class="price-original" id="pp-orig"></span>
-            <span class="price-asking" id="pp-ask"></span>
-            <span class="price-discount" id="pp-discount"></span>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="{{ book_form.is_negotiable.id_for_label }}">
-            {{ book_form.is_negotiable }}
-            Price is Negotiable
-          </label>
-          {{ book_form.is_negotiable.errors }}
-        </div>
-
-        {# Status – always 'available' for new listings; hidden from user #}
-        <div style="display:none">{{ book_form.status }}</div>
-
-        <hr>
-
-        {# ════════════════════════════════════
-           BOOK IMAGES
-        ════════════════════════════════════ #}
-        <h3>Book Images</h3>
-        <p><small>Add up to 8 photos. Your photos are saved even if the form has errors.</small></p>
-
-        {% for form in image_formset %}
-          <div class="form-group image-form-group" data-index="{{ forloop.counter0 }}">
-
-            {# Hidden fields (id, etc.) #}
-            {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
-
-            {# Clickable image preview zone #}
-            <div class="image-upload-zone {% if form.instance.pk %}has-image{% endif %}"
-                 id="zone-{{ forloop.counter0 }}"
-                 onclick="document.getElementById('{{ form.image.id_for_label }}').click()">
-
-              {% if forloop.first %}
-                <span class="image-badge">Cover</span>
-              {% endif %}
-
-              <img class="image-preview"
-                   id="preview-{{ forloop.counter0 }}"
-                   src="{% if form.instance.image %}{{ form.instance.image.url }}{% endif %}"
-                   alt=""
-                   style="{% if not form.instance.image %}display:none{% endif %}" />
-
-              <div class="image-placeholder" id="placeholder-{{ forloop.counter0 }}"
-                   style="{% if form.instance.image %}display:none{% endif %}">
-                <span class="image-placeholder-icon">📷</span>
-                <span class="image-placeholder-label">Click to add photo</span>
+                <!-- dropdown where suggestions / "Add new author" appear -->
+                <div class="author-dropdown" id="author-dropdown" style="display:none"></div>
               </div>
 
-              <button type="button"
-                      class="image-remove-btn"
-                      id="remove-{{ forloop.counter0 }}"
-                      style="{% if not form.instance.image %}display:none{% endif %}"
-                      onclick="clearImageSlot(event, {{ forloop.counter0 }})">✕</button>
+              <div style="display:none">
+                {{ book_form.authors }}
+              </div>
+              {{ book_form.authors.errors }}
+
+              <div class="ebf-add-author-panel" id="add-author-panel" style="display:none">
+                <p class="ebf-add-author-hint">Enter the full name and click <strong>Save Author</strong>.</p>
+                <div class="ebf-add-author-form">
+                  <input type="text" name="new_author_name" id="new-author-name-input"
+                         class="ebf-add-author-input" placeholder="e.g. Paulo Coelho"
+                         maxlength="255" autocomplete="off" />
+                  <button type="button" class="ebf-btn ebf-btn--primary ebf-btn--sm" id="save-author-btn">Save Author</button>
+                  <button type="button" class="ebf-btn ebf-btn--ghost ebf-btn--sm" id="cancel-author-btn">Cancel</button>
+                </div>
+              </div>
             </div>
 
-            {# Actual file input – hidden, triggered by clicking the zone #}
-            <div style="display:none">
-              {{ form.image }}
+            <div class="ebf-field">
+              <label for="{{ book_form.description.id_for_label }}">Description</label>
+              {{ book_form.description }}
+              {{ book_form.description.errors }}
             </div>
-            {{ form.image.errors }}
 
-            {# base64 textarea – stores the data-URL for re-submission on validation errors #}
-            <textarea name="{{ form.image.html_name }}_dataurl"
-                      id="dataurl-{{ forloop.counter0 }}"
-                      style="display:none"></textarea>
-
-            <label for="{{ form.image_type.id_for_label }}">Image Type</label>
-            {{ form.image_type }}
-            {{ form.image_type.errors }}
-
-            <label for="{{ form.caption.id_for_label }}">Caption</label>
-            {{ form.caption }}
-            {{ form.caption.errors }}
-
-            <label for="{{ form.DELETE.id_for_label }}">
-              {{ form.DELETE }} Remove this image
-            </label>
+            <div class="ebf-grid-2">
+              <div class="ebf-field">
+                <label for="{{ book_form.category.id_for_label }}">Category <span class="ebf-req">*</span></label>
+                {{ book_form.category }}
+                {{ book_form.category.errors }}
+              </div>
+              <div class="ebf-field">
+                <label for="{{ book_form.language.id_for_label }}">Language <span class="ebf-req">*</span></label>
+                {{ book_form.language }}
+                {{ book_form.language.errors }}
+              </div>
+              <div class="ebf-field">
+                <label for="{{ book_form.isbn.id_for_label }}">ISBN <span class="ebf-muted-label">(Optional)</span></label>
+                {{ book_form.isbn }}
+                {{ book_form.isbn.errors }}
+                <span class="ebf-hint">13-digit ISBN code</span>
+              </div>
+              <div class="ebf-field">
+                <label for="{{ book_form.publisher.id_for_label }}">Publisher</label>
+                {{ book_form.publisher }}
+                {{ book_form.publisher.errors }}
+              </div>
+              <div class="ebf-field">
+                <label for="{{ book_form.published_year.id_for_label }}">Published Year</label>
+                {{ book_form.published_year }}
+                {{ book_form.published_year.errors }}
+              </div>
+              <div class="ebf-field">
+                <label for="{{ book_form.edition.id_for_label }}">Edition</label>
+                {{ book_form.edition }}
+                {{ book_form.edition.errors }}
+              </div>
+              <div class="ebf-field">
+                <label for="{{ book_form.num_pages.id_for_label }}">Number of Pages</label>
+                {{ book_form.num_pages }}
+                {{ book_form.num_pages.errors }}
+              </div>
+              <div class="ebf-field">
+                <label for="{{ book_form.city.id_for_label }}">City <span class="ebf-req">*</span></label>
+                {{ book_form.city }}
+                {{ book_form.city.errors }}
+              </div>
+            </div>
 
           </div>
-        {% endfor %}
+        </div>
 
-        <div class="form-actions">
-          <button type="submit" class="btn btn-submit" id="submit-btn">
-            <span class="submit-spinner" id="submit-spinner" style="display:none"></span>
-            {% if editing %}Save Changes{% else %}Submit Book{% endif %}
+        {# ════════════════════════════════ BOOK CONDITION ════════════════════════════════ #}
+        <div class="ebf-panel">
+          <div class="ebf-panel__head">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+            Book Condition
+          </div>
+          <div class="ebf-panel__body">
+
+            <div class="ebf-field">
+              <label>Condition <span class="ebf-req">*</span></label>
+              <div class="condition-cards">
+                <button type="button" class="condition-card {% if book_form.condition.value == 'new' %}active{% endif %}" data-value="new">
+                  <span class="condition-card__icon">🌟</span><span class="condition-card__label">New</span>
+                </button>
+                <button type="button" class="condition-card {% if book_form.condition.value == 'like_new' %}active{% endif %}" data-value="like_new">
+                  <span class="condition-card__icon">✨</span><span class="condition-card__label">Like New</span>
+                </button>
+                <button type="button" class="condition-card {% if book_form.condition.value == 'good' %}active{% endif %}" data-value="good">
+                  <span class="condition-card__icon">👍</span><span class="condition-card__label">Good</span>
+                </button>
+                <button type="button" class="condition-card {% if book_form.condition.value == 'fair' %}active{% endif %}" data-value="fair">
+                  <span class="condition-card__icon">📖</span><span class="condition-card__label">Fair</span>
+                </button>
+                <button type="button" class="condition-card {% if book_form.condition.value == 'poor' %}active{% endif %}" data-value="poor">
+                  <span class="condition-card__icon">📄</span><span class="condition-card__label">Poor</span>
+                </button>
+              </div>
+              <input type="hidden" id="id_condition" name="condition" value="{{ book_form.condition.value|default:'' }}" />
+              {{ book_form.condition.errors }}
+            </div>
+
+            <div class="ebf-field">
+              <label for="{{ book_form.condition_notes.id_for_label }}">Damage / Condition Notes</label>
+              {{ book_form.condition_notes }}
+              {{ book_form.condition_notes.errors }}
+            </div>
+
+          </div>
+        </div>
+
+        {# ════════════════════════════════ PRICING ════════════════════════════════ #}
+        <div class="ebf-panel">
+          <div class="ebf-panel__head">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Pricing
+          </div>
+          <div class="ebf-panel__body">
+
+            <div class="ebf-grid-2">
+              <div class="ebf-field">
+                <label for="{{ book_form.original_price.id_for_label }}">Original Price (Rs)</label>
+                <div class="ebf-prefix-wrap">
+                  <span class="ebf-prefix">Rs.</span>
+                  {{ book_form.original_price }}
+                </div>
+                {{ book_form.original_price.errors }}
+              </div>
+              <div class="ebf-field">
+                <label for="{{ book_form.asking_price.id_for_label }}">Asking Price (Rs) <span class="ebf-req">*</span></label>
+                <div class="ebf-prefix-wrap">
+                  <span class="ebf-prefix">Rs.</span>
+                  {{ book_form.asking_price }}
+                </div>
+                {{ book_form.asking_price.errors }}
+              </div>
+            </div>
+
+            <div id="price-preview" style="display:none">
+              <div class="price-preview-inner">
+                <span class="price-original" id="pp-orig"></span>
+                <span class="price-arrow">→</span>
+                <span class="price-asking" id="pp-ask"></span>
+                <span class="price-discount" id="pp-discount"></span>
+              </div>
+            </div>
+
+            <div class="ebf-field">
+              <label class="ebf-checkbox-label">
+                {{ book_form.is_negotiable }}
+                <span>Price is Negotiable</span>
+              </label>
+              {{ book_form.is_negotiable.errors }}
+            </div>
+
+            <div style="display:none">{{ book_form.status }}</div>
+
+          </div>
+        </div>
+
+        {# ════════════════════════════════ BOOK IMAGES ════════════════════════════════ #}
+        <div class="ebf-panel">
+          <div class="ebf-panel__head">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            Book Images
+          </div>
+
+          <div class="ebf-panel__body">
+            <p class="ebf-hint ebf-hint--block">
+              Add up to 8 photos. The first slot is the cover image.
+            </p>
+
+            <div class="img-grid" id="img-grid">
+              {% for form in image_formset %}
+              <div class="img-slot image-form-group" data-index="{{ forloop.counter0 }}">
+                {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+
+                <div class="img-zone {% if form.instance.pk and form.instance.image %}has-image{% endif %}"
+                     id="zone-{{ forloop.counter0 }}"
+                     onclick="triggerImagePicker(this)">
+
+                  <img class="img-zone__preview"
+                       id="preview-{{ forloop.counter0 }}"
+                       src="{% if form.instance.image %}{{ form.instance.image.url }}{% endif %}"
+                       alt=""
+                       style="{% if not form.instance.image %}display:none{% endif %}" />
+
+                  <div class="img-zone__empty" id="placeholder-{{ forloop.counter0 }}"
+                       style="{% if form.instance.image %}display:none{% endif %}">
+                    {% if forloop.first %}
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b0b8c4" stroke-width="1.4">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <path d="M21 15l-5-5L5 21"/>
+                      </svg>
+                      <span>Cover photo</span>
+                    {% else %}
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c8cfd8" stroke-width="1.8">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                      </svg>
+                      <span>Add photo</span>
+                    {% endif %}
+                  </div>
+
+                  {% if forloop.first %}
+                    <span class="img-zone__badge">Cover</span>
+                  {% endif %}
+
+                  <button type="button"
+                          class="img-zone__clear"
+                          id="remove-{{ forloop.counter0 }}"
+                          style="{% if not form.instance.image %}display:none{% endif %}"
+                          onclick="clearImageSlot(event, {{ forloop.counter0 }})">
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+
+                <div style="display:none">{{ form.image }}</div>
+                {{ form.image.errors }}
+
+                <textarea name="{{ form.image.html_name }}_dataurl"
+                  id="dataurl-{{ forloop.counter0 }}"
+                  style="display:none"></textarea>
+
+                <div class="img-slot__meta">
+                  <select name="{{ form.image_type.html_name }}"
+                    id="{{ form.image_type.id_for_label }}"
+                    class="img-type-select">
+                    {% for v, l in form.image_type.field.choices %}
+                      <option value="{{ v }}" {% if form.image_type.value == v %}selected{% endif %}>{{ l }}</option>
+                    {% endfor %}
+                  </select>
+
+                  <div style="display:none">{{ form.DELETE }}</div>
+                </div>
+              </div>
+              {% endfor %}
+
+              {% if image_formset.total_form_count < 8 %}
+              <button type="button" class="img-slot img-slot--add" id="add-image-slot" aria-label="Add another image">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>Add more</span>
+              </button>
+              {% endif %}
+            </div>
+
+            <template id="empty-image-form-template">
+              <div class="img-slot image-form-group" data-index="__prefix__">
+                {% for hidden in image_formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+
+                <div class="img-zone" id="zone-__prefix__" onclick="triggerImagePicker(this)">
+                  <div class="img-zone__empty" id="placeholder-__prefix__">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c8cfd8" stroke-width="1.8">
+                      <line x1="12" y1="5" x2="12" y2="19"/>
+                      <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    <span>Add photo</span>
+                  </div>
+
+                  <button type="button"
+                          class="img-zone__clear"
+                          id="remove-__prefix__"
+                          style="display:none"
+                          onclick="clearImageSlot(event, __prefix__)">
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+
+                <div style="display:none">{{ image_formset.empty_form.image }}</div>
+                <textarea name="{{ image_formset.empty_form.image.html_name }}_dataurl"
+                  id="dataurl-__prefix__"
+                  style="display:none"></textarea>
+
+                <div class="img-slot__meta">
+                  <select name="{{ image_formset.empty_form.image_type.html_name }}"
+                    id="{{ image_formset.empty_form.image_type.id_for_label }}"
+                    class="img-type-select">
+                    {% for v, l in image_formset.empty_form.image_type.field.choices %}
+                      <option value="{{ v }}">{{ l }}</option>
+                    {% endfor %}
+                  </select>
+
+                  <div style="display:none">{{ image_formset.empty_form.DELETE }}</div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        {# ════════════════════════════════ ACTIONS ════════════════════════════════ #}
+        <div class="ebf-actions">
+          <button type="submit" class="ebf-btn ebf-btn--primary ebf-btn--lg" id="submit-btn">
+            <span class="ebf-spinner" id="submit-spinner" style="display:none"></span>
+            {% if editing %}Save Changes{% else %}Submit Listing{% endif %}
           </button>
-          <a href="{% url 'books:browse' %}" class="btn btn-cancel">Cancel</a>
+          <a href="{% url 'books:browse' %}" class="ebf-btn ebf-btn--secondary ebf-btn--lg">Cancel</a>
         </div>
 
       </form>
-    </div>
-  </div>
+    </div>{# /ebf-card #}
+  </div>{# /container #}
 </section>
 
-{# ════════════════════════════════════════════════════════
-   Scoped styles – only for the new interactive widgets.
-   Everything else uses your existing CSS classes.
-════════════════════════════════════════════════════════ #}
-<style>
-  /* ── Condition picker ── */
-  .condition-picker {
-    display: flex;
-    gap: .6rem;
-    flex-wrap: wrap;
-    margin-bottom: .5rem;
-  }
-  .condition-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: .3rem;
-    padding: .7rem 1rem;
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: border-color .2s, background .2s;
-    min-width: 72px;
-    user-select: none;
-  }
-  .condition-card:hover  { border-color: var(--color-primary, #4a90d9); }
-  .condition-card.active { border-color: var(--color-primary, #4a90d9); background: var(--color-primary-light, #eaf2fb); }
-  .condition-icon  { font-size: 1.5rem; }
-  .condition-label { font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #555; }
-  .condition-card.active .condition-label { color: var(--color-primary, #4a90d9); }
 
-  /* ── Author tag widget ── */
-  .author-tag-wrap { position: relative; }
-  .author-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .4rem;
-    align-items: center;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    padding: .45rem .6rem;
-    min-height: 42px;
-    cursor: text;
-  }
-  .author-tags:focus-within { border-color: var(--color-primary, #4a90d9); box-shadow: 0 0 0 3px rgba(74,144,217,.15); }
-  .author-tag {
-    display: flex;
-    align-items: center;
-    gap: .3rem;
-    background: var(--color-primary-light, #eaf2fb);
-    border: 1px solid var(--color-primary, #4a90d9);
-    color: var(--color-primary, #4a90d9);
-    border-radius: 20px;
-    padding: .15rem .65rem;
-    font-size: .8rem;
-    font-weight: 600;
-  }
-  .author-tag-remove { cursor: pointer; font-size: .85rem; opacity: .7; }
-  .author-tag-remove:hover { opacity: 1; }
-  .author-input {
-    border: none;
-    outline: none;
-    flex: 1;
-    min-width: 130px;
-    font-size: .9rem;
-    background: transparent;
-  }
-  .author-dropdown {
-    position: absolute;
-    top: calc(100% + 3px);
-    left: 0; right: 0;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    box-shadow: 0 6px 24px rgba(0,0,0,.1);
-    z-index: 300;
-    max-height: 200px;
-    overflow-y: auto;
-  }
-  .author-dropdown-item,
-  .author-dropdown-create {
-    padding: .55rem .85rem;
-    cursor: pointer;
-    font-size: .88rem;
-  }
-  .author-dropdown-item:hover,
-  .author-dropdown-item.kbd-focus,
-  .author-dropdown-create:hover { background: var(--color-primary-light, #eaf2fb); }
-  .author-dropdown-create { font-weight: 600; color: var(--color-primary, #4a90d9); border-top: 1px solid #eee; }
-
-  /* ── Image upload zone ── */
-  .image-upload-zone {
-    position: relative;
-    border: 2px dashed #ccc;
-    border-radius: 8px;
-    aspect-ratio: 4/3;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    overflow: hidden;
-    transition: border-color .2s, background .2s;
-    margin-bottom: .5rem;
-  }
-  .image-upload-zone:hover  { border-color: var(--color-primary, #4a90d9); background: var(--color-primary-light, #eaf2fb); }
-  .image-upload-zone.has-image { border-style: solid; border-color: var(--color-primary, #4a90d9); }
-  .image-preview { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
-  .image-placeholder { display: flex; flex-direction: column; align-items: center; gap: .35rem; pointer-events: none; }
-  .image-placeholder-icon  { font-size: 2rem; color: #aaa; }
-  .image-placeholder-label { font-size: .78rem; color: #888; font-weight: 500; }
-  .image-badge {
-    position: absolute; top: 8px; left: 8px;
-    background: var(--color-primary, #4a90d9);
-    color: #fff; font-size: .65rem; font-weight: 700;
-    text-transform: uppercase; letter-spacing: .05em;
-    padding: .15rem .45rem; border-radius: 4px; z-index: 2;
-  }
-  .image-remove-btn {
-    position: absolute; top: 8px; right: 8px;
-    background: rgba(0,0,0,.55); color: #fff;
-    border: none; border-radius: 50%;
-    width: 24px; height: 24px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: .75rem; z-index: 2;
-  }
-
-  /* ── Price preview ── */
-  .price-preview-inner {
-    display: flex;
-    align-items: center;
-    gap: .85rem;
-    padding: .65rem 1rem;
-    background: #fffbe6;
-    border: 1px solid #f5d76e;
-    border-radius: 6px;
-  }
-  .price-original { text-decoration: line-through; color: #999; font-size: .88rem; }
-  .price-asking   { font-weight: 700; font-size: 1.05rem; color: #2d7a4f; }
-  .price-discount {
-    background: #e74c3c; color: #fff;
-    font-size: .72rem; font-weight: 700;
-    padding: .15rem .45rem; border-radius: 4px;
-  }
-
-  /* ── Submit spinner ── */
-  .submit-spinner {
-    display: inline-block;
-    width: 14px; height: 14px;
-    border: 2px solid rgba(255,255,255,.4);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: spin .7s linear infinite;
-    vertical-align: middle;
-    margin-right: .4rem;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-</style>
 
 <script>
-/* ──────────────────────────────────────────────────────
-   Data injected by Django view
-────────────────────────────────────────────────────── */
-const ALL_AUTHORS    = {{ all_authors|safe }};      // [{id, name}, …]
-const IMAGE_DATAURLS = {{ image_data_urls|safe }};  // {"images-0-image_dataurl": "data:…"}
+window.EB_SELL_CONTEXT = {
+  all_authors: {{ all_authors|safe }},
+  image_data_urls: {{ image_data_urls|safe }},
+  preselected_author_id: {{ preselected_author_id|default:0 }},
+};
 
-/* ══════════════════════════════════════════════════════
-   CONDITION PICKER
-══════════════════════════════════════════════════════ */
-const condInput = document.getElementById('id_condition');
-
-document.querySelectorAll('.condition-card').forEach(card => {
-  // Restore on page load (edit mode / re-render after errors)
-  if (card.dataset.value === condInput.value) card.classList.add('active');
-
-  card.addEventListener('click', () => {
-    document.querySelectorAll('.condition-card').forEach(c => c.classList.remove('active'));
-    card.classList.add('active');
-    condInput.value = card.dataset.value;
-  });
-});
-
-/* ══════════════════════════════════════════════════════
-   AUTHOR TAG WIDGET
-══════════════════════════════════════════════════════ */
-const authorSelect   = document.getElementById('id_authors');
-const authorTagsBox  = document.getElementById('author-tags');
-const authorInput    = document.getElementById('author-input');
-const authorDropdown = document.getElementById('author-dropdown');
-
-let selectedAuthors = [];
-let kbdIdx = -1;
-
-// Pre-populate from existing <select> selection (edit / re-render)
-Array.from(authorSelect.selectedOptions).forEach(opt => {
-  _addTag({ id: opt.value, name: opt.text });
-});
-
-function _addTag(author) {
-  if (selectedAuthors.find(a => String(a.id) === String(author.id))) return;
-  selectedAuthors.push(author);
-  _syncSelect();
-
-  const tag = document.createElement('div');
-  tag.className  = 'author-tag';
-  tag.dataset.id = author.id;
-  tag.innerHTML  = `<span>${author.name}</span>
-                    <span class="author-tag-remove" onclick="removeAuthor('${author.id}')">✕</span>`;
-  authorTagsBox.insertBefore(tag, authorInput);
+function getCsrfToken() {
+  return document.querySelector('input[name="csrfmiddlewaretoken"]')?.value || '';
 }
 
-function removeAuthor(id) {
-  selectedAuthors = selectedAuthors.filter(a => String(a.id) !== String(id));
-  document.querySelector(`.author-tag[data-id="${id}"]`)?.remove();
-  _syncSelect();
+function getAuthorsField() {
+  return document.querySelector('select[name="authors"]');
 }
 
-function _syncSelect() {
-  Array.from(authorSelect.options).forEach(opt => {
-    opt.selected = selectedAuthors.some(a => String(a.id) === opt.value);
-  });
-}
+function addAuthorChip(id, name) {
+  const tags = document.getElementById('author-tags');
+  const authorsField = getAuthorsField();
+  const input = document.getElementById('author-input');
+  if (!tags || !authorsField || !input) return;
 
-authorInput.addEventListener('input',  _showDropdown);
-authorInput.addEventListener('focus',  _showDropdown);
-authorInput.addEventListener('blur',   () => setTimeout(_hideDropdown, 180));
-authorTagsBox.addEventListener('click', () => authorInput.focus());
-
-authorInput.addEventListener('keydown', e => {
-  const items = [...authorDropdown.querySelectorAll('.author-dropdown-item, .author-dropdown-create')];
-  if      (e.key === 'ArrowDown')  { kbdIdx = Math.min(kbdIdx + 1, items.length - 1); _highlightKbd(items); e.preventDefault(); }
-  else if (e.key === 'ArrowUp')    { kbdIdx = Math.max(kbdIdx - 1, 0); _highlightKbd(items); e.preventDefault(); }
-  else if (e.key === 'Enter')      { e.preventDefault(); items[kbdIdx]?.click(); }
-  else if (e.key === 'Escape')     { _hideDropdown(); }
-});
-
-function _highlightKbd(items) {
-  items.forEach((el, i) => el.classList.toggle('kbd-focus', i === kbdIdx));
-}
-
-function _showDropdown() {
-  const q = authorInput.value.toLowerCase().trim();
-  const matches = ALL_AUTHORS.filter(a =>
-    a.name.toLowerCase().includes(q) && !selectedAuthors.find(s => String(s.id) === String(a.id))
-  );
-  authorDropdown.innerHTML = '';
-  kbdIdx = -1;
-
-  matches.forEach(a => {
-    const el = document.createElement('div');
-    el.className   = 'author-dropdown-item';
-    el.textContent = a.name;
-    el.addEventListener('mousedown', () => { _addTag(a); authorInput.value = ''; _hideDropdown(); });
-    authorDropdown.appendChild(el);
-  });
-
-  if (q) {
-    const create = document.createElement('div');
-    create.className   = 'author-dropdown-create';
-    create.textContent = `+ Create "${authorInput.value}"`;
-    create.addEventListener('mousedown', () => _createAuthor(authorInput.value));
-    authorDropdown.appendChild(create);
+  let option = authorsField.querySelector(`option[value="${CSS.escape(String(id))}"]`);
+  if (!option) {
+    option = document.createElement('option');
+    option.value = String(id);
+    option.textContent = name;
+    authorsField.appendChild(option);
   }
+  option.selected = true;
 
-  authorDropdown.style.display = (matches.length || q) ? 'block' : 'none';
+  if (document.querySelector(`.author-tag[data-author-id="${CSS.escape(String(id))}"]`)) return;
+
+  const chip = document.createElement('span');
+  chip.className = 'author-tag';
+  chip.dataset.authorId = String(id);
+  chip.innerHTML = `${name} <button type="button" class="author-tag__remove" aria-label="Remove author">&times;</button>`;
+
+  chip.querySelector('button')?.addEventListener('click', () => {
+    option.selected = false;
+    chip.remove();
+  });
+
+  tags.insertBefore(chip, input);
 }
 
-function _hideDropdown() { authorDropdown.style.display = 'none'; }
+async function saveAuthorByName(name) {
+  const trimmed = (name || '').trim();
+  if (!trimmed) return null;
 
-async function _createAuthor(name) {
-  try {
-    const res = await fetch("{% url 'books:author_create_ajax' %}", {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': _csrf() },
-      body:    `name=${encodeURIComponent(name)}`,
-    });
-    if (!res.ok) return;
-    const data = await res.json();
-    // Inject into hidden <select> so Django sees it on submit
-    authorSelect.appendChild(new Option(data.name, data.id));
-    ALL_AUTHORS.push({ id: data.id, name: data.name });
-    _addTag({ id: data.id, name: data.name });
-    authorInput.value = '';
-    _hideDropdown();
-  } catch (_) {}
+  const res = await fetch("{% url 'books:author_create' %}", {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCsrfToken(),
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({ new_author_name: trimmed }),
+  });
+
+  if (!res.ok) return null;
+  const data = await res.json();
+  if (!data?.ok) return null;
+
+  addAuthorChip(data.id, data.name);
+  return data;
 }
 
-/* ══════════════════════════════════════════════════════
-   PRICE PREVIEW
-══════════════════════════════════════════════════════ */
-const origInput = document.getElementById('id_original_price');
-const askInput  = document.getElementById('id_asking_price');
-const priceBox  = document.getElementById('price-preview');
+(function bindAuthorSearch() {
+  const input = document.getElementById('author-input');
+  const dropdown = document.getElementById('author-dropdown');
+  const all = window.EB_SELL_CONTEXT?.all_authors || [];
 
-function _updatePrice() {
-  const orig = parseFloat(origInput?.value);
-  const ask  = parseFloat(askInput?.value);
+  if (!input || !dropdown) return;
 
-  if (!isNaN(ask) && ask > 0) {
-    document.getElementById('pp-ask').textContent = `Rs. ${ask.toFixed(0)}`;
-    if (!isNaN(orig) && orig > 0 && orig > ask) {
-      const pct = Math.round((orig - ask) / orig * 100);
-      document.getElementById('pp-orig').textContent     = `Rs. ${orig.toFixed(0)}`;
-      document.getElementById('pp-discount').textContent = `${pct}% OFF`;
-      document.getElementById('pp-orig').style.display     = '';
-      document.getElementById('pp-discount').style.display = '';
+  function renderDropdown(matches, typed) {
+    dropdown.innerHTML = '';
+
+    if (matches.length === 0 && typed) {
+      const item = document.createElement('div');
+      item.className = 'author-dropdown-item new-author';
+      item.dataset.newAuthor = typed;
+      item.textContent = `+ Add new author "${typed}"`;
+
+      item.style.padding = '12px 14px';
+      item.style.cursor = 'pointer';
+      item.style.fontWeight = '600';
+      item.style.color = '#2563eb';
+      item.style.background = '#f8fbff';
+      item.style.borderTop = '1px solid #e5eefc';
+
+      item.addEventListener('mouseenter', () => {
+        item.style.background = '#eef5ff';
+      });
+
+      item.addEventListener('mouseleave', () => {
+        item.style.background = '#f8fbff';
+      });
+
+      dropdown.appendChild(item);
     } else {
-      document.getElementById('pp-orig').style.display     = 'none';
-      document.getElementById('pp-discount').style.display = 'none';
+      matches.forEach((a) => {
+        const item = document.createElement('div');
+        item.className = 'author-dropdown-item';
+        item.dataset.authorId = String(a.id);
+        item.textContent = a.name;
+        dropdown.appendChild(item);
+      });
     }
-    priceBox.style.display = 'block';
-  } else {
-    priceBox.style.display = 'none';
+
+    dropdown.style.display = dropdown.children.length ? 'block' : 'none';
   }
+
+  input.addEventListener('input', (e) => {
+    const v = e.target.value.trim();
+    if (!v) {
+      dropdown.style.display = 'none';
+      dropdown.innerHTML = '';
+      return;
+    }
+
+    const q = v.toLowerCase();
+    const matches = all.filter((a) => String(a.name || '').toLowerCase().includes(q));
+    renderDropdown(matches, v);
+  });
+
+  dropdown.addEventListener('click', (e) => {
+    const item = e.target.closest('.author-dropdown-item');
+    if (!item) return;
+
+    if (item.classList.contains('new-author')) {
+      saveAuthorByName(item.dataset.newAuthor).then(() => {
+        input.value = '';
+        dropdown.style.display = 'none';
+      });
+      return;
+    }
+
+    const id = item.dataset.authorId;
+    const name = item.textContent || '';
+    addAuthorChip(id, name);
+    input.value = '';
+    dropdown.style.display = 'none';
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const first = dropdown.querySelector('.author-dropdown-item');
+      if (first) {
+        first.click();
+      } else {
+        saveAuthorByName(input.value).then(() => {
+          input.value = '';
+          dropdown.style.display = 'none';
+        });
+      }
+    }
+
+    if (e.key === 'Escape') {
+      dropdown.style.display = 'none';
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#author-tag-wrap')) {
+      dropdown.style.display = 'none';
+    }
+  });
+})();
+
+function updatePricePreview() {
+  const orig = document.getElementById('id_original_price');
+  const ask = document.getElementById('id_asking_price');
+  const preview = document.getElementById('price-preview');
+  const ppOrig = document.getElementById('pp-orig');
+  const ppAsk = document.getElementById('pp-ask');
+  const ppDiscount = document.getElementById('pp-discount');
+
+  if (!orig || !ask || !preview || !ppOrig || !ppAsk || !ppDiscount) return;
+
+  const o = parseFloat(orig.value);
+  const a = parseFloat(ask.value);
+
+  if (!Number.isFinite(o) || !Number.isFinite(a) || o <= 0 || a <= 0) {
+    preview.style.display = 'none';
+    return;
+  }
+
+  ppOrig.textContent = `Rs. ${o.toLocaleString('en-PK')}`;
+  ppAsk.textContent = `Rs. ${a.toLocaleString('en-PK')}`;
+
+  const discount = ((o - a) / o) * 100;
+  ppDiscount.textContent = discount > 0 ? `${discount.toFixed(0)}% off` : '';
+  preview.style.display = 'block';
 }
 
-origInput?.addEventListener('input', _updatePrice);
-askInput?.addEventListener('input',  _updatePrice);
-_updatePrice(); // run immediately for edit mode
+(function bindPricePreview() {
+  const orig = document.getElementById('id_original_price');
+  const ask = document.getElementById('id_asking_price');
 
-/* ══════════════════════════════════════════════════════
-   IMAGE UPLOAD + PERSISTENCE
-   
-   How it works:
-   1. User picks a file → JS reads it as base64 data-URL
-      → stores it in a hidden <textarea> next to the input
-      → shows an instant preview in the upload zone.
-   2. On form submit the data-URLs ride along as plain POST
-      fields (no file data lost on redirect).
-   3. If validation fails, Django re-renders the page and
-      passes IMAGE_DATAURLS back. JS restores all previews.
-   4. The view's _inject_dataurl_images() decodes those
-      base64 strings back into InMemoryUploadedFile objects
-      so Django's ORM saves them correctly.
-══════════════════════════════════════════════════════ */
-document.querySelectorAll('input[type=file][name$="-image"]').forEach(fileInput => {
-  fileInput.addEventListener('change', function () {
-    const idx  = this.closest('.image-form-group').dataset.index;
-    const file = this.files[0];
-    if (!file) return;
+  orig?.addEventListener('input', updatePricePreview);
+  ask?.addEventListener('input', updatePricePreview);
+  updatePricePreview();
+})();
 
-    const reader = new FileReader();
-    reader.onload = e => {
-      const dataUrl = e.target.result;
-      document.getElementById(`dataurl-${idx}`).value = dataUrl;
-      _showPreview(idx, dataUrl);
-    };
-    reader.readAsDataURL(file);
-  });
-});
-
-function _showPreview(idx, dataUrl) {
-  const zone        = document.getElementById(`zone-${idx}`);
-  const preview     = document.getElementById(`preview-${idx}`);
-  const placeholder = document.getElementById(`placeholder-${idx}`);
-  const removeBtn   = document.getElementById(`remove-${idx}`);
-
-  preview.src               = dataUrl;
-  preview.style.display     = 'block';
-  placeholder.style.display = 'none';
-  removeBtn.style.display   = 'flex';
-  zone.classList.add('has-image');
+function triggerImagePicker(zoneEl) {
+  const fileInput = zoneEl?.closest('.image-form-group')?.querySelector('input[type="file"]');
+  if (fileInput) fileInput.click();
 }
 
 function clearImageSlot(event, idx) {
-  event.stopPropagation(); // prevent the zone's onclick from firing
+  event.stopPropagation();
 
-  const zone        = document.getElementById(`zone-${idx}`);
-  const preview     = document.getElementById(`preview-${idx}`);
-  const placeholder = document.getElementById(`placeholder-${idx}`);
-  const removeBtn   = document.getElementById(`remove-${idx}`);
-  const dataUrlTA   = document.getElementById(`dataurl-${idx}`);
+  const zone = document.getElementById(`zone-${idx}`);
+  const preview = document.getElementById(`preview-${idx}`);
+  const ph = document.getElementById(`placeholder-${idx}`);
+  const btn = document.getElementById(`remove-${idx}`);
+  const ta = document.getElementById(`dataurl-${idx}`);
+  const fileInput = zone?.closest('.image-form-group')?.querySelector('input[type="file"]');
+  const del = zone?.closest('.image-form-group')?.querySelector('input[type="checkbox"][name$="-DELETE"]');
 
-  // Clear the file input
-  const fileInput = zone.closest('.image-form-group').querySelector('input[type=file]');
   if (fileInput) fileInput.value = '';
-
-  // Clear the base64 store
-  dataUrlTA.value = '';
-
-  // Reset the visual zone
-  preview.src               = '';
-  preview.style.display     = 'none';
-  placeholder.style.display = 'flex';
-  removeBtn.style.display   = 'none';
-  zone.classList.remove('has-image');
-
-  // Tick DELETE if this is an existing saved image
-  const delBox = zone.closest('.image-form-group')?.querySelector('input[type=checkbox][name$="-DELETE"]');
-  if (delBox) delBox.checked = true;
+  if (ta) ta.value = '';
+  if (preview) {
+    preview.src = '';
+    preview.style.display = 'none';
+  }
+  if (ph) ph.style.display = 'flex';
+  if (btn) btn.style.display = 'none';
+  zone?.classList.remove('has-image');
+  if (del) del.checked = true;
 }
 
-// Restore previews after a failed submit (data-URLs passed back by view)
-(function restorePreviews() {
-  for (const [key, dataUrl] of Object.entries(IMAGE_DATAURLS)) {
-    if (!dataUrl?.startsWith('data:')) continue;
-    const m = key.match(/images-(\d+)-image_dataurl/);
-    if (!m) continue;
-    const idx = m[1];
-    const ta  = document.getElementById(`dataurl-${idx}`);
-    if (ta) ta.value = dataUrl;
-    _showPreview(idx, dataUrl);
-  }
+(function bindImagePicker() {
+  const grid = document.getElementById('img-grid');
+  if (!grid) return;
+
+  grid.addEventListener('change', (e) => {
+    const input = e.target;
+    if (!(input instanceof HTMLInputElement) || input.type !== 'file') return;
+    if (!input.files || !input.files[0]) return;
+
+    const slot = input.closest('.image-form-group');
+    if (!slot) return;
+
+    const idx = slot.dataset.index;
+    const preview = document.getElementById(`preview-${idx}`);
+    const placeholder = document.getElementById(`placeholder-${idx}`);
+    const removeBtn = document.getElementById(`remove-${idx}`);
+    const zone = document.getElementById(`zone-${idx}`);
+    const dataUrl = document.getElementById(`dataurl-${idx}`);
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const src = String(reader.result || '');
+      if (preview) {
+        preview.src = src;
+        preview.style.display = 'block';
+      }
+      if (placeholder) placeholder.style.display = 'none';
+      if (removeBtn) removeBtn.style.display = 'inline-flex';
+      zone?.classList.add('has-image');
+      if (dataUrl) dataUrl.value = src;
+    };
+    reader.readAsDataURL(input.files[0]);
+  });
 })();
 
-/* ══════════════════════════════════════════════════════
-   STATUS default + submit spinner
-══════════════════════════════════════════════════════ */
-const statusInput = document.getElementById('id_status');
-if (statusInput && !statusInput.value) statusInput.value = 'available';
+(function bindConditionCards() {
+  const cards = document.querySelectorAll('.condition-card');
+  const hidden = document.getElementById('id_condition');
+  if (!cards.length || !hidden) return;
 
-document.getElementById('sell-form').addEventListener('submit', () => {
-  document.getElementById('submit-spinner').style.display = 'inline-block';
-  document.getElementById('submit-btn').disabled = true;
-});
+  cards.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      cards.forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      hidden.value = btn.dataset.value || '';
+      hidden.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  });
 
-function _csrf() {
-  return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
-}
+  const current = hidden.value;
+  cards.forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.value === current);
+  });
+})();
 </script>
 
 {% endblock %}

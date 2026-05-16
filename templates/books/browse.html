@@ -108,7 +108,18 @@
           {% for book in books %}
             <div class="card">
               <div class="card-content">
-                <img src="{% if book.cover_image %}{{ book.cover_image.url }}{% else %}{% static 'images/default-book.jpg' %}{% endif %}" class="cover-img" />
+                {% if book.images.all %}
+                  {% with img=book.images.all.0 %}
+                    <img
+                      src="{% if img.image %}{{ img.image.url }}{% elif img.file %}{{ img.file.url }}{% elif img.url %}{{ img.url }}{% endif %}"
+                      alt="{{ book.title }}"
+                      class="cover-img"
+                    />
+                  {% endwith %}
+                {% else %}
+                  <img src="{% static 'images/default-book.jpg' %}" alt="{{ book.title }}" class="cover-img" />
+                {% endif %}
+
                 <h1 class="book-title">{{ book.title }}</h1>
 
                 {% if book.authors.all %}
@@ -133,7 +144,6 @@
 </section>
 
 <script>
-  // This logic manages the background updates for Genre and Language
   async function performAjaxUpdate(url) {
     try {
       const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
@@ -141,25 +151,17 @@
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
 
-      // Update the grid
       document.getElementById('book-grid-container').innerHTML = doc.getElementById('book-grid-container').innerHTML;
-      
-      // Update the sidebar (Crucial so that Language buttons update their active state)
       document.getElementById('filter-sidebar-container').innerHTML = doc.getElementById('filter-sidebar-container').innerHTML;
 
-      // Update URL without refreshing the whole page
       window.history.pushState({}, '', url);
-
-      // We must re-bind the listeners every time the sidebar is replaced
       attachAjaxListeners();
     } catch (err) {
-      // If something goes wrong, fall back to a normal refresh
       window.location.href = url;
     }
   }
 
   function attachAjaxListeners() {
-    // Selects ALL links with ajax-link class in both Genre and Language
     document.querySelectorAll('.ajax-link').forEach(link => {
       link.onclick = (e) => {
         e.preventDefault();
@@ -168,7 +170,6 @@
     });
   }
 
-  // Initial call
   document.addEventListener('DOMContentLoaded', attachAjaxListeners);
 </script>
 {% endblock content %}

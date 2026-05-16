@@ -1,10 +1,10 @@
 from django import forms
 from django.forms import inlineformset_factory
-from .models import Book, BookImage,Transaction, Author
+from .models import Book, BookImage, Transaction, Author
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Author quick-add form (used via AJAX to create an author inline)
+# Author quick-add form (used via plain POST to create an author inline)
 # ─────────────────────────────────────────────────────────────────────────────
 class AuthorForm(forms.ModelForm):
     class Meta:
@@ -210,7 +210,7 @@ class BookImageForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["image"].required = False
         self.fields["caption"].required = False
-        self.fields["image_type"].initial = "other"
+        # image_type default is set per-slot via formset initial in the view
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -225,10 +225,11 @@ BookImageFormSet = inlineformset_factory(
     can_delete=True,
 )
 
-# ============================================================
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Checkout Form
 # Collects delivery info from the buyer at checkout.
-# ============================================================
+# ─────────────────────────────────────────────────────────────────────────────
 class CheckoutForm(forms.Form):
 
     CITY_CHOICES = [

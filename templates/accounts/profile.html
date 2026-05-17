@@ -1,43 +1,201 @@
-{% extends "base.html" %}
-{% load static %}
-
-{% block title %}Profile{% endblock %}
+{% extends "base.html" %} 
+{% load static %} 
 
 {% block content %}
-<div class="profile-container">
-  <div class="profile-card">
-    <div class="profile-header">
-      {% if profile.avatar %}
-        <img src="{{ profile.avatar.url }}" alt="{{ profile.full_name }}" class="profile-avatar">
-      {% else %}
-        <img src="{% static 'images/default-avatar.png' %}" alt="Default avatar" class="profile-avatar">
-      {% endif %}
 
-      <div class="profile-info">
-        <h2>{{ profile.full_name }}</h2>
-        <p>@{{ profile.user.username }}</p>
-        <p>{{ profile.user.email }}</p>
-      </div>
-    </div>
+<section class="profile-section">
+  <div class="container">
+    <div class="profile-layout">
+      <aside class="profile-sidebar">
+        <div class="profile-avatar-card">
+          {% if profile.avatar %}
+          <img
+            src="{{ profile.avatar.url }}"
+            alt="{{ profile.full_name }}"
+            class="profile-avatar-img"
+          />
+          {% else %}
+          <div class="profile-avatar-placeholder">
+            <span>{{ profile.user.username|first|upper }}</span>
+          </div>
+          {% endif %}
 
-    <div class="profile-body">
-      <p><strong>Bio:</strong> {{ profile.bio|default:"No bio added yet." }}</p>
-      <p><strong>Phone:</strong> {{ profile.phone|default:"Not provided" }}</p>
-      <p><strong>City:</strong> {{ profile.city|default:"Not provided" }}</p>
-      <p><strong>District:</strong> {{ profile.district|default:"Not provided" }}</p>
-      <p><strong>Seller:</strong> {% if profile.is_seller %}Yes{% else %}No{% endif %}</p>
-      <p><strong>Rating:</strong> {{ profile.average_rating|default:"No ratings yet" }}</p>
-      <p><strong>Total Listings:</strong> {{ profile.total_listings }}</p>
-      <p><strong>Total Purchases:</strong> {{ profile.total_purchases }}</p>
-      <p><strong>Reviews:</strong> {{ profile.review_count }}</p>
-    </div>
+          <h2 class="profile-name">{{ profile.full_name }}</h2>
+          <p class="profile-username">@{{ profile.user.username }}</p>
 
-    <div class="profile-actions">
-      <a href="{% url 'accounts:edit_profile' %}" class="btn btn-primary">Edit Profile</a>
-      {% if not profile.is_seller %}
-        <a href="{% url 'accounts:become_seller' %}" class="btn btn-secondary">Become Seller</a>
-      {% endif %}
+          {% if profile.is_seller %}
+          <span class="profile-badge badge-seller">⭐ Seller</span>
+          {% else %}
+          <span class="profile-badge badge-buyer">📚 Reader</span>
+          {% endif %} 
+          
+          {% if profile.verification_status == "verified" %}
+          <span class="profile-badge badge-verified">✓ Verified</span>
+          {% endif %}
+
+          <div class="profile-sidebar-actions">
+            <a
+              href="{% url 'accounts:edit_profile' %}"
+              class="btn btn-primary profile-edit-btn"
+              >Edit Profile</a
+            >
+            {% if not profile.is_seller %}
+            <a
+              href="{% url 'accounts:become_seller' %}"
+              class="btn btn-secondary profile-seller-btn"
+              >Become a Seller</a
+            >
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="profile-info-card">
+          <h3 class="profile-card-title">Contact Info</h3>
+          <ul class="profile-info-list">
+            <li class="profile-info-item">
+              <span class="profile-info-icon">✉</span>
+              <span class="profile-info-value">{{ profile.user.email }}</span>
+            </li>
+            {% if profile.phone %}
+            <li class="profile-info-item">
+              <span class="profile-info-icon">☎</span>
+              <span class="profile-info-value">{{ profile.phone }}</span>
+            </li>
+            {% endif %} 
+            
+            {% if profile.city or profile.district %}
+            <li class="profile-info-item">
+              <span class="profile-info-icon">📍</span>
+              <span class="profile-info-value">
+                {% if profile.city %}{{ profile.city }}{% endif %} 
+                {% if profile.city and profile.district %}, {% endif %} 
+                {% if profile.district %}{{ profile.district }}{% endif %}
+              </span>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </aside>
+
+      <main class="profile-main">
+        <div class="profile-stats-row">
+          <div class="profile-stat-card">
+            <span class="profile-stat-value">{{ profile.total_listings }}</span>
+            <span class="profile-stat-label">Listings</span>
+          </div>
+          <div class="profile-stat-card">
+            <span class="profile-stat-value">{{ profile.total_purchases }}</span>
+            <span class="profile-stat-label">Purchases</span>
+          </div>
+          <div class="profile-stat-card">
+            <span class="profile-stat-value">{{ profile.review_count }}</span>
+            <span class="profile-stat-label">Reviews</span>
+          </div>
+          {% if profile.is_seller %}
+          <div class="profile-stat-card">
+            <span class="profile-stat-value">
+              {% if profile.average_rating %}{{ profile.average_rating }}★{% else %}—{% endif %}
+            </span>
+            <span class="profile-stat-label">Avg Rating</span>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="profile-section-card">
+          <h3 class="profile-card-title">About</h3>
+          {% if profile.bio %}
+          <p class="profile-bio-text">{{ profile.bio }}</p>
+          {% else %}
+          <p class="profile-bio-text profile-bio-empty">
+            No bio added yet.
+            <a href="{% url 'accounts:edit_profile' %}">Add one →</a>
+          </p>
+          {% endif %}
+        </div>
+
+        <div class="profile-section-card">
+          <h3 class="profile-card-title">Account Status</h3>
+          <div class="profile-status-grid">
+            
+            <div class="profile-status-item">
+              <span class="status-label">Email</span>
+              <span class="status-pill 
+                {% if profile.is_email_verified %}
+                  pill-success
+                {% else %}
+                  pill-warn
+                {% endif %}">
+                {% if profile.is_email_verified %}Verified{% else %}Unverified{% endif %}
+              </span>
+            </div>
+            
+            <div class="profile-status-item">
+              <span class="status-label">Account</span>
+              <span class="status-pill 
+                {% if profile.verification_status == 'verified' %}
+                  pill-success
+                {% elif profile.verification_status == 'suspended' %}
+                  pill-danger
+                {% else %}
+                  pill-warn
+                {% endif %}">
+                {{ profile.get_verification_status_display }}
+              </span>
+            </div>
+            
+            <div class="profile-status-item">
+              <span class="status-label">Role</span>
+              <span class="status-pill 
+                {% if profile.is_seller %}
+                  pill-accent
+                {% else %}
+                  pill-neutral
+                {% endif %}">
+                {% if profile.is_seller %}Seller{% else %}Buyer{% endif %}
+              </span>
+            </div>
+            
+            <div class="profile-status-item">
+              <span class="status-label">Member since</span>
+              <span class="status-date">{{ profile.created_at|date:"M Y" }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-section-card">
+          <h3 class="profile-card-title">
+            Saved Books
+            <span class="profile-card-count">{{ profile.user.saved_books.count }}</span>
+          </h3>
+          {% if profile.user.saved_books.exists %}
+          <div class="profile-saved-grid">
+            {% for saved in profile.user.saved_books.all|slice:":6" %}
+            <a
+              href="{% url 'books:detail' saved.book.slug %}"
+              class="profile-saved-book"
+            >
+              {% if saved.book.images.first %}
+              <img
+                src="{{ saved.book.images.first.image.url }}"
+                alt="{{ saved.book.title }}"
+              />
+              {% else %}
+              <div class="saved-book-placeholder">📖</div>
+              {% endif %}
+              <p>{{ saved.book.title|truncatechars:30 }}</p>
+            </a>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="profile-empty-msg">
+            No saved books yet.
+            <a href="{% url 'books:browse' %}">Browse books →</a>
+          </p>
+          {% endif %}
+        </div>
+      </main>
     </div>
   </div>
-</div>
+</section>
+
 {% endblock %}

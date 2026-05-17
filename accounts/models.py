@@ -93,11 +93,16 @@ def create_user_profile(sender, instance, created, **kwargs):
         Profile.objects.create(user=instance)
 
 
+# @receiver(post_save, sender=User)
+# def save_user_profile(sender, instance, **kwargs):
+#     """Auto-save Profile when User is saved."""
+#     instance.profile.save()
+
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     """Auto-save Profile when User is saved."""
-    instance.profile.save()
-
+    if hasattr(instance, 'profile'):  
+        instance.profile.save()
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Email Verification Token

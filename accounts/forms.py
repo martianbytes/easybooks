@@ -1,5 +1,6 @@
 # ============================================================
-# accounts/forms.py
+# accounts/forms.py  — UPDATED
+# Added widget attrs so Django-rendered fields pick up styling
 # ============================================================
 from django import forms
 from django.contrib.auth.models import User
@@ -27,11 +28,27 @@ class UserRegistrationForm(UserCreationForm):
 
 
 class ProfileUpdateForm(forms.ModelForm):
-    """Form for updating user profile."""
+    """Form for updating user profile — with styled widget attrs."""
 
     class Meta:
         model = Profile
         fields = ["avatar", "bio", "phone", "city", "district"]
+        widgets = {
+            "bio": forms.Textarea(attrs={
+                "placeholder": "Tell readers a little about yourself…",
+                "rows": 4,
+            }),
+            "phone": forms.TextInput(attrs={
+                "placeholder": "e.g. +977 98xxxxxxxx",
+                "type": "tel",
+            }),
+            "city": forms.TextInput(attrs={
+                "placeholder": "e.g. Kathmandu",
+            }),
+            "district": forms.TextInput(attrs={
+                "placeholder": "e.g. Bagmati",
+            }),
+        }
 
 
 class SellerReviewForm(forms.ModelForm):

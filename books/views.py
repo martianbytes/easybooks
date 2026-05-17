@@ -370,3 +370,13 @@ class BookCreateView(BookUpsertView):
 class BookEditView(BookUpsertView):
     def get_book(self):
         return get_object_or_404(Book, slug=self.kwargs["slug"], seller=self.request.user)
+
+
+class BookDeleteView(LoginRequiredMixin, View):
+    login_url = "accounts:login"
+
+    def post(self, request, seller, slug):
+        book = get_object_or_404(Book, slug=slug, seller=request.user)
+        book.delete()
+        messages.success(request, "Your listing has been deleted.")
+        return redirect("books:browse")

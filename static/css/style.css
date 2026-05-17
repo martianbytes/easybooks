@@ -4108,3 +4108,167 @@ form .button input:hover {
 @media (max-width: 420px) {
   .img-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   OWNER ACTIONS — Edit / Delete on detail page
+═══════════════════════════════════════════════════════════ */
+.owner-action-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.owner-action-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-weight: var(--weight-medium);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.owner-action-divider::before,
+.owner-action-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--color-gray-200);
+}
+
+.btn-owner-edit,
+.btn-owner-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: center;
+  width: 100%;
+}
+
+.btn-owner-edit {
+  background: var(--color-primary-50);
+  color: var(--color-primary-700);
+  border: 1px solid var(--color-primary-200);
+  text-decoration: none;
+}
+
+.btn-owner-edit:hover {
+  background: var(--color-primary-100);
+  border-color: var(--color-primary-300);
+  transform: translateY(-1px);
+}
+
+.btn-owner-delete {
+  background: transparent;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+.btn-owner-delete:hover {
+  background: #fff1f1;
+  border-color: #f87171;
+}
+
+/* ─── Delete confirmation modal ─── */
+.delete-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 30, 46, 0.55);
+  backdrop-filter: blur(2px);
+  z-index: 900;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.delete-modal-overlay.is-open {
+  display: flex;
+}
+
+.delete-modal {
+  background: var(--bg-surface, #fff);
+  border-radius: var(--radius-md);
+  padding: var(--space-8) var(--space-6);
+  max-width: 400px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+
+.delete-modal__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #fff1f1;
+  color: #b91c1c;
+  margin: 0 auto var(--space-4);
+}
+
+.delete-modal__title {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-3);
+}
+
+.delete-modal__body {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+  margin: 0 0 var(--space-6);
+}
+
+.delete-modal__actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+}
+
+.btn-modal-cancel {
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  background: var(--color-gray-100);
+  color: var(--text-secondary);
+  border: 1px solid var(--color-gray-200);
+  transition: all var(--transition-fast);
+}
+
+.btn-modal-cancel:hover {
+  background: var(--color-gray-200);
+}
+
+.btn-modal-confirm {
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  background: #b91c1c;
+  color: #fff;
+  border: none;
+  transition: all var(--transition-fast);
+}
+
+.btn-modal-confirm:hover {
+  background: #991b1b;
+}

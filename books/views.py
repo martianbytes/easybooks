@@ -4,7 +4,7 @@ from django.urls import reverse_lazy
 from django.shortcuts import render,get_object_or_404,redirect
 from django.contrib import messages
 from django.views import View
-from .models import Book, Message, Transaction
+from .models import Book, Message, Transaction,CartItem
 from .forms import CheckoutForm
 from django.http import JsonResponse
 import base64
@@ -335,3 +335,72 @@ class BookCreateView(BookUpsertView):
 class BookEditView(BookUpsertView):
     def get_book(self):
         return get_object_or_404(Book, slug=self.kwargs["slug"], seller=self.request.user)
+    
+
+
+
+
+# CART VIEWS
+
+
+class CartView(LoginRequiredMixin, View):
+   
+    login_url = 'accounts:login'
+
+    def get(self, request):
+        # Get all cart items belonging to this user
+        cart_items = CartItem.objects.filter(user=request.user).select_related('book')
+
+        # Calculate total price of all books in cart
+        total = sum(item.book.asking_price for item in cart_items)
+
+        return render(request, 'books/cart.html', {
+            'cart_items': cart_items,
+            'total': total,
+        })
+
+
+class AddToCartView(LoginRequiredMixin, View):
+    """
+    Adds a book to the user's cart.
+    Called when user clicks 'Add to Cart' on book detail page.
+    """
+    login_url = 'accounts:login'
+
+    def post(self, request, seller, slug):
+        book = get_object_or_404(Book, slug=slug, status='available')
+
+        # Seller cannot add their own book to cart
+        if book.seller == request.user:
+            messages.error(request, "You cannot add your own book to cart.")
+            return redirect('books:detail', seller=seller, slug=slug)
+
+        # get_or_create returns (object, created)
+        # created = True  means it was just added
+        # created = False means it was already in cart
+        cart_item, created = CartItem.objects.get_or_create(
+            user=request.user,
+            book=book,
+        )
+
+        if created:
+            messages.success(request, f'"{book.title}" added to your cart!')
+        else:
+            messages.info(request, f'"{book.title}" is already in your cart.')
+
+        return redirect('books:detail', seller=seller, slug=slug)
+
+
+class RemoveFromCartView(LoginRequiredMixin, View):
+   
+    login_url = 'accounts:login'
+
+    def post(self, request, slug):
+        book = get_object_or_404(Book, slug=slug)
+
+        # Find and delete this cart item
+        CartItem.objects.filter(user=request.user, book=book).delete()
+
+        messages.success(request, f'"{book.title}" removed from cart.')
+        return redirect('books:cart')
+

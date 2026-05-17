@@ -289,3 +289,26 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message from {self.buyer.username} to {self.seller.username} about {self.book.title}"
+    
+
+
+# Cart Item
+
+class CartItem(models.Model):
+    """
+    Stores books that a user has added to their cart.
+    One user cannot add the same book twice.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cart_items')
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='carted_by')
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # This makes sure same user cannot add same book twice
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'book'], name='unique_cart_item')
+        ]
+        ordering = ['-added_at']
+
+    def __str__(self):
+        return f"{self.user.username}'s cart → {self.book.title}"

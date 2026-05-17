@@ -20,6 +20,9 @@ urlpatterns = [
     path("subscribe/", views.SubscribeView.as_view(), name="subscribe"),
     path("book/<str:seller>/<slug:slug>/edit/", views.BookEditView.as_view(), name="edit"),
     path('order/<slug:order_slug>/confirmed/', views.OrderConfirmedView.as_view(), name='order_confirmed'),
+    path('cart/', views.CartView.as_view(), name='cart'),
+    path('cart/add/<str:seller>/<slug:slug>/', views.AddToCartView.as_view(), name='add_to_cart'),
+    path('cart/remove/<slug:slug>/', views.RemoveFromCartView.as_view(), name='remove_from_cart'),
     # path("authors/create-ajax/", author_create_ajax.as)
 ]
 

@@ -1,0 +1,178 @@
+{% extends "base.html" %} 
+{% load static %} 
+
+{% block content %}
+
+<section class="edit-profile-section">
+  <div class="container">
+    <div class="edit-profile-layout">
+      <!-- Page Header -->
+      <div class="edit-profile-header">
+        <a href="{% url 'accounts:profile' %}" class="edit-back-link"
+          >← Back to Profile</a
+        >
+        <h1 class="edit-profile-title">Edit Profile</h1>
+        <p class="edit-profile-subtitle">
+          Update your personal information and settings
+        </p>
+      </div>
+
+      <div class="edit-profile-body">
+        <!-- Left: Avatar Preview -->
+        <aside class="edit-avatar-panel">
+          <div class="edit-avatar-preview-wrap">
+            {% if profile.avatar %}
+            <img
+              src="{{ profile.avatar.url }}"
+              alt="{{ profile.full_name }}"
+              class="edit-avatar-preview"
+              id="avatarPreview"
+            />
+            {% else %}
+            <div class="edit-avatar-placeholder" id="avatarPlaceholder">
+              <span>{{ profile.user.username|first|upper }}</span>
+            </div>
+            <img
+              src=""
+              alt=""
+              class="edit-avatar-preview"
+              id="avatarPreview"
+              style="display: none"
+            />
+            {% endif %}
+          </div>
+          <p class="edit-avatar-hint">
+            Click "Choose File" in the form to update your photo
+          </p>
+
+          <div class="edit-user-summary">
+            <strong>{{ profile.user.username }}</strong>
+            <span>{{ profile.user.email }}</span>
+            {% if profile.is_seller %}
+            <span class="profile-badge badge-seller">⭐ Seller</span>
+            {% endif %}
+          </div>
+        </aside>
+
+        <!-- Right: Form -->
+        <div class="edit-form-panel">
+          <form
+            method="post"
+            enctype="multipart/form-data"
+            novalidate
+            class="edit-profile-form"
+          >
+            {% csrf_token %} {% if form.non_field_errors %}
+            <div class="edit-form-errors">
+              {% for error in form.non_field_errors %}
+              <p>{{ error }}</p>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Avatar -->
+            <div class="edit-form-group">
+              <label
+                class="edit-form-label"
+                for="{{ form.avatar.id_for_label }}"
+              >
+                Profile Photo
+              </label>
+              <div class="edit-file-input-wrap">{{ form.avatar }}</div>
+              {% if form.avatar.errors %}
+              <p class="edit-field-error">{{ form.avatar.errors.as_text }}</p>
+              {% endif %}
+            </div>
+
+            <!-- Bio -->
+            <div class="edit-form-group">
+              <label class="edit-form-label" for="{{ form.bio.id_for_label }}"
+                >Bio</label
+              >
+              {{ form.bio }}
+              <span class="edit-form-hint"
+                >Max 500 characters — tell readers about yourself</span
+              >
+              {% if form.bio.errors %}
+              <p class="edit-field-error">{{ form.bio.errors.as_text }}</p>
+              {% endif %}
+            </div>
+
+            <!-- Phone + City in two columns -->
+            <div class="edit-form-row">
+              <div class="edit-form-group">
+                <label
+                  class="edit-form-label"
+                  for="{{ form.phone.id_for_label }}"
+                  >Phone</label
+                >
+                {{ form.phone }} {% if form.phone.errors %}
+                <p class="edit-field-error">{{ form.phone.errors.as_text }}</p>
+                {% endif %}
+              </div>
+              <div class="edit-form-group">
+                <label
+                  class="edit-form-label"
+                  for="{{ form.city.id_for_label }}"
+                  >City</label
+                >
+                {{ form.city }} {% if form.city.errors %}
+                <p class="edit-field-error">{{ form.city.errors.as_text }}</p>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- District -->
+            <div class="edit-form-group">
+              <label
+                class="edit-form-label"
+                for="{{ form.district.id_for_label }}"
+                >District</label
+              >
+              {{ form.district }} {% if form.district.errors %}
+              <p class="edit-field-error">{{ form.district.errors.as_text }}</p>
+              {% endif %}
+            </div>
+
+            <!-- Actions -->
+            <div class="edit-form-actions">
+              <button type="submit" class="btn btn-primary edit-save-btn">
+                Save Changes
+              </button>
+              <a
+                href="{% url 'accounts:profile' %}"
+                class="btn btn-secondary edit-cancel-btn"
+                >Cancel</a
+              >
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  /* Live avatar preview when user picks a file */
+  const avatarInput = document.getElementById("id_avatar");
+  const avatarPreview = document.getElementById("avatarPreview");
+  const avatarPlaceholder = document.getElementById("avatarPlaceholder");
+
+  if (avatarInput) {
+    avatarInput.addEventListener("change", function () {
+      const file = this.files[0];
+      if (file && file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          if (avatarPreview) {
+            avatarPreview.src = e.target.result;
+            avatarPreview.style.display = "block";
+          }
+          if (avatarPlaceholder) avatarPlaceholder.style.display = "none";
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+</script>
+{% endblock %}

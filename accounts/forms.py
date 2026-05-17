@@ -27,11 +27,35 @@ class UserRegistrationForm(UserCreationForm):
 
 
 class ProfileUpdateForm(forms.ModelForm):
-    """Form for updating user profile."""
+    """Form for updating user profile — with styled widget attrs."""
 
     class Meta:
         model = Profile
         fields = ["avatar", "bio", "phone", "city", "district"]
+        widgets = {
+            "bio": forms.Textarea(
+                attrs={
+                    "placeholder": "Tell readers a little about yourself…",
+                    "rows": 4,
+                }
+            ),
+            "phone": forms.TextInput(
+                attrs={
+                    "placeholder": "e.g. +977 98xxxxxxxx",
+                    "type": "tel",
+                }
+            ),
+            "city": forms.TextInput(
+                attrs={
+                    "placeholder": "e.g. Kathmandu",
+                }
+            ),
+            "district": forms.TextInput(
+                attrs={
+                    "placeholder": "e.g. Bagmati",
+                }
+            ),
+        }
 
 
 class SellerReviewForm(forms.ModelForm):

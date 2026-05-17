@@ -13,6 +13,11 @@ from .views import (
     BookEditView,
     BookDeleteView,
     OrderConfirmedView,
+    CartView,
+    AddToCartView,
+    RemoveFromCartView,
+    CartCheckoutView,
+    CartOrderConfirmedView,
 )
 
 app_name = "books"
@@ -33,6 +38,11 @@ urlpatterns = [
     path("book/<str:seller>/<slug:slug>/edit/", BookEditView.as_view(), name="edit"),
     path("book/<str:seller>/<slug:slug>/delete/", BookDeleteView.as_view(), name="delete"),
     path("order/<slug:order_slug>/confirmed/", OrderConfirmedView.as_view(), name="order_confirmed"),
+    path("cart/", CartView.as_view(), name="cart"),
+    path("cart/add/<str:seller>/<slug:slug>/", AddToCartView.as_view(), name="add_to_cart"),
+    path("cart/remove/<slug:slug>/", RemoveFromCartView.as_view(), name="remove_from_cart"),
+    path("cart/checkout/", CartCheckoutView.as_view(), name="cart_checkout"),
+    path("cart/order-confirmed/", CartOrderConfirmedView.as_view(), name="cart_order_confirmed"),
 ]
 
 if settings.DEBUG:

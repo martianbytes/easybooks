@@ -11,6 +11,7 @@ from .views import (
     ContactSellerView,
     SubscribeView,
     BookEditView,
+    BookDeleteView,
     OrderConfirmedView,
 )
 
@@ -30,6 +31,7 @@ urlpatterns = [
     ),
     path("subscribe/", SubscribeView.as_view(), name="subscribe"),
     path("book/<str:seller>/<slug:slug>/edit/", BookEditView.as_view(), name="edit"),
+    path("book/<str:seller>/<slug:slug>/delete/", BookDeleteView.as_view(), name="delete"),
     path("order/<slug:order_slug>/confirmed/", OrderConfirmedView.as_view(), name="order_confirmed"),
 ]
 

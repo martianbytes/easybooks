@@ -104,7 +104,6 @@ class BookDetailView(DetailView):
 
 
 class CheckoutView(LoginRequiredMixin, View):
-    
     login_url = 'accounts:login'
 
     def get(self, request, seller, slug):
@@ -114,7 +113,6 @@ class CheckoutView(LoginRequiredMixin, View):
             messages.error(request, "You cannot buy your own book.")
             return redirect('books:detail', seller=book.seller.username, slug=slug)
 
-        
         initial_data = {
             'first_name': request.user.first_name,
             'last_name': request.user.last_name,
@@ -140,23 +138,18 @@ class CheckoutView(LoginRequiredMixin, View):
         form = CheckoutForm(request.POST)
 
         if form.is_valid():
-            # Save the transaction to the db
             transaction = Transaction.objects.create(
                 book=book,
                 buyer=request.user,
                 seller=book.seller,
                 price=book.asking_price,
                 status='pending',
+                payment_method=form.cleaned_data['payment_method'],
             )
-
-            
             book.status = 'reserved'
-            book.save(update_fields=['status'])
+            book.save()
+            return redirect('books:order_confirmed', pk=transaction.pk)
 
-            # Go to confirmation page
-            return redirect('books:order_confirmed', order_slug=transaction.slug)
-
-       
         return render(request, 'books/checkout.html', {
             'book': book,
             'form': form,

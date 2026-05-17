@@ -232,6 +232,13 @@
             </svg>
             Buy Now
           </a>
+          <!-- Add to Cart button -->
+          <form method="POST" action="{% url 'books:add_to_cart' book.seller.username book.slug %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-action-secondary">
+              🛒 Add to Cart
+            </button>
+          </form>
           <a href="{% url 'books:contact_seller' book.seller.username book.slug %}" class="btn-action-secondary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>

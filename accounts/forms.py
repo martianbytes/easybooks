@@ -33,20 +33,28 @@ class ProfileUpdateForm(forms.ModelForm):
         model = Profile
         fields = ["avatar", "bio", "phone", "city", "district"]
         widgets = {
-            "bio": forms.Textarea(attrs={
-                "placeholder": "Tell readers a little about yourself…",
-                "rows": 4,
-            }),
-            "phone": forms.TextInput(attrs={
-                "placeholder": "e.g. +977 98xxxxxxxx",
-                "type": "tel",
-            }),
-            "city": forms.TextInput(attrs={
-                "placeholder": "e.g. Kathmandu",
-            }),
-            "district": forms.TextInput(attrs={
-                "placeholder": "e.g. Bagmati",
-            }),
+            "bio": forms.Textarea(
+                attrs={
+                    "placeholder": "Tell readers a little about yourself…",
+                    "rows": 4,
+                }
+            ),
+            "phone": forms.TextInput(
+                attrs={
+                    "placeholder": "e.g. +977 98xxxxxxxx",
+                    "type": "tel",
+                }
+            ),
+            "city": forms.TextInput(
+                attrs={
+                    "placeholder": "e.g. Kathmandu",
+                }
+            ),
+            "district": forms.TextInput(
+                attrs={
+                    "placeholder": "e.g. Bagmati",
+                }
+            ),
         }
 
 

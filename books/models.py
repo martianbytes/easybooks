@@ -152,7 +152,7 @@ class Book(models.Model):
                 raise Exception("Slug generation failed.")
         # Only run full_clean when update_fields is not specified
         # (i.e. not a targeted partial update like status change in checkout)
-        if not kwargs.get('update_fields'):
+        if not kwargs.get("update_fields"):
             self.full_clean()
         super().save(*args, **kwargs)
 
@@ -245,7 +245,7 @@ class Transaction(models.Model):
 
     price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
-    
+
     slug = models.SlugField(max_length=300, unique=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -287,3 +287,26 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message from {self.buyer.username} to {self.seller.username} about {self.book.title}"
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Cart Item
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+class CartItem(models.Model):
+    """
+    Stores books that a user has added to their cart.
+    One user cannot add the same book twice.
+    """
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="cart_items")
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="carted_by")
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["user", "book"], name="unique_cart_item")
+        ]
+        ordering = ["-added_at"]
+
+    def __str__(self):
+        return f"{self.user.username}'s cart → {self.book.title}"

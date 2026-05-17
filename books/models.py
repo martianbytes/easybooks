@@ -11,11 +11,9 @@ import uuid
 # Authors
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class Author(models.Model):
-    # what might the author have
     name = models.CharField(max_length=255, unique=True)
 
     def __str__(self):
-        """display the name of the author instead of some unreadable texts"""
         return self.name
 
 

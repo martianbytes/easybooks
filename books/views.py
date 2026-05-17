@@ -1,7 +1,7 @@
 from django.views.generic import TemplateView, ListView, CreateView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.urls import reverse_lazy
-from django.shortcuts import render,get_object_or_404,redirect
+from django.urls import reverse_lazy, reverse
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.views import View
 from .models import Book, Message, Transaction
@@ -12,13 +12,11 @@ import binascii
 import io
 import json
 import uuid
-from django.views import View
 from typing import cast
 
 from django.contrib.auth.decorators import login_required
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import transaction
-from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from .forms import AuthorForm, BookForm, BookImageFormSet
@@ -104,7 +102,7 @@ class BookDetailView(DetailView):
 
 
 class CheckoutView(LoginRequiredMixin, View):
-    
+
     login_url = 'accounts:login'
 
     def get(self, request, seller, slug):
@@ -114,7 +112,6 @@ class CheckoutView(LoginRequiredMixin, View):
             messages.error(request, "You cannot buy your own book.")
             return redirect('books:detail', seller=book.seller.username, slug=slug)
 
-        
         initial_data = {
             'first_name': request.user.first_name,
             'last_name': request.user.last_name,
@@ -140,8 +137,7 @@ class CheckoutView(LoginRequiredMixin, View):
         form = CheckoutForm(request.POST)
 
         if form.is_valid():
-            # Save the transaction to the db
-            transaction = Transaction.objects.create(
+            t = Transaction.objects.create(
                 book=book,
                 buyer=request.user,
                 seller=book.seller,
@@ -149,14 +145,11 @@ class CheckoutView(LoginRequiredMixin, View):
                 status='pending',
             )
 
-            
             book.status = 'reserved'
             book.save(update_fields=['status'])
 
-            # Go to confirmation page
-            return redirect('books:order_confirmed', order_slug=transaction.slug)
+            return redirect('books:order_confirmed', order_slug=t.slug)
 
-       
         return render(request, 'books/checkout.html', {
             'book': book,
             'form': form,
@@ -164,7 +157,7 @@ class CheckoutView(LoginRequiredMixin, View):
 
 
 class OrderConfirmedView(LoginRequiredMixin, View):
-  
+
     login_url = 'accounts:login'
 
     def get(self, request, order_slug):
@@ -189,19 +182,36 @@ class ContactSellerView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-@login_required
-@require_POST
-def author_create_ajax(request):
-    form = AuthorForm(request.POST)
-    if form.is_valid():
-        author = form.save()
-        return JsonResponse({"id": author.pk, "name": author.name})
-    return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
+# ─────────────────────────────────────────────────────────────────────────────
+# Author creation — plain POST, no AJAX/fetch needed
+# ─────────────────────────────────────────────────────────────────────────────
+class AuthorCreateView(LoginRequiredMixin, View):
+    login_url = "accounts:login"
+
+    def post(self, request, *args, **kwargs):
+        name = request.POST.get("new_author_name", "").strip()
+
+        if not name:
+            return JsonResponse({"ok": False, "error": "Author name is required."}, status=400)
+
+        author, created = Author.objects.get_or_create(name=name)
+        return JsonResponse({
+            "ok": True,
+            "id": author.pk,
+            "name": author.name,
+            "created": created,
+        })
+
+    def get(self, request, *args, **kwargs):
+        return redirect("books:sell")
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Book upsert (create + edit) — unchanged logic, updated _sell_context
+# ─────────────────────────────────────────────────────────────────────────────
 class BookUpsertView(LoginRequiredMixin, View):
     template_name = "books/sell.html"
-    login_url = "login"
+    login_url = "accounts:login"
 
     def get_book(self):
         return None
@@ -210,7 +220,17 @@ class BookUpsertView(LoginRequiredMixin, View):
         instance = self.get_book()
         editing = instance is not None
         book_form = BookForm(instance=instance)
-        image_forms = BookImageFormSet(instance=instance, prefix=IMAGE_FORMSET_PREFIX)
+        image_forms = BookImageFormSet(
+            instance=instance,
+            prefix=IMAGE_FORMSET_PREFIX,
+            initial=[{"image_type": "cover"}],  # first slot defaults to cover
+        )
+
+        # If we just came back from adding an author, pre-select it
+        try:
+            preselected_author_id = int(request.GET.get("author_added", 0))
+        except (ValueError, TypeError):
+            preselected_author_id = 0
 
         return render(
             request,
@@ -221,6 +241,8 @@ class BookUpsertView(LoginRequiredMixin, View):
                 image_data_urls={},
                 editing=editing,
                 book=instance,
+                preselected_author_id=preselected_author_id,
+                author_error=request.GET.get("author_error", ""),
             ),
         )
 
@@ -263,18 +285,23 @@ class BookUpsertView(LoginRequiredMixin, View):
                 image_data_urls=_collect_dataurl_values(request.POST),
                 editing=editing,
                 book=instance,
+                preselected_author_id=0,
+                author_error="",
             ),
         )
 
 
-def _sell_context(*, book_form, image_forms, image_data_urls, editing, book):
+def _sell_context(*, book_form, image_forms, image_data_urls, editing, book,
+                  preselected_author_id=0, author_error=""):
     return {
         "book_form": book_form,
-        "image_forms": image_forms,
+        "image_formset": image_forms,
         "image_data_urls": json.dumps(image_data_urls),
-        "all_authors": Author.objects.order_by("name").values("id", "name"),
+        "all_authors": list(Author.objects.order_by("name").values("id", "name")),
         "editing": editing,
         "book": book,
+        "preselected_author_id": preselected_author_id,
+        "author_error": author_error,
     }
 
 
@@ -334,6 +361,7 @@ def _inmemory_file_from_dataurl(*, data_url, field_name, max_bytes):
 def _collect_dataurl_values(post_data):
     return {k: v for k, v in post_data.items() if k.endswith("_dataurl")}
 
+
 class BookCreateView(BookUpsertView):
     def get_book(self):
         return None
@@ -342,3 +370,13 @@ class BookCreateView(BookUpsertView):
 class BookEditView(BookUpsertView):
     def get_book(self):
         return get_object_or_404(Book, slug=self.kwargs["slug"], seller=self.request.user)
+
+
+class BookDeleteView(LoginRequiredMixin, View):
+    login_url = "accounts:login"
+
+    def post(self, request, seller, slug):
+        book = get_object_or_404(Book, slug=slug, seller=request.user)
+        book.delete()
+        messages.success(request, "Your listing has been deleted.")
+        return redirect("books:browse")

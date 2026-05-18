@@ -23,7 +23,7 @@
     <div class="alert alert-{{ message.tags }}">{{ message }}</div>
     {% endfor %} {% endif %}
 
-    <form method="POST" action="{% url 'books:checkout' book.slug %}">
+    <form method="POST" action="{% url 'books:checkout' book.seller.username book.slug %}">
       {% csrf_token %}
 
       <div class="checkout-layout">

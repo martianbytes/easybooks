@@ -40,13 +40,17 @@
             <div class="ebf-field">
               <label for="{{ book_form.title.id_for_label }}">Book Title <span class="ebf-req">*</span></label>
               {{ book_form.title }}
-              {{ book_form.title.errors }}
+              {% if book_form.title.errors %}
+              <div class="ebf-alert">{% for e in book_form.title.errors %}{{ e }}{% endfor %}</div>
+              {% endif %}
             </div>
 
             <div class="ebf-field">
               <label for="{{ book_form.subtitle.id_for_label }}">Subtitle</label>
               {{ book_form.subtitle }}
-              {{ book_form.subtitle.errors }}
+              {% if book_form.subtitle.errors %}
+              <div class="ebf-alert">{% for e in book_form.subtitle.errors %}{{ e }}{% endfor %}</div>
+              {% endif %}
             </div>
 
             <div class="ebf-field">
@@ -65,7 +69,9 @@
               <div style="display:none">
                 {{ book_form.authors }}
               </div>
-              {{ book_form.authors.errors }}
+              {% if book_form.authors.errors %}
+              <div class="ebf-alert">{% for e in book_form.authors.errors %}{{ e }}{% endfor %}</div>
+             {% endif %}
 
               <div class="ebf-add-author-panel" id="add-author-panel" style="display:none">
                 <p class="ebf-add-author-hint">Enter the full name and click <strong>Save Author</strong>.</p>
@@ -82,50 +88,68 @@
             <div class="ebf-field">
               <label for="{{ book_form.description.id_for_label }}">Description</label>
               {{ book_form.description }}
-              {{ book_form.description.errors }}
+              {% if book_form.description.errors %}
+              <div class="ebf-alert">{% for e in book_form.description.errors %}{{ e }}{% endfor %}</div>
+              {% endif %}
             </div>
 
             <div class="ebf-grid-2">
               <div class="ebf-field">
                 <label for="{{ book_form.category.id_for_label }}">Category <span class="ebf-req">*</span></label>
                 {{ book_form.category }}
-                {{ book_form.category.errors }}
+                {% if book_form.category.errors %}
+  <div class="ebf-alert">{% for e in book_form.category.errors %}{{ e }}{% endfor %}</div>
+{% endif %}
               </div>
               <div class="ebf-field">
                 <label for="{{ book_form.language.id_for_label }}">Language <span class="ebf-req">*</span></label>
                 {{ book_form.language }}
-                {{ book_form.language.errors }}
+                {% if book_form.language.errors %}
+  <div class="ebf-alert">{% for e in book_form.language.errors %}{{ e }}{% endfor %}</div>
+{% endif %}
               </div>
               <div class="ebf-field">
                 <label for="{{ book_form.isbn.id_for_label }}">ISBN <span class="ebf-muted-label">(Optional)</span></label>
                 {{ book_form.isbn }}
-                {{ book_form.isbn.errors }}
+                {% if book_form.isbn.errors %}
+  <div class="ebf-alert">{% for e in book_form.isbn.errors %}{{ e }}{% endfor %}</div>
+{% endif %}
                 <span class="ebf-hint">13-digit ISBN code</span>
               </div>
               <div class="ebf-field">
                 <label for="{{ book_form.publisher.id_for_label }}">Publisher</label>
                 {{ book_form.publisher }}
-                {{ book_form.publisher.errors }}
+                {% if book_form.publisher.errors %}
+  <div class="ebf-alert">{% for e in book_form.publisher.errors %}{{ e }}{% endfor %}</div>
+{% endif %}
               </div>
               <div class="ebf-field">
                 <label for="{{ book_form.published_year.id_for_label }}">Published Year</label>
                 {{ book_form.published_year }}
-                {{ book_form.published_year.errors }}
+                {% if book_form.published_year.errors %}
+  <div class="ebf-alert">{% for e in book_form.published_year.errors %}{{ e }}{% endfor %}</div>
+{% endif %}
               </div>
               <div class="ebf-field">
                 <label for="{{ book_form.edition.id_for_label }}">Edition</label>
                 {{ book_form.edition }}
-                {{ book_form.edition.errors }}
+                {% if book_form.edition.errors %}
+  <div class="ebf-alert">{% for e in book_form.edition.errors %}{{ e }}{% endfor %}</div>
+{% endif %}
               </div>
               <div class="ebf-field">
                 <label for="{{ book_form.num_pages.id_for_label }}">Number of Pages</label>
                 {{ book_form.num_pages }}
-                {{ book_form.num_pages.errors }}
+                {% if book_form.num_pages.errors %}
+  <div class="ebf-alert">{% for e in book_form.num_pages.errors %}{{ e }}{% endfor %}</div>
+{% endif %}
               </div>
               <div class="ebf-field">
                 <label for="{{ book_form.city.id_for_label }}">City <span class="ebf-req">*</span></label>
                 {{ book_form.city }}
-                {{ book_form.city.errors }}
+                {% if book_form.city.errors %}
+  <div class="ebf-alert">{% for e in book_form.city.errors %}{{ e }}{% endfor %}</div>
+{% endif %}
               </div>
             </div>
 
@@ -160,13 +184,17 @@
                 </button>
               </div>
               <input type="hidden" id="id_condition" name="condition" value="{{ book_form.condition.value|default:'' }}" />
-              {{ book_form.condition.errors }}
+              {% if book_form.condition.errors %}
+  <div class="ebf-alert">{% for e in book_form.condition.errors %}{{ e }}{% endfor %}</div>
+{% endif %}
             </div>
 
             <div class="ebf-field">
               <label for="{{ book_form.condition_notes.id_for_label }}">Damage / Condition Notes</label>
               {{ book_form.condition_notes }}
-              {{ book_form.condition_notes.errors }}
+              {% if book_form.condition_notes.errors %}
+  <div class="ebf-alert">{% for e in book_form.condition_notes.errors %}{{ e }}{% endfor %}</div>
+{% endif %}
             </div>
 
           </div>
@@ -187,7 +215,9 @@
                   <span class="ebf-prefix">Rs.</span>
                   {{ book_form.original_price }}
                 </div>
-                {{ book_form.original_price.errors }}
+                {% if book_form.original_price.errors %}
+  <div class="ebf-alert">{% for e in book_form.original_price.errors %}{{ e }}{% endfor %}</div>
+{% endif %}
               </div>
               <div class="ebf-field">
                 <label for="{{ book_form.asking_price.id_for_label }}">Asking Price (Rs) <span class="ebf-req">*</span></label>
@@ -195,7 +225,9 @@
                   <span class="ebf-prefix">Rs.</span>
                   {{ book_form.asking_price }}
                 </div>
-                {{ book_form.asking_price.errors }}
+                {% if book_form.asking_price.errors %}
+  <div class="ebf-alert">{% for e in book_form.asking_price.errors %}{{ e }}{% endfor %}</div>
+{% endif %}
               </div>
             </div>
 
@@ -213,7 +245,9 @@
                 {{ book_form.is_negotiable }}
                 <span>Price is Negotiable</span>
               </label>
-              {{ book_form.is_negotiable.errors }}
+              {% if book_form.is_negotiable.errors %}
+  <div class="ebf-alert">{% for e in book_form.is_negotiable.errors %}{{ e }}{% endfor %}</div>
+{% endif %}
             </div>
 
             <div style="display:none">{{ book_form.status }}</div>
@@ -283,7 +317,9 @@
                 </div>
 
                 <div style="display:none">{{ form.image }}</div>
-                {{ form.image.errors }}
+                {% if form.image.errors %}
+  <div class="ebf-alert">{% for e in form.image.errors %}{{ e }}{% endfor %}</div>
+{% endif %}
 
                 <textarea name="{{ form.image.html_name }}_dataurl"
                   id="dataurl-{{ forloop.counter0 }}"

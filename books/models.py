@@ -75,7 +75,7 @@ class Book(models.Model):
     isbn = models.CharField(max_length=13, blank=True, unique=True, null=True)
 
     language = models.CharField(max_length=10, choices=LANGUAGE_CHOICES, default="en")
-    num_pages = models.PositiveIntegerField(blank=True, null=True)
+    num_pages = models.IntegerField(blank=True, null=True)
     category = models.CharField(
         max_length=50, choices=CATEGORY_CHOICES, default="other"
     )

@@ -13,12 +13,12 @@ import io
 import json
 import uuid
 from typing import cast
-
+import re
 from django.contrib.auth.decorators import login_required
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import transaction
 from django.views.decorators.http import require_POST
-
+from django.db.models import Q
 from .forms import AuthorForm, BookForm, BookImageFormSet
 from .models import Author, Book, Message
 
@@ -53,13 +53,47 @@ class BrowseView(ListView):
     def get_queryset(self):
         queryset = Book.objects.filter(status="available")
 
-        category = self.request.GET.get("genre")
-        if category:
-            queryset = queryset.filter(category=category)
+        q = self.request.GET.get("q", "").strip()
+        if q:
+            queryset = queryset.filter(
+                Q(title__icontains=q) |
+                Q(authors__name__icontains=q) |
+                Q(isbn__icontains=q)
+            ).distinct()
+
+        genre = self.request.GET.get("genre")
+        if genre:
+            queryset = queryset.filter(category=genre)
 
         language = self.request.GET.get("language")
         if language:
             queryset = queryset.filter(language=language)
+
+        conditions = self.request.GET.getlist("condition")
+        if conditions:
+            queryset = queryset.filter(condition__in=conditions)
+
+        min_price = self.request.GET.get("min_price")
+        if min_price:
+            try:
+                queryset = queryset.filter(asking_price__gte=min_price)
+            except ValueError:
+                pass
+
+        max_price = self.request.GET.get("max_price")
+        if max_price:
+            try:
+                queryset = queryset.filter(asking_price__lte=max_price)
+            except ValueError:
+                pass
+
+        sort = self.request.GET.get("sort", "newest")
+        if sort == "price-low-to-high":
+            queryset = queryset.order_by("asking_price")
+        elif sort == "price-high-to-low":
+            queryset = queryset.order_by("-asking_price")
+        else:
+            queryset = queryset.order_by("-created_at")
 
         return queryset
 
@@ -67,11 +101,15 @@ class BrowseView(ListView):
         context = super().get_context_data(**kwargs)
         context["genre_choices"] = Book.CATEGORY_CHOICES
         context["language_choices"] = Book.LANGUAGE_CHOICES
-        context["selected_genre"] = self.request.GET.get("genre")
-        context["selected_language"] = self.request.GET.get("language")
+        context["condition_choices"] = Book.CONDITION_CHOICES
+        context["selected_genre"] = self.request.GET.get("genre", "")
+        context["selected_language"] = self.request.GET.get("language", "")
+        context["selected_conditions"] = self.request.GET.getlist("condition")
+        context["search_query"] = self.request.GET.get("q", "")
+        context["min_price"] = self.request.GET.get("min_price", "")
+        context["max_price"] = self.request.GET.get("max_price", "")
+        context["selected_sort"] = self.request.GET.get("sort", "newest")
         return context
-
-
 class SubscribeView(CreateView):
     def post(self, request):
         email = request.POST.get("email")
@@ -194,13 +232,17 @@ class AuthorCreateView(LoginRequiredMixin, View):
         if not name:
             return JsonResponse({"ok": False, "error": "Author name is required."}, status=400)
 
+        if len(name) < 2:
+            return JsonResponse({"ok": False, "error": "Author name is too short."}, status=400)
+
+        if not re.search(r"[a-zA-Z]", name):
+            return JsonResponse({"ok": False, "error": "Author name must contain at least one letter."}, status=400)
+
+        if not re.match(r"^[a-zA-Z0-9\s\.\-\'\,]+$", name):
+            return JsonResponse({"ok": False, "error": "Author name contains invalid characters."}, status=400)
+
         author, created = Author.objects.get_or_create(name=name)
-        return JsonResponse({
-            "ok": True,
-            "id": author.pk,
-            "name": author.name,
-            "created": created,
-        })
+        return JsonResponse({"ok": True, "id": author.pk, "name": author.name, "created": created})
 
     def get(self, request, *args, **kwargs):
         return redirect("books:sell")
@@ -223,7 +265,8 @@ class BookUpsertView(LoginRequiredMixin, View):
         image_forms = BookImageFormSet(
             instance=instance,
             prefix=IMAGE_FORMSET_PREFIX,
-            initial=[{"image_type": "cover"}],  # first slot defaults to cover
+            # initial=[{"image_type": "cover"}],  # first slot defaults to cover
+            initial=[{"image_type": "cover"}, {"image_type": "condition"}, {"image_type": "condition"}],
         )
 
         # If we just came back from adding an author, pre-select it

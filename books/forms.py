@@ -1,3 +1,5 @@
+import re
+from datetime import datetime
 from django import forms
 from django.forms import inlineformset_factory
 from .models import Book, BookImage, Transaction, Author
@@ -179,15 +181,234 @@ class BookForm(forms.ModelForm):
         # status is required but has a default; hidden from user
         self.fields["status"].required = False
 
-    # ── Cross-field validation ────────────────────────────────────────────
+# ── Individual field validation ───────────────────────────────────────
+
+    def clean_title(self):
+        """
+        Validates the book title.
+        - Strips extra spaces
+        - Minimum 2 characters
+        - Only allows letters, numbers, spaces and common punctuation
+        """
+        title = self.cleaned_data.get("title", "").strip()
+
+        # Check minimum length
+        if len(title) < 2:
+            raise forms.ValidationError(
+                "Title must be at least 2 characters long."
+            )
+
+        # Check for invalid special characters
+        # Allowed: letters, numbers, spaces, . , - & ' : ( ) + /
+        if not re.match(r"^[a-zA-Z0-9\s.,\-&':()+/]+$", title):
+            raise forms.ValidationError(
+                "Title contains invalid characters. "
+                "Only letters, numbers, and basic punctuation are allowed."
+            )
+
+        return title
+
+    def clean_isbn(self):
+        """
+        Validates the ISBN number.
+        - Optional field — skip if empty
+        - Must be exactly 10 or 13 digits
+        - Only numbers allowed (no dashes or spaces)
+        """
+        isbn = self.cleaned_data.get("isbn", "").strip()
+
+        # If empty, that's fine — ISBN is optional
+        if not isbn:
+            return isbn
+
+        # Remove dashes and spaces in case user typed them
+        isbn_clean = isbn.replace("-", "").replace(" ", "")
+
+        # Must be only digits
+        if not isbn_clean.isdigit():
+            raise forms.ValidationError(
+                "ISBN must contain numbers only. Remove any dashes or spaces."
+            )
+
+        # Must be exactly 10 or 13 digits
+        if len(isbn_clean) not in [10, 13]:
+            raise forms.ValidationError(
+                f"ISBN must be exactly 10 or 13 digits. You entered {len(isbn_clean)} digits."
+            )
+
+        return isbn_clean  # return the cleaned version without dashes
+
+    def clean_published_year(self):
+        """
+        Validates the published year.
+        - Optional field — skip if empty
+        - Cannot be before 1800
+        - Cannot be in the future
+        """
+        year = self.cleaned_data.get("published_year")
+
+        # If empty, that's fine — published year is optional
+        if year is None:
+            return year
+
+        current_year = datetime.now().year
+
+        if year < 1800:
+            raise forms.ValidationError(
+                "Published year cannot be before 1800."
+            )
+
+        if year > current_year:
+            raise forms.ValidationError(
+                f"Published year cannot be in the future. "
+                f"Current year is {current_year}."
+            )
+
+        return year
+
+    def clean_num_pages(self):
+        """
+        Validates number of pages.
+        - Optional field — skip if empty
+        - Minimum 1 page
+        - Maximum 10,000 pages
+        """
+        num_pages = self.cleaned_data.get("num_pages")
+
+        # If empty, that's fine — num_pages is optional
+        if num_pages is None:
+            return num_pages
+
+        if num_pages < 1:
+            raise forms.ValidationError(
+                "Number of pages must be at least 1."
+            )
+
+        if num_pages > 10000:
+            raise forms.ValidationError(
+                "Number of pages cannot exceed 10,000."
+            )
+
+        return num_pages
+
+    def clean_asking_price(self):
+        """
+        Validates the asking price.
+        - Required field
+        - Minimum Rs. 1
+        - Maximum Rs. 50,000
+        """
+        asking_price = self.cleaned_data.get("asking_price")
+
+        if asking_price is None:
+            return asking_price
+
+        if asking_price < 1:
+            raise forms.ValidationError(
+                "Asking price must be at least Rs. 1."
+            )
+
+        if asking_price > 50000:
+            raise forms.ValidationError(
+                "Asking price cannot exceed Rs. 50,000."
+            )
+
+        return asking_price
+
+    def clean_original_price(self):
+        """
+        Validates the original price.
+        - Optional field — skip if empty
+        - Minimum Rs. 1
+        - Maximum Rs. 100,000
+        """
+        original_price = self.cleaned_data.get("original_price")
+
+        # If empty, that's fine — original price is optional
+        if original_price is None:
+            return original_price
+
+        if original_price < 1:
+            raise forms.ValidationError(
+                "Original price must be at least Rs. 1."
+            )
+
+        if original_price > 100000:
+            raise forms.ValidationError(
+                "Original price cannot exceed Rs. 100,000."
+            )
+
+        return original_price
+
+    def clean_city(self):
+        """
+        Validates the city name.
+        - Required field
+        - Letters, spaces, and hyphens only
+        - Minimum 2 characters
+        """
+        city = self.cleaned_data.get("city", "").strip()
+
+        if len(city) < 2:
+            raise forms.ValidationError(
+                "City name must be at least 2 characters long."
+            )
+
+        if not re.match(r"^[a-zA-Z\s\-]+$", city):
+            raise forms.ValidationError(
+                "City name can only contain letters, spaces, and hyphens."
+            )
+
+        return city
+
+    def clean_condition_notes(self):
+        """
+        Validates condition notes.
+        - Optional field — skip if empty
+        - Maximum 500 characters
+        """
+        notes = self.cleaned_data.get("condition_notes", "").strip()
+
+        if len(notes) > 500:
+            raise forms.ValidationError(
+                f"Condition notes cannot exceed 500 characters. "
+                f"You have {len(notes)} characters."
+            )
+
+        return notes
+
+    def clean_description(self):
+        """
+        Validates book description.
+        - Optional field — skip if empty
+        - Maximum 2000 characters
+        """
+        description = self.cleaned_data.get("description", "").strip()
+
+        if len(description) > 2000:
+            raise forms.ValidationError(
+                f"Description cannot exceed 2000 characters. "
+                f"You have {len(description)} characters."
+            )
+
+        return description
+
+   # ── Cross-field validation ────────────────────────────────────────────
     def clean(self):
+        """
+        Cross-field validation — checks fields against each other.
+        This runs AFTER all individual clean_fieldname() methods.
+        """
         cleaned = super().clean()
         original = cleaned.get("original_price")
         asking = cleaned.get("asking_price")
 
+        # Check asking price is not more than original price
         if original and asking and asking > original:
             self.add_error(
-                "asking_price", "Asking price cannot exceed the original price."
+                "asking_price",
+                f"Asking price (Rs. {asking}) cannot be more than "
+                f"original price (Rs. {original})."
             )
 
         return cleaned
@@ -255,7 +476,8 @@ class CheckoutForm(forms.Form):
 
     first_name = forms.CharField(
         max_length=100,
-        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Ram"}),
+        widget=forms.TextInput(
+            attrs={"class": "form-control", "placeholder": "Ram"}),
     )
     last_name = forms.CharField(
         max_length=100,
@@ -277,11 +499,13 @@ class CheckoutForm(forms.Form):
     address = forms.CharField(
         max_length=255,
         widget=forms.TextInput(
-            attrs={"class": "form-control", "placeholder": "Street / Tole / Landmark"}
+            attrs={"class": "form-control",
+                   "placeholder": "Street / Tole / Landmark"}
         ),
     )
     city = forms.ChoiceField(
-        choices=CITY_CHOICES, widget=forms.Select(attrs={"class": "form-control"})
+        choices=CITY_CHOICES, widget=forms.Select(
+            attrs={"class": "form-control"})
     )
     district = forms.CharField(
         max_length=100,

@@ -204,7 +204,6 @@ class BookForm(forms.ModelForm):
         if not re.match(r"^[a-zA-Z0-9\s.,\-&':()+/]+$", title):
             raise forms.ValidationError(
                 "Title contains invalid characters. "
-                "Only letters, numbers, and basic punctuation are allowed."
             )
 
         return title

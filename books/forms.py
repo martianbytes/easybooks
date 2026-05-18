@@ -517,3 +517,128 @@ class CheckoutForm(forms.Form):
         choices=PAYMENT_CHOICES,
         widget=forms.RadioSelect(attrs={"class": "payment-radio"}),
     )
+    # ── Individual field validation ───────────────────────────────────────
+
+    def clean_first_name(self):
+        """
+        Validates first name.
+        - Strip extra spaces
+        - Minimum 2 characters
+        - Letters, spaces and hyphens only
+        - No numbers or symbols
+        """
+        first_name = self.cleaned_data.get("first_name", "").strip()
+
+        if len(first_name) < 2:
+            raise forms.ValidationError(
+                "First name must be at least 2 characters long."
+            )
+
+        if not re.match(r"^[a-zA-Z\s\-]+$", first_name):
+            raise forms.ValidationError(
+                "First name can only contain letters, spaces, and hyphens."
+            )
+
+        return first_name
+
+    def clean_last_name(self):
+        """
+        Validates last name.
+        - Strip extra spaces
+        - Minimum 2 characters
+        - Letters, spaces and hyphens only
+        """
+        last_name = self.cleaned_data.get("last_name", "").strip()
+
+        if len(last_name) < 2:
+            raise forms.ValidationError(
+                "Last name must be at least 2 characters long."
+            )
+
+        if not re.match(r"^[a-zA-Z\s\-]+$", last_name):
+            raise forms.ValidationError(
+                "Last name can only contain letters, spaces, and hyphens."
+            )
+
+        return last_name
+
+    def clean_phone(self):
+        """
+        Validates Nepal phone number.
+        - Remove spaces and dashes user might type
+        - Must start with 97 or 98 (Nepal mobile)
+        - Must be exactly 10 digits
+        
+        Valid examples:
+            9841234567   → valid
+            9741234567   → valid
+            +977 9841234567 → we strip +977 and validate the rest
+        """
+        phone = self.cleaned_data.get("phone", "").strip()
+
+        # Remove common formatting characters user might type
+        phone = phone.replace(" ", "").replace("-", "").replace("+", "")
+
+        # If user typed country code 977, remove it
+        # e.g. 9779841234567 → 9841234567
+        if phone.startswith("977") and len(phone) == 13:
+            phone = phone[3:]
+
+        # Must be only digits now
+        if not phone.isdigit():
+            raise forms.ValidationError(
+                "Phone number must contain digits only."
+            )
+
+        # Must be exactly 10 digits
+        if len(phone) != 10:
+            raise forms.ValidationError(
+                "Phone number must be exactly 10 digits. e.g. 9841234567"
+            )
+
+        # Must start with 97 or 98 (Nepal mobile numbers)
+        if not (phone.startswith("97") or phone.startswith("98")):
+            raise forms.ValidationError(
+                "Please enter a valid Nepal mobile number "
+                "starting with 97 or 98."
+            )
+
+        return phone
+
+    def clean_address(self):
+        """
+        Validates delivery address.
+        - Strip extra spaces
+        - Minimum 5 characters
+        - Should have some meaningful content
+        """
+        address = self.cleaned_data.get("address", "").strip()
+
+        if len(address) < 5:
+            raise forms.ValidationError(
+                "Please enter a complete address "
+                "(at least 5 characters)."
+            )
+
+        return address
+
+    def clean_district(self):
+        """
+        Validates district name.
+        - Strip extra spaces
+        - Minimum 2 characters
+        - Letters, spaces and hyphens only
+        """
+        district = self.cleaned_data.get("district", "").strip()
+
+        if len(district) < 2:
+            raise forms.ValidationError(
+                "District name must be at least 2 characters long."
+            )
+
+        if not re.match(r"^[a-zA-Z\s\-]+$", district):
+            raise forms.ValidationError(
+                "District name can only contain letters, spaces, and hyphens."
+            )
+
+        return district

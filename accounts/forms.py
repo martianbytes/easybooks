@@ -36,7 +36,8 @@ class UserRegistrationForm(UserCreationForm):
         - Only letters, numbers, and underscores allowed
         - No spaces allowed
         """
-        username = self.cleaned_data.get("username", "").strip()
+        username = self.cleaned_data.get("username") or ""
+        username = username.strip()
 
         if len(username) < 3:
             raise forms.ValidationError(
@@ -63,7 +64,8 @@ class UserRegistrationForm(UserCreationForm):
         - Django already checks email format ✅
         - We add: check if email is already registered
         """
-        email = self.cleaned_data.get("email", "").strip().lower()
+        email = self.cleaned_data.get("email") or ""
+        email = email.strip().lower()
 
         # Check if this email is already used by another user
         if User.objects.filter(email=email).exists():
@@ -81,7 +83,8 @@ class UserRegistrationForm(UserCreationForm):
         - If provided: minimum 2 characters
         - Letters, spaces and hyphens only
         """
-        first_name = self.cleaned_data.get("first_name", "").strip()
+        first_name = self.cleaned_data.get("first_name") or ""
+        first_name = first_name.strip()
 
         # Optional — if empty skip all checks
         if not first_name:
@@ -106,7 +109,8 @@ class UserRegistrationForm(UserCreationForm):
         - If provided: minimum 2 characters
         - Letters, spaces and hyphens only
         """
-        last_name = self.cleaned_data.get("last_name", "").strip()
+        last_name = self.cleaned_data.get("last_name") or ""
+        last_name = last_name.strip()
 
         # Optional — if empty skip all checks
         if not last_name:

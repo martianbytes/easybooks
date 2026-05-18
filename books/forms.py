@@ -190,7 +190,8 @@ class BookForm(forms.ModelForm):
         - Minimum 2 characters
         - Only allows letters, numbers, spaces and common punctuation
         """
-        title = self.cleaned_data.get("title", "").strip()
+        title = self.cleaned_data.get("title") or ""
+        title = title.strip()
 
         # Check minimum length
         if len(title) < 2:
@@ -215,7 +216,8 @@ class BookForm(forms.ModelForm):
         - Must be exactly 10 or 13 digits
         - Only numbers allowed (no dashes or spaces)
         """
-        isbn = self.cleaned_data.get("isbn", "").strip()
+        isbn = self.cleaned_data.get("isbn") or ""
+        isbn = isbn.strip()
 
         # If empty, that's fine — ISBN is optional
         if not isbn:
@@ -347,7 +349,8 @@ class BookForm(forms.ModelForm):
         - Letters, spaces, and hyphens only
         - Minimum 2 characters
         """
-        city = self.cleaned_data.get("city", "").strip()
+        city = self.cleaned_data.get("city") or ""
+        city = city.strip()
 
         if len(city) < 2:
             raise forms.ValidationError(
@@ -367,7 +370,8 @@ class BookForm(forms.ModelForm):
         - Optional field — skip if empty
         - Maximum 500 characters
         """
-        notes = self.cleaned_data.get("condition_notes", "").strip()
+        notes = self.cleaned_data.get("condition_notes") or ""
+        notes = notes.strip()
 
         if len(notes) > 500:
             raise forms.ValidationError(
@@ -383,7 +387,8 @@ class BookForm(forms.ModelForm):
         - Optional field — skip if empty
         - Maximum 2000 characters
         """
-        description = self.cleaned_data.get("description", "").strip()
+        description = self.cleaned_data.get("description") or ""
+        description = description.strip()
 
         if len(description) > 2000:
             raise forms.ValidationError(
@@ -527,7 +532,8 @@ class CheckoutForm(forms.Form):
         - Letters, spaces and hyphens only
         - No numbers or symbols
         """
-        first_name = self.cleaned_data.get("first_name", "").strip()
+        first_name = self.cleaned_data.get("first_name") or ""
+        first_name = first_name.strip()
 
         if len(first_name) < 2:
             raise forms.ValidationError(
@@ -548,7 +554,8 @@ class CheckoutForm(forms.Form):
         - Minimum 2 characters
         - Letters, spaces and hyphens only
         """
-        last_name = self.cleaned_data.get("last_name", "").strip()
+        last_name = self.cleaned_data.get("last_name") or ""
+        last_name = last_name.strip()
 
         if len(last_name) < 2:
             raise forms.ValidationError(
@@ -574,7 +581,8 @@ class CheckoutForm(forms.Form):
             9741234567   → valid
             +977 9841234567 → we strip +977 and validate the rest
         """
-        phone = self.cleaned_data.get("phone", "").strip()
+        phone = self.cleaned_data.get("phone") or ""
+        phone = phone.strip()
 
         # Remove common formatting characters user might type
         phone = phone.replace(" ", "").replace("-", "").replace("+", "")
@@ -612,7 +620,8 @@ class CheckoutForm(forms.Form):
         - Minimum 5 characters
         - Should have some meaningful content
         """
-        address = self.cleaned_data.get("address", "").strip()
+        address = self.cleaned_data.get("address") or ""
+        address = address.strip()
 
         if len(address) < 5:
             raise forms.ValidationError(
@@ -629,7 +638,8 @@ class CheckoutForm(forms.Form):
         - Minimum 2 characters
         - Letters, spaces and hyphens only
         """
-        district = self.cleaned_data.get("district", "").strip()
+        district = self.cleaned_data.get("district") or ""
+        district = district.strip()
 
         if len(district) < 2:
             raise forms.ValidationError(

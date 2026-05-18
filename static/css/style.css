@@ -589,7 +589,7 @@ a {
       rgba(250, 248, 244, 0.8) 30%,
       rgba(212, 160, 23, 0.15) 50%,
       rgba(255, 255, 255, 0) 60%),
-    url(images/main.png);
+    url(../images/main.png);
   background-repeat: no-repeat;
   background-size: cover;
   background-position: right;

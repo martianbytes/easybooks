@@ -4,7 +4,7 @@ from django.urls import reverse_lazy, reverse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.views import View
-from .models import Book, Message, Transaction
+from .models import Book, Message, Transaction, CartItem
 from .forms import CheckoutForm
 from django.http import JsonResponse
 import base64
@@ -13,12 +13,12 @@ import io
 import json
 import uuid
 from typing import cast
-
+import re
 from django.contrib.auth.decorators import login_required
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import transaction
 from django.views.decorators.http import require_POST
-
+from django.db.models import Q
 from .forms import AuthorForm, BookForm, BookImageFormSet
 from .models import Author, Book, Message
 
@@ -53,13 +53,47 @@ class BrowseView(ListView):
     def get_queryset(self):
         queryset = Book.objects.filter(status="available")
 
-        category = self.request.GET.get("genre")
-        if category:
-            queryset = queryset.filter(category=category)
+        q = self.request.GET.get("q", "").strip()
+        if q:
+            queryset = queryset.filter(
+                Q(title__icontains=q) |
+                Q(authors__name__icontains=q) |
+                Q(isbn__icontains=q)
+            ).distinct()
+
+        genre = self.request.GET.get("genre")
+        if genre:
+            queryset = queryset.filter(category=genre)
 
         language = self.request.GET.get("language")
         if language:
             queryset = queryset.filter(language=language)
+
+        conditions = self.request.GET.getlist("condition")
+        if conditions:
+            queryset = queryset.filter(condition__in=conditions)
+
+        min_price = self.request.GET.get("min_price")
+        if min_price:
+            try:
+                queryset = queryset.filter(asking_price__gte=min_price)
+            except ValueError:
+                pass
+
+        max_price = self.request.GET.get("max_price")
+        if max_price:
+            try:
+                queryset = queryset.filter(asking_price__lte=max_price)
+            except ValueError:
+                pass
+
+        sort = self.request.GET.get("sort", "newest")
+        if sort == "price-low-to-high":
+            queryset = queryset.order_by("asking_price")
+        elif sort == "price-high-to-low":
+            queryset = queryset.order_by("-asking_price")
+        else:
+            queryset = queryset.order_by("-created_at")
 
         return queryset
 
@@ -67,11 +101,15 @@ class BrowseView(ListView):
         context = super().get_context_data(**kwargs)
         context["genre_choices"] = Book.CATEGORY_CHOICES
         context["language_choices"] = Book.LANGUAGE_CHOICES
-        context["selected_genre"] = self.request.GET.get("genre")
-        context["selected_language"] = self.request.GET.get("language")
+        context["condition_choices"] = Book.CONDITION_CHOICES
+        context["selected_genre"] = self.request.GET.get("genre", "")
+        context["selected_language"] = self.request.GET.get("language", "")
+        context["selected_conditions"] = self.request.GET.getlist("condition")
+        context["search_query"] = self.request.GET.get("q", "")
+        context["min_price"] = self.request.GET.get("min_price", "")
+        context["max_price"] = self.request.GET.get("max_price", "")
+        context["selected_sort"] = self.request.GET.get("sort", "newest")
         return context
-
-
 class SubscribeView(CreateView):
     def post(self, request):
         email = request.POST.get("email")
@@ -194,13 +232,17 @@ class AuthorCreateView(LoginRequiredMixin, View):
         if not name:
             return JsonResponse({"ok": False, "error": "Author name is required."}, status=400)
 
+        if len(name) < 2:
+            return JsonResponse({"ok": False, "error": "Author name is too short."}, status=400)
+
+        if not re.search(r"[a-zA-Z]", name):
+            return JsonResponse({"ok": False, "error": "Author name must contain at least one letter."}, status=400)
+
+        if not re.match(r"^[a-zA-Z0-9\s\.\-\'\,]+$", name):
+            return JsonResponse({"ok": False, "error": "Author name contains invalid characters."}, status=400)
+
         author, created = Author.objects.get_or_create(name=name)
-        return JsonResponse({
-            "ok": True,
-            "id": author.pk,
-            "name": author.name,
-            "created": created,
-        })
+        return JsonResponse({"ok": True, "id": author.pk, "name": author.name, "created": created})
 
     def get(self, request, *args, **kwargs):
         return redirect("books:sell")
@@ -223,7 +265,8 @@ class BookUpsertView(LoginRequiredMixin, View):
         image_forms = BookImageFormSet(
             instance=instance,
             prefix=IMAGE_FORMSET_PREFIX,
-            initial=[{"image_type": "cover"}],  # first slot defaults to cover
+            # initial=[{"image_type": "cover"}],  # first slot defaults to cover
+            initial=[{"image_type": "cover"}, {"image_type": "condition"}, {"image_type": "condition"}],
         )
 
         # If we just came back from adding an author, pre-select it
@@ -380,3 +423,162 @@ class BookDeleteView(LoginRequiredMixin, View):
         book.delete()
         messages.success(request, "Your listing has been deleted.")
         return redirect("books:browse")
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CART VIEWS
+# ─────────────────────────────────────────────────────────────────────────────
+
+class CartView(LoginRequiredMixin, View):
+    login_url = 'accounts:login'
+
+    def get(self, request):
+        cart_items = CartItem.objects.filter(user=request.user).select_related('book')
+        total = sum(item.book.asking_price for item in cart_items)
+        return render(request, 'books/cart.html', {
+            'cart_items': cart_items,
+            'total': total,
+        })
+
+
+class AddToCartView(LoginRequiredMixin, View):
+    """Adds a book to the user's cart. Called from book detail page."""
+    login_url = 'accounts:login'
+
+    def post(self, request, seller, slug):
+        book = get_object_or_404(Book, slug=slug, status='available')
+
+        if book.seller == request.user:
+            messages.error(request, "You cannot add your own book to cart.")
+            return redirect('books:detail', seller=seller, slug=slug)
+
+        cart_item, created = CartItem.objects.get_or_create(
+            user=request.user,
+            book=book,
+        )
+
+        if created:
+            messages.success(request, f'"{book.title}" added to your cart!')
+        else:
+            messages.info(request, f'"{book.title}" is already in your cart.')
+
+        return redirect('books:detail', seller=seller, slug=slug)
+
+
+class RemoveFromCartView(LoginRequiredMixin, View):
+    login_url = 'accounts:login'
+
+    def post(self, request, slug):
+        book = get_object_or_404(Book, slug=slug)
+        CartItem.objects.filter(user=request.user, book=book).delete()
+        messages.success(request, f'"{book.title}" removed from cart.')
+        return redirect('books:cart')
+
+
+class CartCheckoutView(LoginRequiredMixin, View):
+    """
+    Single checkout for all books in the cart.
+    Creates one Transaction per book, marks each reserved, clears the cart.
+    """
+    login_url = 'accounts:login'
+
+    def get(self, request):
+        cart_items = CartItem.objects.filter(user=request.user).select_related('book')
+
+        if not cart_items.exists():
+            messages.info(request, "Your cart is empty.")
+            return redirect('books:cart')
+
+        # Filter out any books that became unavailable since being added
+        available = [item for item in cart_items if item.book.status == 'available' and item.book.seller != request.user]
+        unavailable = [item for item in cart_items if item.book.status != 'available' or item.book.seller == request.user]
+
+        if not available:
+            messages.error(request, "None of the books in your cart are available for purchase.")
+            return redirect('books:cart')
+
+        total = sum(item.book.asking_price for item in available)
+        initial_data = {
+            'first_name': request.user.first_name,
+            'last_name': request.user.last_name,
+            'email': request.user.email,
+            'phone': getattr(request.user.profile, 'phone', ''),
+            'city': getattr(request.user.profile, 'city', ''),
+            'district': getattr(request.user.profile, 'district', ''),
+        }
+        form = CheckoutForm(initial=initial_data)
+
+        return render(request, 'books/cart_checkout.html', {
+            'available_items': available,
+            'unavailable_items': unavailable,
+            'total': total,
+            'form': form,
+        })
+
+    def post(self, request):
+        cart_items = CartItem.objects.filter(user=request.user).select_related('book')
+
+        if not cart_items.exists():
+            return redirect('books:cart')
+
+        available = [item for item in cart_items if item.book.status == 'available' and item.book.seller != request.user]
+
+        if not available:
+            messages.error(request, "None of the books in your cart are available.")
+            return redirect('books:cart')
+
+        form = CheckoutForm(request.POST)
+
+        if form.is_valid():
+            created_transactions = []
+
+            with transaction.atomic():
+                for item in available:
+                    t = Transaction.objects.create(
+                        book=item.book,
+                        buyer=request.user,
+                        seller=item.book.seller,
+                        price=item.book.asking_price,
+                        status='pending',
+                    )
+                    item.book.status = 'reserved'
+                    item.book.save(update_fields=['status'])
+                    created_transactions.append(t)
+
+                # Clear all purchased items from cart
+                CartItem.objects.filter(
+                    user=request.user,
+                    book__in=[item.book for item in available]
+                ).delete()
+
+            # Pass slugs of all transactions via session to the confirmed page
+            request.session['cart_order_slugs'] = [t.slug for t in created_transactions]
+            return redirect('books:cart_order_confirmed')
+
+        total = sum(item.book.asking_price for item in available)
+        return render(request, 'books/cart_checkout.html', {
+            'available_items': available,
+            'unavailable_items': [],
+            'total': total,
+            'form': form,
+        })
+
+
+class CartOrderConfirmedView(LoginRequiredMixin, View):
+    login_url = 'accounts:login'
+
+    def get(self, request):
+        slugs = request.session.pop('cart_order_slugs', [])
+        if not slugs:
+            return redirect('books:browse')
+
+        transactions = Transaction.objects.filter(
+            slug__in=slugs,
+            buyer=request.user
+        ).select_related('book', 'book__seller')
+
+        total = sum(t.price for t in transactions)
+
+        return render(request, 'books/cart_order_confirmed.html', {
+            'transactions': transactions,
+            'total': total,
+        })

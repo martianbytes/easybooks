@@ -103,6 +103,9 @@ def save_user_profile(sender, instance, **kwargs):
     """Auto-save Profile when User is saved."""
     if hasattr(instance, 'profile'):  
         instance.profile.save()
+    if hasattr(instance, "profile"):
+        instance.profile.save()
+
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Email Verification Token

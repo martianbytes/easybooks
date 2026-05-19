@@ -1,30 +1,38 @@
 {% load static %}
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EasyBooks</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
-<body>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  </head>
+  <body>
     {% comment %} navbar {% endcomment %}
     <nav class="navbar">
       <div class="container">
         <div class="navbar-inner">
           <div class="navbar-logo">
-            <a href="{% url 'books:home' %}" class="nav-logo-link"><em>Easy<span>Books</span></em></a>
+            <a href="{% url 'books:home' %}" class="nav-logo-link"
+              ><em>Easy<span>Books</span></em></a
+            >
           </div>
           <ul class="navbar-nav">
             <li><a href="{% url 'books:browse' %}">Browse</a></li>
-            <li><a href="{% url 'books:browse' %}?category=new">New Arrival</a></li>
+            <li>
+              <a href="{% url 'books:browse' %}?category=new">New Arrival</a>
+            </li>
             <li><a href="{% url 'books:browse' %}">BestSellers</a></li>
             <li><a href="#">Genres</a></li>
             <li><a href="#">Authors</a></li>
             <li><a href="{% url 'books:sell' %}">Sell</a></li>
           </ul>
           <div class="navbar-actions">
-            <div class="search-bar">
+            <form
+              class="search-bar"
+              method="get"
+              action="{% url 'books:browse' %}"
+            >
               <svg
                 class="search-icon"
                 width="14"
@@ -37,66 +45,81 @@
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.35-4.35" />
               </svg>
-              <input type="text" placeholder="Search books, authors..." />
-            </div>
-            <a href="#" class="cart-btn-icon">
+              <input
+                type="text"
+                name="q"
+                placeholder="Search books, authors..."
+              />
+            </form>
+            <a href="{% url 'books:cart' %}" class="cart-btn-icon">
               <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M5.33331 6H19.8672C20.4687 6 20.9341 6.52718 20.8595 7.12403L20.1095 13.124C20.0469 13.6245 19.6215 14 19.1172 14H16.5555H9.44442H7.99998"
-                    stroke="#ffffff"
-                    stroke-linejoin="round"
-                  />
-                  <path
-                    d="M2 4H4.23362C4.68578 4 5.08169 4.30341 5.19924 4.74003L8.30076 16.26C8.41831 16.6966 8.81422 17 9.26638 17H19"
-                    stroke="#ffffff"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                  <circle
-                    cx="10"
-                    cy="20"
-                    r="1"
-                    stroke="#ffffff"
-                    stroke-linejoin="round"
-                  />
-                  <circle
-                    cx="17.5"
-                    cy="20"
-                    r="1"
-                    stroke="#ffffff"
-                    stroke-linejoin="round"
-                  />
+                <path
+                  d="M5.33331 6H19.8672C20.4687 6 20.9341 6.52718 20.8595 7.12403L20.1095 13.124C20.0469 13.6245 19.6215 14 19.1172 14H16.5555H9.44442H7.99998"
+                  stroke="#ffffff"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M2 4H4.23362C4.68578 4 5.08169 4.30341 5.19924 4.74003L8.30076 16.26C8.41831 16.6966 8.81422 17 9.26638 17H19"
+                  stroke="#ffffff"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <circle
+                  cx="10"
+                  cy="20"
+                  r="1"
+                  stroke="#ffffff"
+                  stroke-linejoin="round"
+                />
+                <circle
+                  cx="17.5"
+                  cy="20"
+                  r="1"
+                  stroke="#ffffff"
+                  stroke-linejoin="round"
+                />
               </svg>
-              <span class="cart-badge">3</span>
+              {% if user.is_authenticated %}{% with count=request.user.cart_items.count %}{% if count > 0 %}<span class="cart-badge">{{ count }}</span>{% endif %}{% endwith %}{% endif %}
             </a>
-            
+
             {% if user.is_authenticated %}
-              <div class="user-menu">
-                <a href="{% url 'accounts:profile' %}" class="user-profile-link">
-                  {% if user.profile.avatar %}
-                    <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="user-avatar-small">
-                  {% else %}
-                    <span class="user-initial">{{ user.username|first|upper }}</span>
-                  {% endif %}
-                </a>
-                <form method="post" action="{% url 'accounts:logout' %}" style="display:inline;">
-                  {% csrf_token %}
-                  <button type="submit" class="btn-nav-cta btn-logout">Logout</button>
-                </form>
-              </div>
+            <div class="user-menu">
+              <a href="{% url 'accounts:profile' %}" class="user-profile-link">
+                {% if user.profile.avatar %}
+                <img
+                  src="{{ user.profile.avatar.url }}"
+                  alt="{{ user.username }}"
+                  class="user-avatar-small"
+                />
+                {% else %}
+                <span class="user-initial"
+                  >{{ user.username|first|upper }}</span
+                >
+                {% endif %}
+              </a>
+              <form
+                method="post"
+                action="{% url 'accounts:logout' %}"
+                style="display: inline"
+              >
+                {% csrf_token %}
+                <button type="submit" class="btn-nav-cta btn-logout">
+                  Logout
+                </button>
+              </form>
+            </div>
             {% else %}
-              <a href="{% url 'accounts:login' %}" class="btn-nav-cta">Sign In</a>
-              <a href="{% url 'accounts:register' %}" class="btn-nav-secondary">Register</a>
+            <a href="{% url 'accounts:login' %}" class="btn-nav-cta">Sign In</a>
+            <a href="{% url 'accounts:register' %}" class="btn-nav-secondary"
+              >Register</a
+            >
             {% endif %}
           </div>
         </div>
       </div>
     </nav>
 
-    {% comment %} all other contents here {% endcomment %}
-    {% block content %}{% endblock content %}
-
-    {% comment %} footer {% endcomment %}
+    {% comment %} all other contents here {% endcomment %} {% block content %}{% endblock content %} {% comment %} footer {% endcomment %}
     <footer class="footer-section">
       <div class="container">
         <div class="footer-inner">
@@ -112,7 +135,11 @@
               <h2 class="footer-list-title explore-list-title">Explore</h2>
               <ul class="explore-list-items">
                 <li><a href="{% url 'books:browse' %}">Browse All</a></li>
-                <li><a href="{% url 'books:browse' %}?category=new">New Arrivals</a></li>
+                <li>
+                  <a href="{% url 'books:browse' %}?category=new"
+                    >New Arrivals</a
+                  >
+                </li>
                 <li><a href="{% url 'books:browse' %}">BestSellers</a></li>
                 <li><a href="#">Genres</a></li>
               </ul>
@@ -121,15 +148,15 @@
               <h2 class="footer-list-title account-list-title">Account</h2>
               <ul class="account-list-items">
                 {% if user.is_authenticated %}
-                  <li><a href="{% url 'accounts:profile' %}">My Profile</a></li>
-                  <li><a href="{% url 'accounts:logout' %}">Logout</a></li>
-                  <li><a href="#">Wishlist</a></li>
-                  <li><a href="#">Orders</a></li>
+                <li><a href="{% url 'accounts:profile' %}">My Profile</a></li>
+                <li><a href="{% url 'accounts:logout' %}">Logout</a></li>
+                <li><a href="#">Wishlist</a></li>
+                <li><a href="#">Orders</a></li>
                 {% else %}
-                  <li><a href="{% url 'accounts:login' %}">Sign In</a></li>
-                  <li><a href="{% url 'accounts:register' %}">Register</a></li>
-                  <li><a href="#">Wishlist</a></li>
-                  <li><a href="#">Orders</a></li>
+                <li><a href="{% url 'accounts:login' %}">Sign In</a></li>
+                <li><a href="{% url 'accounts:register' %}">Register</a></li>
+                <li><a href="#">Wishlist</a></li>
+                <li><a href="#">Orders</a></li>
                 {% endif %}
               </ul>
             </div>
@@ -149,5 +176,5 @@
         </div>
       </div>
     </footer>
-</body>
+  </body>
 </html>

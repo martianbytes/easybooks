@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-
+{% load static %}
 <!-- ═══════════════════════════════════════════
      BREADCRUMB
 ═══════════════════════════════════════════ -->
@@ -62,6 +62,7 @@
         {% if book.images.count > 1 %}
         <div class="gallery-thumbs">
           {% for img in book.images.all %}
+          {% if img.image %}
           <a
             href="{{ img.image.url }}"
             class="thumb-btn {% if forloop.first %}active{% endif %}"
@@ -69,6 +70,7 @@
           >
             <img src="{{ img.image.url }}" alt="{{ img.get_image_type_display }}" />
           </a>
+          {% endif %}
           {% endfor %}
         </div>
         {% endif %}
@@ -232,6 +234,13 @@
             </svg>
             Buy Now
           </a>
+          <!-- Add to Cart button -->
+          <form method="POST" action="{% url 'books:add_to_cart' book.seller.username book.slug %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-action-secondary">
+              🛒 Add to Cart
+            </button>
+          </form>
           <a href="{% url 'books:contact_seller' book.seller.username book.slug %}" class="btn-action-secondary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
@@ -292,29 +301,8 @@
           </div>
         </div>
 
-        <script>
-          (function () {
-            var trigger = document.getElementById('delete-trigger');
-            var modal   = document.getElementById('delete-modal');
-            var cancel  = document.getElementById('delete-cancel');
-            if (trigger && modal && cancel) {
-              trigger.addEventListener('click', function () {
-                modal.setAttribute('aria-hidden', 'false');
-                modal.classList.add('is-open');
-              });
-              cancel.addEventListener('click', function () {
-                modal.setAttribute('aria-hidden', 'true');
-                modal.classList.remove('is-open');
-              });
-              modal.addEventListener('click', function (e) {
-                if (e.target === modal) {
-                  modal.setAttribute('aria-hidden', 'true');
-                  modal.classList.remove('is-open');
-                }
-              });
-            }
-          })();
-        </script>
+        {% load static %}
+<script src="{% static 'js/detail.js' %}"></script>
         {% endif %}
 
         <!-- Seller info -->

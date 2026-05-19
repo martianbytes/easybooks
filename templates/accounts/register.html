@@ -9,64 +9,96 @@
     <div class="register-inner">
       <div class="register-container">
         <div class="register-title">Registration</div>
-  
+
         <div class="register-content">
-          <form method="post" novalidate>
+          <form method="post" novalidate id="register-form">
             {% csrf_token %}
-  
+
             {% if form.non_field_errors %}
-              <div class="form-errors">
-                {{ form.non_field_errors }}
+              <div class="ebf-alert">
+                {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
               </div>
             {% endif %}
-  
+
             <div class="user-details">
+
               <div class="input-box">
-                <span class="details">Username</span>
+                <span class="details">Username <span class="ebf-req">*</span></span>
                 {{ form.username }}
-                {{ form.username.errors }}
+                {% if form.username.errors %}
+                  <span class="ebf-field-error">{{ form.username.errors|join:", " }}</span>
+                {% else %}
+                  <span class="ebf-field-error" id="err-username"></span>
+                {% endif %}
               </div>
-  
+
               <div class="input-box">
-                <span class="details">Email</span>
+                <span class="details">Email <span class="ebf-req">*</span></span>
                 {{ form.email }}
-                {{ form.email.errors }}
+                {% if form.email.errors %}
+                  <span class="ebf-field-error">{{ form.email.errors|join:", " }}</span>
+                {% else %}
+                  <span class="ebf-field-error" id="err-email"></span>
+                {% endif %}
               </div>
-  
+
               <div class="input-box">
                 <span class="details">First Name</span>
                 {{ form.first_name }}
-                {{ form.first_name.errors }}
+                {% if form.first_name.errors %}
+                  <span class="ebf-field-error">{{ form.first_name.errors|join:", " }}</span>
+                {% else %}
+                  <span class="ebf-field-error" id="err-first-name"></span>
+                {% endif %}
               </div>
-  
+
               <div class="input-box">
                 <span class="details">Last Name</span>
                 {{ form.last_name }}
-                {{ form.last_name.errors }}
+                {% if form.last_name.errors %}
+                  <span class="ebf-field-error">{{ form.last_name.errors|join:", " }}</span>
+                {% else %}
+                  <span class="ebf-field-error" id="err-last-name"></span>
+                {% endif %}
               </div>
-  
+
               <div class="input-box">
-                <span class="details">Password</span>
+                <span class="details">Password <span class="ebf-req">*</span></span>
                 {{ form.password1 }}
-                {{ form.password1.errors }}
+                {% if form.password1.errors %}
+                  <span class="ebf-field-error">{{ form.password1.errors|join:", " }}</span>
+                {% else %}
+                  <span class="ebf-field-error" id="err-password1"></span>
+                {% endif %}
+                <div class="password-strength-bar" id="strength-bar">
+                  <div class="strength-fill" id="strength-fill"></div>
+                </div>
+                <span class="strength-label" id="strength-label"></span>
               </div>
-  
+
               <div class="input-box">
-                <span class="details">Confirm Password</span>
+                <span class="details">Confirm Password <span class="ebf-req">*</span></span>
                 {{ form.password2 }}
-                {{ form.password2.errors }}
+                {% if form.password2.errors %}
+                  <span class="ebf-field-error">{{ form.password2.errors|join:", " }}</span>
+                {% else %}
+                  <span class="ebf-field-error" id="err-password2"></span>
+                {% endif %}
               </div>
+
             </div>
-  
+
             <div class="button">
               <input type="submit" value="Register">
             </div>
           </form>
-  
+
           <p>Already have an account? <a class='already-have-account-login-link' href="{% url 'accounts:login' %}">Login</a></p>
         </div>
       </div>
     </div>
   </div>
 </section>
+
+<script src="{% static 'js/register.js' %}" defer></script>
 {% endblock %}

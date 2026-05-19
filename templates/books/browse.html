@@ -7,7 +7,7 @@
     <div class="browse-header-inner">
       <div class="browse-search-wrap">
         <form class="browse-search-bar" method="get" action="{% url 'books:browse' %}">
-          <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search by title, author, or ISBN" />
+          <input type="text" name="q" value="{{ search_query }}" placeholder="Search by title, author, or ISBN" />
           <button type="submit" class="btn browse-search-btn">Search</button>
         </form>
       </div>
@@ -18,90 +18,82 @@
 <section class="browse-body">
   <div class="container">
     <div class="browse-layout">
+
       <div class="filter-sidebar-sticky" id="filter-sidebar-container">
-        <div class="filter-sidebar">
+        <form class="filter-sidebar" method="get" action="{% url 'books:browse' %}" id="filter-form">
+
+          {% if search_query %}<input type="hidden" name="q" value="{{ search_query }}">{% endif %}
+
           <div class="filter-sidebar-title">
             <span>Filters</span>
-            <a href="{% url 'books:browse' %}" class="filter-clear-btn ajax-link">Clear all</a>
+            <a href="{% url 'books:browse' %}{% if search_query %}?q={{ search_query }}{% endif %}" class="filter-clear-btn">Clear all</a>
           </div>
 
           <div class="filter-group">
             <p class="filter-group-label">Genre</p>
-            <div class="genre-pills">
-              <a href="{% url 'books:browse' %}" class="genre-pill ajax-link {% if not selected_genre %}active{% endif %}">All</a>
+            <div class="filter-pill-group">
+              <label class="filter-pill {% if not selected_genre %}active{% endif %}">
+                <input type="radio" name="genre" value="" {% if not selected_genre %}checked{% endif %} hidden>All
+              </label>
               {% for key, label in genre_choices %}
-                <a href="{% url 'books:browse' %}?genre={{ key }}" class="genre-pill ajax-link {% if selected_genre == key %}active{% endif %}">{{ label }}</a>
+              <label class="filter-pill {% if selected_genre == key %}active{% endif %}">
+                <input type="radio" name="genre" value="{{ key }}" {% if selected_genre == key %}checked{% endif %} hidden>{{ label }}
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <p class="filter-group-label">Language</p>
+            <div class="filter-pill-group">
+              <label class="filter-pill {% if not selected_language %}active{% endif %}">
+                <input type="radio" name="language" value="" {% if not selected_language %}checked{% endif %} hidden>All
+              </label>
+              {% for key, label in language_choices %}
+              <label class="filter-pill {% if selected_language == key %}active{% endif %}">
+                <input type="radio" name="language" value="{{ key }}" {% if selected_language == key %}checked{% endif %} hidden>{{ label }}
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <p class="filter-group-label">Condition</p>
+            <div class="filter-check-group">
+              {% for key, label in condition_choices %}
+              <label class="filter-check-item">
+                <input type="checkbox" name="condition" value="{{ key }}" {% if key in selected_conditions %}checked{% endif %}>
+                <span class="filter-check-box"></span>
+                <span>{{ label }}</span>
+              </label>
               {% endfor %}
             </div>
           </div>
 
           <div class="filter-group">
             <p class="filter-group-label">Price Range (Rs.)</p>
-            <form method="get" action="{% url 'books:browse' %}" class="price-range-row">
-              <input class="price-input" type="number" name="min_price" value="{{ request.GET.min_price }}" placeholder="Min" />
-              <span class="price-range-sep">—</span>
-              <input class="price-input" type="number" name="max_price" value="{{ request.GET.max_price }}" placeholder="Max" />
-              <button type="submit" class="btn browse-search-btn">Apply</button>
-            </form>
-          </div>
-
-          <div class="filter-group">
-            <p class="filter-group-label">Condition</p>
-            <div class="condition-list">
-              <div class="condition-item">
-                <input type="checkbox" name="condition" value="like-new" id="cond-like-new" />
-                <label for="cond-like-new">Like New</label>
-              </div>
-              <div class="condition-item">
-                <input type="checkbox" name="condition" value="good" id="cond-good" />
-                <label for="cond-good">Good</label>
-              </div>
-              <div class="condition-item">
-                <input type="checkbox" name="condition" value="fair" id="cond-fair" />
-                <label for="cond-fair">Fair</label>
-              </div>
-              <div class="condition-item">
-                <input type="checkbox" name="condition" value="acceptable" id="cond-acceptable" />
-                <label for="cond-acceptable">Acceptable</label>
-              </div>
+            <div class="filter-price-row">
+              <input class="filter-price-input" type="number" name="min_price" value="{{ min_price }}" placeholder="Min" min="0" />
+              <span class="filter-price-sep">–</span>
+              <input class="filter-price-input" type="number" name="max_price" value="{{ max_price }}" placeholder="Max" min="0" />
             </div>
           </div>
 
-          <div class="filter-group">
-            <p class="filter-group-label">Availability</p>
-            <div class="condition-list">
-              <div class="condition-item">
-                <input type="checkbox" name="availability" value="in-stock" id="avail-in-stock" />
-                <label for="avail-in-stock">In Stock</label>
-              </div>
-              <div class="condition-item">
-                <input type="checkbox" name="availability" value="pre-order" id="avail-pre-order" />
-                <label for="avail-pre-order">Pre-Order</label>
-              </div>
-            </div>
-          </div>
+          <button type="submit" class="filter-apply-btn">Apply Filters</button>
 
-          <div class="filter-group">
-            <p class="filter-group-label">Language</p>
-            <div class="genre-pills">
-              <a href="{% url 'books:browse' %}" class="genre-pill ajax-link {% if not selected_language %}active{% endif %}">All</a>
-              {% for key, label in language_choices %}
-                <a href="{% url 'books:browse' %}?language={{ key }}" class="genre-pill ajax-link {% if selected_language == key %}active{% endif %}">{{ label }}</a>
-              {% endfor %}
-            </div>
-          </div>
-        </div>
+        </form>
       </div>
 
-      <div id="book-grid-container" style="flex: 1;">
+      <div id="book-grid-container" style="flex:1; min-width:0;">
         <div class="browse-grid-header">
-          <p class="browse-result-count">Showing <strong>{{ books|length }}</strong> books</p>
-          <form method="get" action="{% url 'books:browse' %}">
-            <select name="sort" class="sort-select" onchange="this.form.submit()">
-              <option value="relevance" {% if request.GET.sort == 'relevance' %}selected{% endif %}>Sort: Relevance</option>
-              <option value="price-low-to-high" {% if request.GET.sort == 'price-low-to-high' %}selected{% endif %}>Price: Low to High</option>
-            </select>
-          </form>
+          <p class="browse-result-count">
+            Showing <strong>{{ page_obj.paginator.count }}</strong> book{{ page_obj.paginator.count|pluralize }}
+          </p>
+          <select name="sort" class="sort-select" id="sort-select">
+            <option value="newest" {% if selected_sort == 'newest' %}selected{% endif %}>Newest First</option>
+            <option value="price-low-to-high" {% if selected_sort == 'price-low-to-high' %}selected{% endif %}>Price: Low to High</option>
+            <option value="price-high-to-low" {% if selected_sort == 'price-high-to-low' %}selected{% endif %}>Price: High to Low</option>
+          </select>
         </div>
 
         <div class="browse-grid">
@@ -110,66 +102,46 @@
               <div class="card-content">
                 {% if book.images.all %}
                   {% with img=book.images.all.0 %}
-                    <img
-                      src="{% if img.image %}{{ img.image.url }}{% elif img.file %}{{ img.file.url }}{% elif img.url %}{{ img.url }}{% endif %}"
-                      alt="{{ book.title }}"
-                      class="cover-img"
-                    />
+                    <img src="{% if img.image %}{{ img.image.url }}{% elif img.file %}{{ img.file.url }}{% elif img.url %}{{ img.url }}{% endif %}"
+                         alt="{{ book.title }}" class="cover-img" />
                   {% endwith %}
                 {% else %}
                   <img src="{% static 'images/default-book.jpg' %}" alt="{{ book.title }}" class="cover-img" />
                 {% endif %}
-
                 <h1 class="book-title">{{ book.title }}</h1>
-
                 {% if book.authors.all %}
                   <p class="author-name">
-                    {% for author in book.authors.all %}
-                      {% if not forloop.first %}, {% endif %}{{ author.name }}
-                    {% endfor %}
+                    {% for author in book.authors.all %}{% if not forloop.first %}, {% endif %}{{ author.name }}{% endfor %}
                   </p>
                 {% endif %}
-
                 <p class="price">Rs. {{ book.asking_price }}</p>
                 <a href="{% url 'books:detail' book.seller.username book.slug %}" class="feature-btn-buy-now">View Details</a>
               </div>
             </div>
           {% empty %}
-            <p>No books found.</p>
+            <p class="browse-empty">No books found matching your filters.</p>
           {% endfor %}
         </div>
+
+        {% if page_obj.has_other_pages %}
+        <div class="browse-pagination">
+          {% if page_obj.has_previous %}
+            <a href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}" class="page-btn">&laquo;</a>
+          {% endif %}
+          {% for num in page_obj.paginator.page_range %}
+            <a href="?{{ request.GET.urlencode }}&page={{ num }}" class="page-btn {% if page_obj.number == num %}active{% endif %}">{{ num }}</a>
+          {% endfor %}
+          {% if page_obj.has_next %}
+            <a href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}" class="page-btn">&raquo;</a>
+          {% endif %}
+        </div>
+        {% endif %}
+
       </div>
     </div>
   </div>
 </section>
 
-<script>
-  async function performAjaxUpdate(url) {
-    try {
-      const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-      const html = await response.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-
-      document.getElementById('book-grid-container').innerHTML = doc.getElementById('book-grid-container').innerHTML;
-      document.getElementById('filter-sidebar-container').innerHTML = doc.getElementById('filter-sidebar-container').innerHTML;
-
-      window.history.pushState({}, '', url);
-      attachAjaxListeners();
-    } catch (err) {
-      window.location.href = url;
-    }
-  }
-
-  function attachAjaxListeners() {
-    document.querySelectorAll('.ajax-link').forEach(link => {
-      link.onclick = (e) => {
-        e.preventDefault();
-        performAjaxUpdate(link.href);
-      };
-    });
-  }
-
-  document.addEventListener('DOMContentLoaded', attachAjaxListeners);
-</script>
+{% load static %}
+<script src="{% static 'js/browse.js' %}"></script>
 {% endblock content %}

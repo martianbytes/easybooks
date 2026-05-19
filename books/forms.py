@@ -528,45 +528,80 @@ class CheckoutForm(forms.Form):
     def clean_first_name(self):
         """
         Validates first name.
-        - Strip extra spaces
-        - Minimum 2 characters
-        - Letters, spaces and hyphens only
-        - No numbers or symbols
+        - Optional — skip all checks if empty
+        - 2–50 characters, letters/spaces/hyphens only
+        - Must contain at least one vowel (blocks 'zzz', 'asdf')
+        - No character repeated more than 3× in a row (blocks 'aaaa')
         """
         first_name = self.cleaned_data.get("first_name") or ""
+
+        if first_name.strip() == "" and len(first_name) > 0:
+            raise forms.ValidationError("First name cannot be only spaces.")
+
+        if first_name != first_name.strip():
+            raise forms.ValidationError("First name must not start or end with a space.")
+
         first_name = first_name.strip()
 
+        if not first_name:
+            return first_name
+
         if len(first_name) < 2:
-            raise forms.ValidationError(
-                "First name must be at least 2 characters long."
-            )
+            raise forms.ValidationError("First name must be at least 2 characters long.")
+
+        if len(first_name) > 50:
+            raise forms.ValidationError("First name cannot exceed 50 characters.")
 
         if not re.match(r"^[a-zA-Z\s\-]+$", first_name):
             raise forms.ValidationError(
                 "First name can only contain letters, spaces, and hyphens."
             )
 
+        if not re.search(r"[aeiouAEIOU]", first_name):
+            raise forms.ValidationError("Please enter a real first name.")
+
+        if re.search(r"(.)\1{3,}", first_name):
+            raise forms.ValidationError("Please enter a real first name.")
+
         return first_name
 
     def clean_last_name(self):
         """
         Validates last name.
-        - Strip extra spaces
-        - Minimum 2 characters
-        - Letters, spaces and hyphens only
+        - Optional — skip all checks if empty
+        - 2–50 characters, letters/spaces/hyphens only
+        - Must contain at least one vowel (blocks 'zzz', 'asdf')
+        - No character repeated more than 3× in a row (blocks 'aaaa')
         """
         last_name = self.cleaned_data.get("last_name") or ""
+
+        if last_name.strip() == "" and len(last_name) > 0:
+            raise forms.ValidationError("Last name cannot be only spaces.")
+
+        if last_name != last_name.strip():
+            raise forms.ValidationError("Last name must not start or end with a space.")
+
         last_name = last_name.strip()
 
+        if not last_name:
+            return last_name
+
         if len(last_name) < 2:
-            raise forms.ValidationError(
-                "Last name must be at least 2 characters long."
-            )
+            raise forms.ValidationError("Last name must be at least 2 characters long.")
+
+        if len(last_name) > 50:
+            raise forms.ValidationError("Last name cannot exceed 50 characters.")
 
         if not re.match(r"^[a-zA-Z\s\-]+$", last_name):
             raise forms.ValidationError(
                 "Last name can only contain letters, spaces, and hyphens."
             )
+
+        if not re.search(r"[aeiouAEIOU]", last_name):
+            raise forms.ValidationError("Please enter a real last name.")
+
+        if re.search(r"(.)\1{3,}", last_name):
+            raise forms.ValidationError("Please enter a real last name.")
 
         return last_name
 

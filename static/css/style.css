@@ -5301,3 +5301,44 @@ form .button input:hover {
   border-top: 2px solid var(--border-default);
   font-size: var(--text-base);
 }
+/* ─────────────────────────────────────────────────────────────────
+   REGISTRATION FORM — input validation states & password strength
+   These complement .ebf-field-error, .ebf-alert, .ebf-req which
+   are already defined above in the ebf section.
+   ───────────────────────────────────────────────────────────────── */
+
+/* Invalid input — red border + light red tint */
+.user-details .input-box input.input-invalid {
+  border-color: #dc2626 !important;
+  background: #fff8f8;
+}
+
+/* Valid input — green border */
+.user-details .input-box input.input-valid {
+  border-color: #16a34a !important;
+}
+
+/* Password strength bar track */
+.password-strength-bar {
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  margin-top: 6px;
+  overflow: hidden;
+  display: none; /* shown by JS once user starts typing */
+}
+
+/* Animated fill — colour set dynamically by JS */
+.strength-fill {
+  height: 100%;
+  width: 0;
+  border-radius: 4px;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+
+/* "Weak / Fair / Strong" label under the bar */
+.strength-label {
+  font-size: 0.72rem;
+  margin-top: 2px;
+  display: block;
+}

@@ -218,9 +218,11 @@ class BookForm(forms.ModelForm):
         isbn = self.cleaned_data.get("isbn") or ""
         isbn = isbn.strip()
 
-        # If empty, that's fine — ISBN is optional
+        # If empty, that's fine — ISBN is optional.
+        # Return None (not "") so the DB stores NULL, which is never
+        # flagged as a duplicate by the unique constraint.
         if not isbn:
-            return isbn
+            return None
 
         # Remove dashes and spaces in case user typed them
         isbn_clean = isbn.replace("-", "").replace(" ", "")

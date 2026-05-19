@@ -62,6 +62,7 @@
         {% if book.images.count > 1 %}
         <div class="gallery-thumbs">
           {% for img in book.images.all %}
+          {% if img.image %}
           <a
             href="{{ img.image.url }}"
             class="thumb-btn {% if forloop.first %}active{% endif %}"
@@ -69,6 +70,7 @@
           >
             <img src="{{ img.image.url }}" alt="{{ img.get_image_type_display }}" />
           </a>
+          {% endif %}
           {% endfor %}
         </div>
         {% endif %}

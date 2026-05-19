@@ -164,10 +164,15 @@ class Book(models.Model):
         images = self.images.all()  # type: ignore
 
         for img in images:
-            if img.image_type == "cover":
+            if img.image_type == "cover" and img.image:
                 return img.image.url
 
-        return images[0].image.url if images else None
+        # Fall back to first image that actually has a file
+        for img in images:
+            if img.image:
+                return img.image.url
+
+        return None
 
     @property
     def cover_image(self):

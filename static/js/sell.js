@@ -36,9 +36,30 @@ function addAuthorChip(id, name) {
   tags.insertBefore(chip, input);
 }
 
+function showAuthorError(msg) {
+  const input = document.getElementById('author-input');
+  if (input) {
+    input.style.outline = '2px solid red';
+    setTimeout(() => { input.style.outline = ''; }, 3000);
+  }
+  let err = document.getElementById('author-input-error');
+  if (!err) {
+    err = document.createElement('div');
+    err.id = 'author-input-error';
+    err.style.cssText = 'color:#b91c1c; font-size:0.8rem; margin-top:4px; padding:4px 8px;';
+    input?.insertAdjacentElement('afterend', err);
+  }
+  err.textContent = msg;
+  setTimeout(() => { err.textContent = ''; }, 3000);
+}
+
 async function saveAuthorByName(name) {
   const trimmed = (name || '').trim();
-  if (!trimmed) return null;
+
+  if (!trimmed) {
+    showAuthorError('Author name cannot be empty or only spaces.');
+    return null;
+  }
 
   const authorCreateUrl = document.getElementById('sell-form').dataset.authorCreateUrl;
   const res = await fetch(authorCreateUrl, {
@@ -50,9 +71,11 @@ async function saveAuthorByName(name) {
     body: new URLSearchParams({ new_author_name: trimmed }),
   });
 
-  if (!res.ok) return null;
   const data = await res.json();
-  if (!data?.ok) return null;
+  if (!data?.ok) {
+    showAuthorError(data.error || 'Invalid author name.');
+    return null;
+  }
 
   addAuthorChip(data.id, data.name);
   return data;
@@ -326,31 +349,20 @@ function clearImageSlot(event, idx) {
   });
 })();
 
-async function saveAuthorByName(name) {
-  const trimmed = (name || '').trim();
-  if (!trimmed) return null;
+(function bindFormSubmitValidation() {
+  const form = document.getElementById('sell-form');
+  if (!form) return;
 
-  const authorCreateUrl = document.getElementById('sell-form').dataset.authorCreateUrl;
-  const res = await fetch(authorCreateUrl, {
-    method: 'POST',
-    headers: {
-      'X-CSRFToken': getCsrfToken(),
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: new URLSearchParams({ new_author_name: trimmed }),
-  });
+  form.addEventListener('submit', (e) => {
+    const authorsField = getAuthorsField();
+    const selected = authorsField
+      ? Array.from(authorsField.options).filter(o => o.selected)
+      : [];
 
-  const data = await res.json();
-  if (!data?.ok) {
-    const input = document.getElementById('author-input');
-    if (input) {
-      input.style.outline = '2px solid red';
-      input.title = data.error || 'Invalid author name';
-      setTimeout(() => { input.style.outline = ''; input.title = ''; }, 3000);
+    if (selected.length === 0) {
+      e.preventDefault();
+      showAuthorError('Please add at least one author.');
+      document.getElementById('author-input')?.focus();
     }
-    return null;
-  }
-
-  addAuthorChip(data.id, data.name);
-  return data;
-}
+  });
+})();

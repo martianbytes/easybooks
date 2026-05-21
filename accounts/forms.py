@@ -149,12 +149,12 @@ class ProfileUpdateForm(forms.ModelForm):
             ),
             "city": forms.TextInput(
                 attrs={
-                    "placeholder": "e.g. Kathmandu",
+                    "placeholder": "e.g. Bharatpur",
                 }
             ),
             "district": forms.TextInput(
                 attrs={
-                    "placeholder": "e.g. Bagmati",
+                    "placeholder": "e.g. Chitwan",
                 }
             ),
         }

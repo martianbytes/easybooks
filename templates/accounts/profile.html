@@ -1,198 +1,226 @@
-{% extends "base.html" %} 
-{% load static %} 
+{% extends "base.html" %}
+{% load static %}
 
 {% block content %}
 
-<section class="profile-section">
+<section class="pdb-section">
   <div class="container">
-    <div class="profile-layout">
-      <aside class="profile-sidebar">
-        <div class="profile-avatar-card">
-          {% if profile.avatar %}
-          <img
-            src="{{ profile.avatar.url }}"
-            alt="{{ profile.full_name }}"
-            class="profile-avatar-img"
-          />
-          {% else %}
-          <div class="profile-avatar-placeholder">
-            <span>{{ profile.user.username|first|upper }}</span>
-          </div>
-          {% endif %}
+    <div class="pdb-layout">
 
-          <h2 class="profile-name">{{ profile.full_name }}</h2>
-          <p class="profile-username">@{{ profile.user.username }}</p>
-
-          {% if profile.is_seller %}
-          <span class="profile-badge badge-seller">⭐ Seller</span>
-          {% else %}
-          <span class="profile-badge badge-buyer">📚 Reader</span>
-          {% endif %} 
-          
-          {% if profile.verification_status == "verified" %}
-          <span class="profile-badge badge-verified">✓ Verified</span>
-          {% endif %}
-
-          <div class="profile-sidebar-actions">
-            <a
-              href="{% url 'accounts:edit_profile' %}"
-              class="btn btn-primary profile-edit-btn"
-              >Edit Profile</a
-            >
-            {% if not profile.is_seller %}
-            <a
-              href="{% url 'accounts:become_seller' %}"
-              class="btn btn-secondary profile-seller-btn"
-              >Become a Seller</a
-            >
-            {% endif %}
-          </div>
-        </div>
-
-        <div class="profile-info-card">
-          <h3 class="profile-card-title">Contact Info</h3>
-          <ul class="profile-info-list">
-            <li class="profile-info-item">
-              <span class="profile-info-icon">✉</span>
-              <span class="profile-info-value">{{ profile.user.email }}</span>
-            </li>
-            {% if profile.phone %}
-            <li class="profile-info-item">
-              <span class="profile-info-icon">☎</span>
-              <span class="profile-info-value">{{ profile.phone }}</span>
-            </li>
-            {% endif %} 
-            
-            {% if profile.city or profile.district %}
-            <li class="profile-info-item">
-              <span class="profile-info-icon">📍</span>
-              <span class="profile-info-value">
-                {% if profile.city %}{{ profile.city }}{% endif %} 
-                {% if profile.city and profile.district %}, {% endif %} 
-                {% if profile.district %}{{ profile.district }}{% endif %}
-              </span>
-            </li>
-            {% endif %}
-          </ul>
-        </div>
+      <!-- ── LEFT SIDEBAR ── -->
+      <aside class="pdb-sidebar">
+        <nav class="pdb-nav">
+          <a href="{% url 'accounts:profile' %}" class="pdb-nav-item pdb-nav-active">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            Dashboard
+          </a>
+          <a href="{% url 'accounts:edit_profile' %}" class="pdb-nav-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit Profile
+          </a>
+          <a href="{% url 'books:browse' %}?seller={{ request.user.username }}" class="pdb-nav-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            My Listings
+          </a>
+          <a href="{% url 'books:browse' %}" class="pdb-nav-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            Sales
+          </a>
+          <a href="{% url 'accounts:edit_profile' %}" class="pdb-nav-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            Change Password
+          </a>
+          <div class="pdb-nav-divider"></div>
+          <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="pdb-nav-item pdb-nav-logout" style="background:none;border:none;width:100%;cursor:pointer;font-family:inherit;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Logout
+            </button>
+          </form>
+        </nav>
       </aside>
 
-      <main class="profile-main">
-        <div class="profile-stats-row">
-          <div class="profile-stat-card">
-            <span class="profile-stat-value">{{ profile.total_listings }}</span>
-            <span class="profile-stat-label">Listings</span>
-          </div>
-          <div class="profile-stat-card">
-            <span class="profile-stat-value">{{ profile.total_purchases }}</span>
-            <span class="profile-stat-label">Purchases</span>
-          </div>
-          <div class="profile-stat-card">
-            <span class="profile-stat-value">{{ profile.review_count }}</span>
-            <span class="profile-stat-label">Reviews</span>
-          </div>
-          {% if profile.is_seller %}
-          <div class="profile-stat-card">
-            <span class="profile-stat-value">
-              {% if profile.average_rating %}{{ profile.average_rating }}★{% else %}—{% endif %}
-            </span>
-            <span class="profile-stat-label">Avg Rating</span>
-          </div>
-          {% endif %}
-        </div>
+      <!-- ── MAIN CONTENT ── -->
+      <main class="pdb-main">
 
-        <div class="profile-section-card">
-          <h3 class="profile-card-title">About</h3>
-          {% if profile.bio %}
-          <p class="profile-bio-text">{{ profile.bio }}</p>
-          {% else %}
-          <p class="profile-bio-text profile-bio-empty">
-            No bio added yet.
-            <a href="{% url 'accounts:edit_profile' %}">Add one →</a>
-          </p>
-          {% endif %}
-        </div>
-
-        <div class="profile-section-card">
-          <h3 class="profile-card-title">Account Status</h3>
-          <div class="profile-status-grid">
-            
-            <div class="profile-status-item">
-              <span class="status-label">Email</span>
-              <span class="status-pill 
-                {% if profile.is_email_verified %}
-                  pill-success
-                {% else %}
-                  pill-warn
-                {% endif %}">
-                {% if profile.is_email_verified %}Verified{% else %}Unverified{% endif %}
-              </span>
-            </div>
-            
-            <div class="profile-status-item">
-              <span class="status-label">Account</span>
-              <span class="status-pill 
-                {% if profile.verification_status == 'verified' %}
-                  pill-success
-                {% elif profile.verification_status == 'suspended' %}
-                  pill-danger
-                {% else %}
-                  pill-warn
-                {% endif %}">
-                {{ profile.get_verification_status_display }}
-              </span>
-            </div>
-            
-            <div class="profile-status-item">
-              <span class="status-label">Role</span>
-              <span class="status-pill 
-                {% if profile.is_seller %}
-                  pill-accent
-                {% else %}
-                  pill-neutral
-                {% endif %}">
-                {% if profile.is_seller %}Seller{% else %}Buyer{% endif %}
-              </span>
-            </div>
-            
-            <div class="profile-status-item">
-              <span class="status-label">Member since</span>
-              <span class="status-date">{{ profile.created_at|date:"M Y" }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="profile-section-card">
-          <h3 class="profile-card-title">
-            Saved Books
-            <span class="profile-card-count">{{ profile.user.saved_books.count }}</span>
-          </h3>
-          {% if profile.user.saved_books.exists %}
-          <div class="profile-saved-grid">
-            {% for saved in profile.user.saved_books.all|slice:":6" %}
-            <a
-              href="{% url 'books:detail' saved.book.slug %}"
-              class="profile-saved-book"
-            >
-              {% if saved.book.images.first %}
-              <img
-                src="{{ saved.book.images.first.image.url }}"
-                alt="{{ saved.book.title }}"
-              />
+        <!-- Profile Banner Card -->
+        <div class="pdb-profile-card">
+          <div class="pdb-banner"></div>
+          <div class="pdb-profile-info">
+            <div class="pdb-avatar-wrap">
+              {% if profile.avatar %}
+              <img src="{{ profile.avatar.url }}" alt="{{ profile.full_name }}" class="pdb-avatar" />
               {% else %}
-              <div class="saved-book-placeholder">📖</div>
+              <div class="pdb-avatar-fallback">{{ profile.user.username|first|upper }}</div>
               {% endif %}
-              <p>{{ saved.book.title|truncatechars:30 }}</p>
-            </a>
+            </div>
+            <div class="pdb-identity">
+              <h1 class="pdb-fullname">{{ profile.full_name }}</h1>
+              <p class="pdb-username">@{{ profile.user.username }}</p>
+              <p class="pdb-joined">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Joined {{ profile.created_at|date:"F Y" }}
+              </p>
+            </div>
+            <div class="pdb-profile-actions">
+              <a href="{% url 'accounts:edit_profile' %}" class="pdb-btn-primary">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Edit Profile
+              </a>
+              <form method="post" action="{% url 'accounts:logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="pdb-btn-outline" style="cursor:pointer;font-family:inherit;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  Logout
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Contact Row -->
+          <div class="pdb-contact-row">
+            <div class="pdb-contact-item">
+              <span class="pdb-contact-icon pdb-icon-email">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 8l10 6 10-6"/></svg>
+              </span>
+              <div>
+                <p class="pdb-contact-label">EMAIL ADDRESS</p>
+                <p class="pdb-contact-value">{{ profile.user.email }}</p>
+              </div>
+            </div>
+            {% if profile.phone %}
+            <div class="pdb-contact-item">
+              <span class="pdb-contact-icon pdb-icon-phone">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.63A2 2 0 012 .82h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+              </span>
+              <div>
+                <p class="pdb-contact-label">PHONE NUMBER</p>
+                <p class="pdb-contact-value">{{ profile.phone }}</p>
+              </div>
+            </div>
+            {% endif %}
+            {% if profile.city or profile.district %}
+            <div class="pdb-contact-item">
+              <span class="pdb-contact-icon pdb-icon-location">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              </span>
+              <div>
+                <p class="pdb-contact-label">LOCATION</p>
+                <p class="pdb-contact-value">
+                  {% if profile.city %}{{ profile.city }}{% endif %}{% if profile.city and profile.district %}, {% endif %}{% if profile.district %}{{ profile.district }}{% endif %}
+                </p>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Bio -->
+          {% if profile.bio %}
+          <div class="pdb-bio-row">
+            <span class="pdb-bio-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>
+            </span>
+            <div>
+              <p class="pdb-bio-label">BIO / ABOUT ME</p>
+              <p class="pdb-bio-text">{{ profile.bio }}</p>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Stats Row -->
+        <div class="pdb-stats-row">
+          <div class="pdb-stat-card">
+            <span class="pdb-stat-icon pdb-stat-green">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+            </span>
+            <div>
+              <p class="pdb-stat-value">{{ profile.total_listings }}</p>
+              <p class="pdb-stat-label">Total Books Listed</p>
+            </div>
+          </div>
+          <div class="pdb-stat-card">
+            <span class="pdb-stat-icon pdb-stat-orange">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            </span>
+            <div>
+              <p class="pdb-stat-value">{{ profile.user.sales.count }}</p>
+              <p class="pdb-stat-label">Books Sold</p>
+            </div>
+          </div>
+          <div class="pdb-stat-card">
+            <span class="pdb-stat-icon pdb-stat-blue">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+            </span>
+            <div>
+              <p class="pdb-stat-value">{{ profile.total_purchases }}</p>
+              <p class="pdb-stat-label">Books Purchased</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Listings -->
+        <div class="pdb-listings-section">
+          <div class="pdb-listings-header">
+            <h2 class="pdb-listings-title">
+              <span class="pdb-listings-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
+              </span>
+              My Recent Listings
+            </h2>
+            <a href="{% url 'books:browse' %}" class="pdb-view-all">View All</a>
+          </div>
+
+          {% with listings=profile.user.listings.all %}
+          {% if listings %}
+          <div class="pdb-listings-grid">
+            {% for book in listings|slice:":4" %}
+            <div class="pdb-listing-card">
+              <div class="pdb-listing-img-wrap">
+                {% if book.condition %}
+                <span class="pdb-condition-badge pdb-cond-{{ book.condition|lower }}">{{ book.condition }}</span>
+                {% endif %}
+                {% if book.images.first %}
+                <img src="{{ book.images.first.image.url }}" alt="{{ book.title }}" class="pdb-listing-img" />
+                {% else %}
+                <div class="pdb-listing-img-placeholder">📖</div>
+                {% endif %}
+                <div class="pdb-listing-overlay">
+                  <a href="{% url 'books:edit' book.seller.username book.slug %}" class="pdb-overlay-btn" title="Edit">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </a>
+                  <form method="post" action="{% url 'books:delete' book.seller.username book.slug %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="pdb-overlay-btn pdb-overlay-del" title="Delete"
+                            style="background:white; border:none; cursor:pointer; padding:0; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow: 0 2px 6px rgba(0,0,0,0.15);"
+                            onclick="return confirm('Delete this book?')">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e53e3e" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                        <path d="M10 11v6"/><path d="M14 11v6"/>
+                        <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                      </svg>
+                    </button>
+                  </form>
+                </div>
+              </div>
+              <div class="pdb-listing-body">
+                <p class="pdb-listing-genre">{{ book.category }}</p>
+                <h3 class="pdb-listing-title">{{ book.title }}</h3>
+                <p class="pdb-listing-author">{{ book.author }}</p>
+                <hr class="pdb-listing-divider" />
+                <p class="pdb-listing-price">Rs {{ book.asking_price }}</p>
+              </div>
+            </div>
             {% endfor %}
           </div>
           {% else %}
-          <p class="profile-empty-msg">
-            No saved books yet.
-            <a href="{% url 'books:browse' %}">Browse books →</a>
-          </p>
+          <p class="pdb-empty-msg">No listings yet. <a href="{% url 'books:sell' %}">List your first book →</a></p>
           {% endif %}
+          {% endwith %}
         </div>
+
       </main>
     </div>
   </div>

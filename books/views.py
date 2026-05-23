@@ -1,4 +1,5 @@
 from django.views.generic import TemplateView, ListView, CreateView, DetailView
+from django.db.models import Sum
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy, reverse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -210,14 +211,42 @@ class ContactSellerView(LoginRequiredMixin, CreateView):
     model = Message
     template_name = "books/contact_seller.html"
     fields = ["message"]
-    success_url = reverse_lazy("books:browse")
-    login_url = "login"
+    login_url = "accounts:login"
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['message'].widget.attrs.update({
+            'class': 'pdb-edit-form-textarea',
+            'rows': 6,
+            'placeholder': 'Hi, I\'m interested in this book. Is it still available?',
+        })
+        return form
+
+    def dispatch(self, request, *args, **kwargs):
+        self.book = get_object_or_404(Book, slug=self.kwargs["slug"])
+        # Sellers cannot message themselves
+        if request.user.is_authenticated and request.user == self.book.seller:
+            return redirect("books:detail", seller=self.book.seller.username, slug=self.book.slug)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["book"] = self.book
+        return ctx
 
     def form_valid(self, form):
         form.instance.buyer = self.request.user
-        form.instance.book = Book.objects.get(slug=self.kwargs["slug"])
-        form.instance.seller = form.instance.book.seller
-        return super().form_valid(form)
+        form.instance.book = self.book
+        form.instance.seller = self.book.seller
+        messages.success(self.request, f"Message sent to {self.book.seller.username}!")
+        response = super().form_valid(form)
+        return response
+
+    def get_success_url(self):
+        return reverse("books:detail", kwargs={
+            "seller": self.book.seller.username,
+            "slug": self.book.slug,
+        })
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -582,3 +611,126 @@ class CartOrderConfirmedView(LoginRequiredMixin, View):
             'transactions': transactions,
             'total': total,
         })
+
+
+class SalesView(LoginRequiredMixin, View):
+    login_url = 'accounts:login'
+
+    def get(self, request):
+        sales = Transaction.objects.filter(
+            seller=request.user
+        ).select_related('book', 'buyer').order_by('-created_at')
+
+        status_filter = request.GET.get('status', '')
+        if status_filter in ('pending', 'completed', 'cancelled'):
+            sales = sales.filter(status=status_filter)
+
+        total_earned = Transaction.objects.filter(
+            seller=request.user, status='completed'
+        ).aggregate(total=Sum('price'))['total'] or 0
+
+        return render(request, 'books/sales.html', {
+            'sales': sales,
+            'status_filter': status_filter,
+            'total_earned': total_earned,
+        })
+
+
+class BestSellersView(ListView):
+    model = Book
+    template_name = 'books/bestsellers.html'
+    context_object_name = 'books'
+    paginate_by = 20
+
+    def get_queryset(self):
+        return Book.objects.filter(status='available').order_by('-views')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['genre_choices'] = Book.CATEGORY_CHOICES
+        return context
+
+
+class GenresView(TemplateView):
+    template_name = 'books/genres.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        genres = []
+        for slug, label in Book.CATEGORY_CHOICES:
+            count = Book.objects.filter(category=slug, status='available').count()
+            genres.append({'slug': slug, 'label': label, 'count': count})
+        context['genres'] = genres
+        return context
+
+
+class AuthorsView(ListView):
+    template_name = 'books/authors.html'
+    context_object_name = 'authors'
+
+    def get_queryset(self):
+        from .models import Author
+        from django.db.models import Count, Q
+        return Author.objects.annotate(
+            book_count=Count('books', filter=Q(books__status='available'))
+        ).filter(book_count__gt=0).order_by('name')
+
+
+class WishlistView(LoginRequiredMixin, View):
+    login_url = 'accounts:login'
+
+    def get(self, request):
+        from accounts.models import SavedBook
+        saved = SavedBook.objects.filter(user=request.user).select_related('book', 'book__seller')
+        return render(request, 'books/wishlist.html', {'saved': saved})
+
+
+class OrdersView(LoginRequiredMixin, View):
+    login_url = 'accounts:login'
+
+    def get(self, request):
+        status_filter = request.GET.get('status', '')
+        orders = Transaction.objects.filter(buyer=request.user).select_related('book', 'seller').order_by('-created_at')
+        if status_filter in ('pending', 'completed', 'cancelled'):
+            orders = orders.filter(status=status_filter)
+        return render(request, 'books/orders.html', {
+            'orders': orders,
+            'status_filter': status_filter,
+        })
+
+
+class AboutView(TemplateView):
+    template_name = 'books/about.html'
+
+
+class ContactView(TemplateView):
+    template_name = 'books/contact.html'
+
+
+class BlogView(TemplateView):
+    template_name = 'books/blog.html'
+
+
+class MessagesInboxView(LoginRequiredMixin, View):
+    login_url = 'accounts:login'
+
+    def get(self, request):
+        inbox = Message.objects.filter(
+            seller=request.user
+        ).select_related('buyer', 'book').order_by('-created_at')
+        unread_count = inbox.filter(is_read=False).count()
+        return render(request, 'books/messages_inbox.html', {
+            'inbox': inbox,
+            'unread_count': unread_count,
+        })
+
+
+class MarkMessageReadView(LoginRequiredMixin, View):
+    login_url = 'accounts:login'
+
+    def post(self, request, pk):
+        msg = get_object_or_404(Message, pk=pk, seller=request.user)
+        msg.is_read = True
+        msg.save(update_fields=['is_read'])
+        from django.http import JsonResponse
+        return JsonResponse({'ok': True})

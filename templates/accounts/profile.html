@@ -22,13 +22,16 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             My Listings
           </a>
-          <a href="{% url 'books:browse' %}" class="pdb-nav-item">
+          <a href="{% url 'books:sales' %}" class="pdb-nav-item">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
             Sales
           </a>
-          <a href="{% url 'accounts:edit_profile' %}" class="pdb-nav-item">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-            Change Password
+          <a href="{% url 'books:messages_inbox' %}" class="pdb-nav-item" style="position:relative;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            Messages
+            {% if unread_messages_count > 0 %}<span class="pdb-nav-badge">{{ unread_messages_count }}</span>{% endif %}
+          </a>
+          <a href="{% url 'accounts:change_password' %}" class="pdb-nav-item">
           </a>
           <div class="pdb-nav-divider"></div>
           <form method="post" action="{% url 'accounts:logout' %}">
@@ -190,19 +193,18 @@
                   <a href="{% url 'books:edit' book.seller.username book.slug %}" class="pdb-overlay-btn" title="Edit">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                   </a>
-                  <form method="post" action="{% url 'books:delete' book.seller.username book.slug %}" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="pdb-overlay-btn pdb-overlay-del" title="Delete"
-                            style="background:white; border:none; cursor:pointer; padding:0; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow: 0 2px 6px rgba(0,0,0,0.15);"
-                            onclick="return confirm('Delete this book?')">
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e53e3e" stroke-width="2">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-                        <path d="M10 11v6"/><path d="M14 11v6"/>
-                        <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
-                      </svg>
-                    </button>
-                  </form>
+                  <button type="button" class="pdb-overlay-btn pdb-overlay-del" title="Delete"
+                          style="background:white; border:none; cursor:pointer; padding:0; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow: 0 2px 6px rgba(0,0,0,0.15);"
+                          data-delete-trigger
+                          data-title="{{ book.title }}"
+                          data-action="{% url 'books:delete' book.seller.username book.slug %}">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e53e3e" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                      <path d="M10 11v6"/><path d="M14 11v6"/>
+                      <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                    </svg>
+                  </button>
                 </div>
               </div>
               <div class="pdb-listing-body">
@@ -225,5 +227,29 @@
     </div>
   </div>
 </section>
+
+<!-- Delete confirmation modal -->
+<div class="delete-modal-overlay" id="pdb-delete-modal" aria-hidden="true">
+  <div class="delete-modal">
+    <div class="delete-modal__icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#e53e3e" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+    <h3 class="delete-modal__title">Delete this listing?</h3>
+    <p class="delete-modal__body">This will permanently remove <strong id="pdb-delete-book-title"></strong> from EasyBooks. This action cannot be undone.</p>
+    <div class="delete-modal__actions">
+      <button type="button" class="btn-modal-cancel" id="pdb-delete-cancel">Cancel</button>
+      <form method="POST" id="pdb-delete-form">
+        {% csrf_token %}
+        <button type="submit" class="btn-modal-confirm">Yes, delete it</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+<script src="{% static 'js/profile.js' %}" defer></script>
 
 {% endblock %}

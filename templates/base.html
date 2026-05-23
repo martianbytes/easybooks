@@ -19,12 +19,10 @@
           </div>
           <ul class="navbar-nav">
             <li><a href="{% url 'books:browse' %}">Browse</a></li>
-            <li>
-              <a href="{% url 'books:browse' %}?category=new">New Arrival</a>
-            </li>
-            <li><a href="{% url 'books:browse' %}">BestSellers</a></li>
-            <li><a href="#">Genres</a></li>
-            <li><a href="#">Authors</a></li>
+            <li><a href="{% url 'books:browse' %}?category=new">New Arrival</a></li>
+            <li><a href="{% url 'books:bestsellers' %}">BestSellers</a></li>
+            <li><a href="{% url 'books:genres' %}">Genres</a></li>
+            <li><a href="{% url 'books:authors' %}">Authors</a></li>
             <li><a href="{% url 'books:sell' %}">Sell</a></li>
           </ul>
           <div class="navbar-actions">
@@ -84,7 +82,7 @@
 
             {% if user.is_authenticated %}
             <div class="user-menu">
-              <a href="{% url 'accounts:profile' %}" class="user-profile-link">
+              <a href="{% url 'accounts:profile' %}" class="user-profile-link" style="position:relative;">
                 {% if user.profile.avatar %}
                 <img
                   src="{{ user.profile.avatar.url }}"
@@ -95,6 +93,9 @@
                 <span class="user-initial"
                   >{{ user.username|first|upper }}</span
                 >
+                {% endif %}
+                {% if unread_messages_count > 0 %}
+                <span class="msg-badge">{{ unread_messages_count }}</span>
                 {% endif %}
               </a>
               <form
@@ -135,13 +136,9 @@
               <h2 class="footer-list-title explore-list-title">Explore</h2>
               <ul class="explore-list-items">
                 <li><a href="{% url 'books:browse' %}">Browse All</a></li>
-                <li>
-                  <a href="{% url 'books:browse' %}?category=new"
-                    >New Arrivals</a
-                  >
-                </li>
-                <li><a href="{% url 'books:browse' %}">BestSellers</a></li>
-                <li><a href="#">Genres</a></li>
+                <li><a href="{% url 'books:browse' %}?category=new">New Arrivals</a></li>
+                <li><a href="{% url 'books:bestsellers' %}">BestSellers</a></li>
+                <li><a href="{% url 'books:genres' %}">Genres</a></li>
               </ul>
             </div>
             <div class="footer-account">
@@ -150,23 +147,23 @@
                 {% if user.is_authenticated %}
                 <li><a href="{% url 'accounts:profile' %}">My Profile</a></li>
                 <li><a href="{% url 'accounts:logout' %}">Logout</a></li>
-                <li><a href="#">Wishlist</a></li>
-                <li><a href="#">Orders</a></li>
+                <li><a href="{% url 'books:wishlist' %}">Wishlist</a></li>
+                <li><a href="{% url 'books:orders' %}">Orders</a></li>
                 {% else %}
                 <li><a href="{% url 'accounts:login' %}">Sign In</a></li>
                 <li><a href="{% url 'accounts:register' %}">Register</a></li>
-                <li><a href="#">Wishlist</a></li>
-                <li><a href="#">Orders</a></li>
+                <li><a href="{% url 'books:wishlist' %}">Wishlist</a></li>
+                <li><a href="{% url 'books:orders' %}">Orders</a></li>
                 {% endif %}
               </ul>
             </div>
             <div class="footer-company">
               <h2 class="footer-list-title company-list-title">Company</h2>
               <ul class="company-list-items">
-                <li><a href="#">About Us</a></li>
-                <li><a href="#">Blog</a></li>
-                <li><a href="#">Authors</a></li>
-                <li><a href="#">Contact</a></li>
+                <li><a href="{% url 'books:about' %}">About Us</a></li>
+                <li><a href="{% url 'books:blog' %}">Blog</a></li>
+                <li><a href="{% url 'books:authors' %}">Authors</a></li>
+                <li><a href="{% url 'books:contact' %}">Contact</a></li>
               </ul>
             </div>
           </div>

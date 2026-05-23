@@ -22,11 +22,16 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             My Listings
           </a>
-          <a href="{% url 'books:browse' %}" class="pdb-nav-item">
+          <a href="{% url 'books:sales' %}" class="pdb-nav-item">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
             Sales
           </a>
-          <a href="{% url 'accounts:edit_profile' %}" class="pdb-nav-item">
+          <a href="{% url 'books:messages_inbox' %}" class="pdb-nav-item" style="position:relative;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            Messages
+            {% if unread_messages_count > 0 %}<span class="pdb-nav-badge">{{ unread_messages_count }}</span>{% endif %}
+          </a>
+          <a href="{% url 'accounts:change_password' %}" class="pdb-nav-item">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
             Change Password
           </a>

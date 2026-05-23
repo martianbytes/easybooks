@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<section class="simple-page-section">
+  <div class="container">
+
+    <div class="simple-page-header">
+      <h1 class="simple-page-title">Authors</h1>
+      <p class="simple-page-subtitle">Discover books by author</p>
+    </div>
+
+    {% if authors %}
+    <div class="authors-page-grid">
+      {% for author in authors %}
+      <a href="{% url 'books:browse' %}?q={{ author.name|urlencode }}" class="author-page-card">
+        <div class="author-page-avatar">{{ author.name|first|upper }}</div>
+        <div class="author-page-info">
+          <span class="author-page-name">{{ author.name }}</span>
+          <span class="author-page-count">{{ author.book_count }} book{{ author.book_count|pluralize }}</span>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="simple-empty">
+      <p>No authors with available books yet.</p>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% endblock %}

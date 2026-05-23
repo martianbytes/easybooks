@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<section class="sales-page">
+  <div class="container">
+
+    <!-- Header -->
+    <div class="sales-header">
+      <div class="sales-header__left">
+        <a href="{% url 'accounts:profile' %}" class="sales-back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to Profile
+        </a>
+        <h1 class="sales-title">My Sales</h1>
+        <p class="sales-subtitle">Track all your completed and pending transactions</p>
+      </div>
+      <div class="sales-header__stat">
+        <p class="sales-earned-label">Total Earned</p>
+        <p class="sales-earned-value">Rs {{ total_earned }}</p>
+      </div>
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="sales-filters">
+      <a href="{% url 'books:sales' %}" class="sales-filter-tab {% if not status_filter %}active{% endif %}">All</a>
+      <a href="{% url 'books:sales' %}?status=completed" class="sales-filter-tab {% if status_filter == 'completed' %}active{% endif %}">Completed</a>
+      <a href="{% url 'books:sales' %}?status=pending" class="sales-filter-tab {% if status_filter == 'pending' %}active{% endif %}">Pending</a>
+      <a href="{% url 'books:sales' %}?status=cancelled" class="sales-filter-tab {% if status_filter == 'cancelled' %}active{% endif %}">Cancelled</a>
+    </div>
+
+    <!-- Table -->
+    {% if sales %}
+    <div class="sales-table-wrap">
+      <table class="sales-table">
+        <thead>
+          <tr>
+            <th>Book</th>
+            <th>Buyer</th>
+            <th>Price</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sale in sales %}
+          <tr class="sales-row" data-status="{{ sale.status }}">
+            <td class="sales-cell-book">
+              <a href="{% url 'books:detail' sale.book.seller.username sale.book.slug %}" class="sales-book-link">
+                {% if sale.book.images.first %}
+                <img src="{{ sale.book.images.first.image.url }}" alt="{{ sale.book.title }}" class="sales-book-thumb" />
+                {% else %}
+                <div class="sales-book-thumb-placeholder">📖</div>
+                {% endif %}
+                <span class="sales-book-title">{{ sale.book.title }}</span>
+              </a>
+            </td>
+            <td class="sales-cell-buyer">
+              <span class="sales-buyer-avatar">{{ sale.buyer.username|first|upper }}</span>
+              {{ sale.buyer.username }}
+            </td>
+            <td class="sales-cell-price">Rs {{ sale.price }}</td>
+            <td class="sales-cell-status">
+              <span class="sales-badge sales-badge--{{ sale.status }}">{{ sale.get_status_display }}</span>
+            </td>
+            <td class="sales-cell-date">{{ sale.created_at|date:"M d, Y" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="sales-empty">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary-300)" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      <p class="sales-empty__title">No sales yet</p>
+      <p class="sales-empty__sub">Once someone buys your listing it'll show up here.</p>
+      <a href="{% url 'books:sell' %}" class="sales-empty__cta">List a book →</a>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+<script src="{% static 'js/sales.js' %}" defer></script>
+{% endblock %}

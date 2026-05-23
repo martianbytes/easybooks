@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<section class="pdb-section">
+  <div class="container">
+    <div class="pdb-layout">
+
+      <!-- ── LEFT SIDEBAR ── -->
+      <aside class="pdb-sidebar">
+        <nav class="pdb-nav">
+          <a href="{% url 'accounts:profile' %}" class="pdb-nav-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            Dashboard
+          </a>
+          <a href="{% url 'accounts:edit_profile' %}" class="pdb-nav-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit Profile
+          </a>
+          <a href="{% url 'books:browse' %}?seller={{ request.user.username }}" class="pdb-nav-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            My Listings
+          </a>
+          <a href="{% url 'books:sales' %}" class="pdb-nav-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            Sales
+          </a>
+          <a href="{% url 'books:messages_inbox' %}" class="pdb-nav-item pdb-nav-active" style="position:relative;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            Messages
+            {% if unread_messages_count > 0 %}<span class="pdb-nav-badge">{{ unread_messages_count }}</span>{% endif %}
+          </a>
+          <a href="{% url 'accounts:change_password' %}" class="pdb-nav-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            Change Password
+          </a>
+          <div class="pdb-nav-divider"></div>
+          <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="pdb-nav-item pdb-nav-logout" style="width:100%;background:none;border:none;cursor:pointer;text-align:left;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Logout
+            </button>
+          </form>
+        </nav>
+      </aside>
+
+      <!-- ── MAIN CONTENT ── -->
+      <main class="pdb-main">
+        <div class="pdb-edit-card">
+
+          <div class="pdb-edit-header">
+            <div class="pdb-edit-title-wrap">
+              <span class="pdb-edit-title-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              </span>
+              <div>
+                <h1 class="pdb-edit-title">Messages
+                  {% if unread_count > 0 %}<span class="inbox-unread-pill">{{ unread_count }} unread</span>{% endif %}
+                </h1>
+                <p class="pdb-edit-subtitle">Messages buyers have sent you about your listings.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="pdb-edit-divider"></div>
+
+          {% if inbox %}
+          <div class="inbox-list">
+            {% for msg in inbox %}
+            <div class="inbox-item {% if not msg.is_read %}inbox-item--unread{% endif %}" data-msg-id="{{ msg.pk }}" data-read-url="{% url 'books:message_read' msg.pk %}">
+              <div class="inbox-item__avatar">{{ msg.buyer.username|first|upper }}</div>
+              <div class="inbox-item__body">
+                <div class="inbox-item__meta">
+                  <span class="inbox-item__sender">{{ msg.buyer.username }}</span>
+                  {% if not msg.is_read %}<span class="inbox-unread-dot"></span>{% endif %}
+                  <span class="inbox-item__time">{{ msg.created_at|date:"M d, Y · g:i A" }}</span>
+                </div>
+                <a href="{% url 'books:detail' msg.book.seller.username msg.book.slug %}" class="inbox-item__book">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+                  {{ msg.book.title }}
+                </a>
+                <p class="inbox-item__text">{{ msg.message }}</p>
+              </div>
+              <div class="inbox-item__actions">
+                <a href="mailto:{{ msg.buyer.email }}?subject=Re: {{ msg.book.title }}" class="inbox-reply-btn" title="Reply via email">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 00-4-4H4"/></svg>
+                  Reply
+                </a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="sales-empty" style="padding:4rem 1rem;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary-300)" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            <p class="sales-empty__title">No messages yet</p>
+            <p class="sales-empty__sub">When buyers message you about your listings, they'll appear here.</p>
+          </div>
+          {% endif %}
+
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+
+<script src="{% static 'js/messages_inbox.js' %}" defer></script>
+{% endblock %}

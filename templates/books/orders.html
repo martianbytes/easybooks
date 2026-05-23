@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<section class="sales-page">
+  <div class="container">
+
+    <div class="simple-page-header">
+      <h1 class="simple-page-title">My Orders</h1>
+      <p class="simple-page-subtitle">Books you've purchased on EasyBooks</p>
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="sales-filters">
+      <a href="{% url 'books:orders' %}" class="sales-filter-tab {% if not status_filter %}active{% endif %}">All</a>
+      <a href="{% url 'books:orders' %}?status=completed" class="sales-filter-tab {% if status_filter == 'completed' %}active{% endif %}">Completed</a>
+      <a href="{% url 'books:orders' %}?status=pending" class="sales-filter-tab {% if status_filter == 'pending' %}active{% endif %}">Pending</a>
+      <a href="{% url 'books:orders' %}?status=cancelled" class="sales-filter-tab {% if status_filter == 'cancelled' %}active{% endif %}">Cancelled</a>
+    </div>
+
+    {% if orders %}
+    <div class="sales-table-wrap">
+      <table class="sales-table">
+        <thead>
+          <tr>
+            <th>Book</th>
+            <th>Seller</th>
+            <th>Price</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+          <tr class="sales-row">
+            <td class="sales-cell-book">
+              <a href="{% url 'books:detail' order.book.seller.username order.book.slug %}" class="sales-book-link">
+                {% if order.book.images.first %}
+                <img src="{{ order.book.images.first.image.url }}" alt="{{ order.book.title }}" class="sales-book-thumb" />
+                {% else %}
+                <div class="sales-book-thumb-placeholder">📖</div>
+                {% endif %}
+                <span class="sales-book-title">{{ order.book.title }}</span>
+              </a>
+            </td>
+            <td class="sales-cell-buyer">
+              <span class="sales-buyer-avatar">{{ order.seller.username|first|upper }}</span>
+              {{ order.seller.username }}
+            </td>
+            <td class="sales-cell-price">Rs {{ order.price }}</td>
+            <td class="sales-cell-status">
+              <span class="sales-badge sales-badge--{{ order.status }}">{{ order.get_status_display }}</span>
+            </td>
+            <td class="sales-cell-date">{{ order.created_at|date:"M d, Y" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="sales-empty">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary-300)" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <p class="sales-empty__title">No orders yet</p>
+      <p class="sales-empty__sub">Books you purchase will appear here.</p>
+      <a href="{% url 'books:browse' %}" class="sales-empty__cta">Browse books →</a>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+<script src="{% static 'js/sales.js' %}" defer></script>
+{% endblock %}

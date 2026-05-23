@@ -18,6 +18,17 @@ from .views import (
     RemoveFromCartView,
     CartCheckoutView,
     CartOrderConfirmedView,
+    SalesView,
+    BestSellersView,
+    GenresView,
+    AuthorsView,
+    WishlistView,
+    OrdersView,
+    AboutView,
+    ContactView,
+    BlogView,
+    MessagesInboxView,
+    MarkMessageReadView,
 )
 
 app_name = "books"
@@ -43,6 +54,17 @@ urlpatterns = [
     path("cart/remove/<slug:slug>/", RemoveFromCartView.as_view(), name="remove_from_cart"),
     path("cart/checkout/", CartCheckoutView.as_view(), name="cart_checkout"),
     path("cart/order-confirmed/", CartOrderConfirmedView.as_view(), name="cart_order_confirmed"),
+    path("sales/", SalesView.as_view(), name="sales"),
+    path("bestsellers/", BestSellersView.as_view(), name="bestsellers"),
+    path("genres/", GenresView.as_view(), name="genres"),
+    path("authors/", AuthorsView.as_view(), name="authors"),
+    path("wishlist/", WishlistView.as_view(), name="wishlist"),
+    path("orders/", OrdersView.as_view(), name="orders"),
+    path("about/", AboutView.as_view(), name="about"),
+    path("contact/", ContactView.as_view(), name="contact"),
+    path("blog/", BlogView.as_view(), name="blog"),
+    path("messages/", MessagesInboxView.as_view(), name="messages_inbox"),
+    path("messages/<int:pk>/read/", MarkMessageReadView.as_view(), name="message_read"),
 ]
 
 if settings.DEBUG:

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<section class="simple-page-section">
+  <div class="container">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav" style="margin-bottom:1.5rem;">
+      <ol class="breadcrumb">
+        <li><a href="{% url 'books:home' %}">Home</a></li>
+        <li><a href="{% url 'books:browse' %}">Browse</a></li>
+        <li><a href="{% url 'books:detail' book.seller.username book.slug %}">{{ book.title }}</a></li>
+        <li>Message Seller</li>
+      </ol>
+    </nav>
+
+    <div class="contact-seller-layout">
+
+      <!-- Book preview -->
+      <div class="contact-seller-book">
+        <div class="about-page-card">
+          <h3 class="about-page-heading" style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--color-primary-400);">About this listing</h3>
+          <div class="contact-seller-book-row">
+            {% if book.images.first %}
+            <img src="{{ book.images.first.image.url }}" alt="{{ book.title }}" class="contact-seller-book-img" />
+            {% else %}
+            <div class="contact-seller-book-img" style="display:flex;align-items:center;justify-content:center;font-size:2rem;background:var(--color-linen-100);">📖</div>
+            {% endif %}
+            <div>
+              <p class="book-card-category">{{ book.get_category_display }}</p>
+              <p class="contact-seller-book-title">{{ book.title }}</p>
+              <p style="font-size:0.83rem;color:#aaa;margin:0.2rem 0 0;">Seller: {{ book.seller.username }}</p>
+              <p style="font-size:1rem;font-weight:700;color:var(--color-primary-800);margin:0.5rem 0 0;">Rs {{ book.asking_price }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message form -->
+      <div class="about-page-card contact-seller-form-card">
+        <div class="pdb-edit-title-wrap" style="margin-bottom:1.25rem;">
+          <span class="pdb-edit-title-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          </span>
+          <div>
+            <h1 class="pdb-edit-title">Message {{ book.seller.username }}</h1>
+            <p class="pdb-edit-subtitle">Ask about condition, price, or delivery. Be polite!</p>
+          </div>
+        </div>
+
+        <form method="post" novalidate class="pdb-edit-form" style="padding:0;">
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+          <div class="pdb-form-errors">
+            {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+          </div>
+          {% endif %}
+
+          <div class="pdb-form-group">
+            <label class="pdb-form-label" for="{{ form.message.id_for_label }}">Your message</label>
+            {{ form.message }}
+            {% if form.message.errors %}<p class="pdb-field-error">{{ form.message.errors.as_text }}</p>{% endif %}
+          </div>
+
+          <div class="pdb-form-actions">
+            <button type="submit" class="pdb-btn-primary">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Send Message
+            </button>
+            <a href="{% url 'books:detail' book.seller.username book.slug %}" class="pdb-btn-cancel">Cancel</a>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<section class="simple-page-section">
+  <div class="container">
+
+    <div class="simple-page-header">
+      <h1 class="simple-page-title">EasyBooks Blog</h1>
+      <p class="simple-page-subtitle">Stories, tips, and updates from the EasyBooks team</p>
+    </div>
+
+    <div class="blog-coming-soon">
+      <div class="blog-coming-soon__icon">✍️</div>
+      <h2 class="blog-coming-soon__title">Blog coming soon</h2>
+      <p class="blog-coming-soon__sub">We're working on articles about books, reading, and making the most of EasyBooks. Check back soon.</p>
+      <a href="{% url 'books:browse' %}" class="pdb-btn-primary" style="margin-top:1rem; display:inline-flex;">Browse Books</a>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<section class="simple-page-section">
+  <div class="container">
+
+    <div class="simple-page-header">
+      <h1 class="simple-page-title">BestSellers</h1>
+      <p class="simple-page-subtitle">The most-viewed books on EasyBooks right now</p>
+    </div>
+
+    {% if books %}
+    <div class="browse-grid">
+      {% for book in books %}
+      <a href="{% url 'books:detail' book.seller.username book.slug %}" class="book-card">
+        <div class="book-card-img-wrap">
+          {% if book.images.first %}
+          <img src="{{ book.images.first.image.url }}" alt="{{ book.title }}" class="book-card-img" />
+          {% else %}
+          <div class="book-card-img-placeholder">📖</div>
+          {% endif %}
+          <span class="book-card-condition book-card-cond-{{ book.condition|lower }}">{{ book.condition }}</span>
+        </div>
+        <div class="book-card-body">
+          <p class="book-card-category">{{ book.get_category_display }}</p>
+          <h3 class="book-card-title">{{ book.title }}</h3>
+          <p class="author-name">
+            {% for author in book.authors.all %}{{ author.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+          </p>
+          <p class="book-card-price">Rs {{ book.asking_price }}</p>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="pagination-wrap">
+      {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}" class="page-btn">← Prev</a>
+      {% endif %}
+      <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}" class="page-btn">Next →</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="simple-empty">
+      <p>No books available yet. <a href="{% url 'books:sell' %}">Be the first to list one →</a></p>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% endblock %}

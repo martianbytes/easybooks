@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<section class="simple-page-section">
+  <div class="container">
+
+    <div class="simple-page-header">
+      <h1 class="simple-page-title">My Wishlist</h1>
+      <p class="simple-page-subtitle">Books you've saved to buy later</p>
+    </div>
+
+    {% if saved %}
+    <div class="browse-grid">
+      {% for item in saved %}
+      <div class="book-card">
+        <a href="{% url 'books:detail' item.book.seller.username item.book.slug %}" class="book-card-img-link">
+          <div class="book-card-img-wrap">
+            {% if item.book.images.first %}
+            <img src="{{ item.book.images.first.image.url }}" alt="{{ item.book.title }}" class="book-card-img" />
+            {% else %}
+            <div class="book-card-img-placeholder">📖</div>
+            {% endif %}
+            <span class="book-card-condition book-card-cond-{{ item.book.condition|lower }}">{{ item.book.condition }}</span>
+          </div>
+        </a>
+        <div class="book-card-body">
+          <p class="book-card-category">{{ item.book.get_category_display }}</p>
+          <h3 class="book-card-title">
+            <a href="{% url 'books:detail' item.book.seller.username item.book.slug %}">{{ item.book.title }}</a>
+          </h3>
+          <p class="author-name">
+            {% for author in item.book.authors.all %}{{ author.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+          </p>
+          <p class="book-card-price">Rs {{ item.book.asking_price }}</p>
+          <p class="wishlist-saved-date">Saved {{ item.saved_at|date:"M d, Y" }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="simple-empty">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary-300)" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      <p class="simple-empty__title">Your wishlist is empty</p>
+      <p class="simple-empty__sub">Save books you like and they'll appear here.</p>
+      <a href="{% url 'books:browse' %}" class="simple-empty__cta">Browse books →</a>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% endblock %}

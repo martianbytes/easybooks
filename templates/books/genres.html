@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<section class="simple-page-section">
+  <div class="container">
+
+    <div class="simple-page-header">
+      <h1 class="simple-page-title">Browse by Genre</h1>
+      <p class="simple-page-subtitle">Find exactly what you're looking for</p>
+    </div>
+
+    <div class="genres-page-grid">
+      {% for genre in genres %}
+      <a href="{% url 'books:browse' %}?genre={{ genre.slug }}" class="genre-page-card">
+        <span class="genre-page-icon">
+          {% if genre.slug == 'fiction' %}📚
+          {% elif genre.slug == 'non_fiction' %}🧠
+          {% elif genre.slug == 'textbook' %}🎓
+          {% elif genre.slug == 'science' %}🔬
+          {% elif genre.slug == 'technology' %}💻
+          {% elif genre.slug == 'history' %}🏛️
+          {% elif genre.slug == 'biography' %}👤
+          {% elif genre.slug == 'self_help' %}✨
+          {% elif genre.slug == 'business' %}💼
+          {% elif genre.slug == 'children' %}🧸
+          {% elif genre.slug == 'comics' %}🎨
+          {% else %}📖
+          {% endif %}
+        </span>
+        <div class="genre-page-info">
+          <span class="genre-page-name">{{ genre.label }}</span>
+          <span class="genre-page-count">{{ genre.count }} book{{ genre.count|pluralize }}</span>
+        </div>
+        <svg class="genre-page-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+      {% empty %}
+      <p class="simple-empty">No genres available yet.</p>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}

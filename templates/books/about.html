@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<section class="simple-page-section">
+  <div class="container">
+
+    <div class="simple-page-header">
+      <h1 class="simple-page-title">About EasyBooks</h1>
+      <p class="simple-page-subtitle">Your destination for discovering, buying, and selling books you'll love</p>
+    </div>
+
+    <div class="about-page-grid">
+      <div class="about-page-main">
+        <div class="about-page-card">
+          <h2 class="about-page-heading">Who We Are</h2>
+          <p>EasyBooks is an online platform that allows users to buy and sell second-hand books easily. Our goal is to make books more affordable while encouraging the reuse of educational resources.</p>
+          <p>By connecting buyers and sellers, we help students and readers access the books they need at lower prices — curated with care since 2026.</p>
+        </div>
+
+        <div class="about-page-card">
+          <h2 class="about-page-heading">Our Mission</h2>
+          <p>We believe every book deserves a second life. Our mission is to build a trusted community where knowledge passes hands easily, affordably, and sustainably.</p>
+        </div>
+
+        <div class="about-page-card">
+          <h2 class="about-page-heading">Why EasyBooks?</h2>
+          <div class="about-features-grid">
+            <div class="about-feature">
+              <span class="about-feature-icon">💸</span>
+              <h3>Save Money</h3>
+              <p>Buy used books at a fraction of the original price.</p>
+            </div>
+            <div class="about-feature">
+              <span class="about-feature-icon">🌱</span>
+              <h3>Go Green</h3>
+              <p>Give books a second life instead of letting them collect dust.</p>
+            </div>
+            <div class="about-feature">
+              <span class="about-feature-icon">🤝</span>
+              <h3>Community</h3>
+              <p>Connect with fellow readers and students in your area.</p>
+            </div>
+            <div class="about-feature">
+              <span class="about-feature-icon">🔒</span>
+              <h3>Trusted</h3>
+              <p>Verified listings with secure checkout and buyer protection.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-page-side">
+        <div class="about-page-card about-cta-card">
+          <h3>Ready to get started?</h3>
+          <p>Join thousands of readers already on EasyBooks.</p>
+          <a href="{% url 'books:browse' %}" class="pdb-btn-primary" style="display:inline-flex;margin-top:0.5rem;">Browse Books</a>
+          <a href="{% url 'books:sell' %}" class="pdb-btn-cancel" style="display:inline-flex;margin-top:0.5rem;">Sell a Book</a>
+        </div>
+        <div class="about-page-card">
+          <h3 style="margin:0 0 1rem;font-size:1rem;">Find us on</h3>
+          <div class="about-socials">
+            <a href="https://www.facebook.com" class="about-social-link" target="_blank" rel="noopener">
+              <img src="{% static 'images/facebook.svg' %}" alt="Facebook" width="20" /> Facebook
+            </a>
+            <a href="https://www.instagram.com" class="about-social-link" target="_blank" rel="noopener">
+              <img src="{% static 'images/instagram.svg' %}" alt="Instagram" width="20" /> Instagram
+            </a>
+            <a href="https://www.linkedin.com" class="about-social-link" target="_blank" rel="noopener">
+              <img src="{% static 'images/linkedin.svg' %}" alt="LinkedIn" width="20" /> LinkedIn
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}

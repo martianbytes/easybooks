@@ -69,25 +69,51 @@
           <div class="inbox-list">
             {% for msg in inbox %}
             <div class="inbox-item {% if not msg.is_read %}inbox-item--unread{% endif %}" data-msg-id="{{ msg.pk }}" data-read-url="{% url 'books:message_read' msg.pk %}">
-              <div class="inbox-item__avatar">{{ msg.buyer.username|first|upper }}</div>
-              <div class="inbox-item__body">
-                <div class="inbox-item__meta">
-                  <span class="inbox-item__sender">{{ msg.buyer.username }}</span>
-                  {% if not msg.is_read %}<span class="inbox-unread-dot"></span>{% endif %}
-                  <span class="inbox-item__time">{{ msg.created_at|date:"M d, Y · g:i A" }}</span>
+              <!-- Top row: avatar + body + reply button -->
+              <div class="inbox-item__row">
+                <div class="inbox-item__avatar">{{ msg.buyer.username|first|upper }}</div>
+                <div class="inbox-item__body">
+                  <div class="inbox-item__meta">
+                    <span class="inbox-item__sender">{{ msg.buyer.username }}</span>
+                    {% if not msg.is_read %}<span class="inbox-unread-dot"></span>{% endif %}
+                    <span class="inbox-item__time">{{ msg.created_at|date:"M d, Y · g:i A" }}</span>
+                  </div>
+                  <a href="{% url 'books:detail' msg.book.seller.username msg.book.slug %}" class="inbox-item__book">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+                    {{ msg.book.title }}
+                  </a>
+                  <p class="inbox-item__text">{{ msg.message }}</p>
                 </div>
-                <a href="{% url 'books:detail' msg.book.seller.username msg.book.slug %}" class="inbox-item__book">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
-                  {{ msg.book.title }}
-                </a>
-                <p class="inbox-item__text">{{ msg.message }}</p>
+                <div class="inbox-item__actions">
+                  <button type="button" class="inbox-reply-btn" data-toggle-reply="{{ msg.pk }}">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 00-4-4H4"/></svg>
+                    Reply {% if msg.replies.count %}<span class="reply-count">({{ msg.replies.count }})</span>{% endif %}
+                  </button>
+                </div>
               </div>
-              <div class="inbox-item__actions">
-                <a href="mailto:{{ msg.buyer.email }}?subject=Re: {{ msg.book.title }}" class="inbox-reply-btn" title="Reply via email">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 00-4-4H4"/></svg>
-                  Reply
-                </a>
+
+              <!-- Reply thread (below row, full width) -->
+              <div class="reply-thread" id="thread-{{ msg.pk }}">
+                {% for reply in msg.replies.all %}
+                <div class="reply-bubble {% if reply.sender == request.user %}reply-bubble--self{% endif %}">
+                  <span class="reply-bubble__sender">{{ reply.sender.username }}</span>
+                  <p class="reply-bubble__text">{{ reply.body }}</p>
+                  <span class="reply-bubble__time">{{ reply.created_at|date:"M d · g:i A" }}</span>
+                </div>
+                {% endfor %}
+
+                <div class="reply-form-wrap" id="reply-form-{{ msg.pk }}" style="display:none;">
+                  <textarea class="reply-textarea" placeholder="Write a reply…" rows="2" data-msg-id="{{ msg.pk }}" data-reply-url="{% url 'books:message_reply' msg.pk %}"></textarea>
+                  <div class="reply-form-actions">
+                    <button type="button" class="reply-send-btn" data-msg-id="{{ msg.pk }}">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                      Send
+                    </button>
+                    <button type="button" class="reply-cancel-btn" data-msg-id="{{ msg.pk }}">Cancel</button>
+                  </div>
+                </div>
               </div>
+            </div>
             </div>
             {% endfor %}
           </div>

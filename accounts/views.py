@@ -57,6 +57,88 @@ class ProfileView(LoginRequiredMixin, DetailView):
     def get_object(self, queryset=None):
         return self.request.user.profile  # type: ignore
 
+    def get_context_data(self, **kwargs):
+        from books.models import Transaction
+        from django.db.models import Sum, Max, Min, Count
+        from django.db.models.functions import TruncMonth
+        from django.utils import timezone
+        import json
+
+        ctx = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        # ── Sales analytics ──────────────────────────────────────────
+        sales_qs = Transaction.objects.filter(seller=user)
+        sales_agg = sales_qs.aggregate(
+            total_earned=Sum('price'),
+            highest_sale=Max('price'),
+            lowest_sale=Min('price'),
+            total_sales=Count('id'),
+        )
+
+        # ── Purchase analytics ───────────────────────────────────────
+        purchases_qs = Transaction.objects.filter(buyer=user)
+        purchases_agg = purchases_qs.aggregate(
+            total_spent=Sum('price'),
+            highest_purchase=Max('price'),
+            lowest_purchase=Min('price'),
+            total_purchases=Count('id'),
+        )
+
+        # ── Monthly chart data (last 6 months) ───────────────────────
+        six_months_ago = timezone.now() - timezone.timedelta(days=180)
+
+        sales_by_month = (
+            sales_qs.filter(created_at__gte=six_months_ago)
+            .annotate(month=TruncMonth('created_at'))
+            .values('month')
+            .annotate(total=Sum('price'), count=Count('id'))
+            .order_by('month')
+        )
+        purchases_by_month = (
+            purchases_qs.filter(created_at__gte=six_months_ago)
+            .annotate(month=TruncMonth('created_at'))
+            .values('month')
+            .annotate(total=Sum('price'), count=Count('id'))
+            .order_by('month')
+        )
+
+        # Build unified month labels
+        months_set = set()
+        for r in sales_by_month:
+            months_set.add(r['month'].strftime('%b %Y'))
+        for r in purchases_by_month:
+            months_set.add(r['month'].strftime('%b %Y'))
+        month_labels = sorted(months_set, key=lambda m: timezone.datetime.strptime(m, '%b %Y'))
+
+        sales_data = {r['month'].strftime('%b %Y'): float(r['total'] or 0) for r in sales_by_month}
+        purchases_data = {r['month'].strftime('%b %Y'): float(r['total'] or 0) for r in purchases_by_month}
+
+        chart_data = {
+            'labels': month_labels,
+            'sales': [sales_data.get(m, 0) for m in month_labels],
+            'purchases': [purchases_data.get(m, 0) for m in month_labels],
+        }
+
+        ctx.update({
+            # Sales
+            'total_earned': sales_agg['total_earned'] or 0,
+            'highest_sale': sales_agg['highest_sale'] or 0,
+            'lowest_sale': sales_agg['lowest_sale'] or 0,
+            'total_sales_count': sales_agg['total_sales'] or 0,
+            # Purchases
+            'total_spent': purchases_agg['total_spent'] or 0,
+            'highest_purchase': purchases_agg['highest_purchase'] or 0,
+            'lowest_purchase': purchases_agg['lowest_purchase'] or 0,
+            'total_purchases_count': purchases_agg['total_purchases'] or 0,
+            # Chart
+            'chart_data_json': json.dumps(chart_data),
+            # Recent transactions
+            'recent_sales': sales_qs.select_related('book', 'buyer').order_by('-created_at')[:5],
+            'recent_purchases': purchases_qs.select_related('book', 'seller').order_by('-created_at')[:5],
+        })
+        return ctx
+
 
 class EditProfileView(LoginRequiredMixin, UpdateView):
     model = Profile

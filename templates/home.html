@@ -47,11 +47,16 @@
           {% for book in featured_books %}
           <div class="card">
             <div class="card-content">
-              <img
-                src="{{ book.cover_image }}"
-                alt="{{ book.title }}"
-                class="cover-img"
-              />
+              <div style="position:relative;">
+                <img
+                  src="{{ book.cover_image }}"
+                  alt="{{ book.title }}"
+                  class="cover-img"
+                />
+                {% if book.condition %}
+                <span class="book-card-condition book-card-cond-{{ book.condition|lower }}">{{ book.get_condition_display }}</span>
+                {% endif %}
+              </div>
               <h3 class="book-title">{{ book.title }}</h3>
               <p class="author-name">{{ book.author }}</p>
               <p class="price">Rs.{{ book.asking_price }}</p>
@@ -78,11 +83,16 @@
           {% for book in bestselling_books %}
           <div class="card">
             <div class="card-content">
-              <img
-                src="{{ book.cover_image }}"
-                alt="{{ book.title }}"
-                class="cover-img"
-              />
+              <div style="position:relative;">
+                <img
+                  src="{{ book.cover_image }}"
+                  alt="{{ book.title }}"
+                  class="cover-img"
+                />
+                {% if book.condition %}
+                <span class="book-card-condition book-card-cond-{{ book.condition|lower }}">{{ book.get_condition_display }}</span>
+                {% endif %}
+              </div>
               <h3 class="book-title">{{ book.title }}</h3>
               <p class="author-name">{{ book.author }}</p>
               <p class="price">Rs.{{ book.asking_price }}</p>
@@ -109,11 +119,16 @@
           {% for book in recommended_books %}
           <div class="card">
             <div class="card-content">
-              <img
-                src="{{ book.cover_image }}"
-                alt="{{ book.title }}"
-                class="cover-img"
-              />
+              <div style="position:relative;">
+                <img
+                  src="{{ book.cover_image }}"
+                  alt="{{ book.title }}"
+                  class="cover-img"
+                />
+                {% if book.condition %}
+                <span class="book-card-condition book-card-cond-{{ book.condition|lower }}">{{ book.get_condition_display }}</span>
+                {% endif %}
+              </div>
               <h3 class="book-title">{{ book.title }}</h3>
               <p class="author-name">{{ book.author }}</p>
               <p class="price">Rs.{{ book.asking_price }}</p>

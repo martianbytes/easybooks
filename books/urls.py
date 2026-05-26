@@ -29,6 +29,7 @@ from .views import (
     BlogView,
     MessagesInboxView,
     MarkMessageReadView,
+    ReplyMessageView,
 )
 
 app_name = "books"
@@ -65,6 +66,7 @@ urlpatterns = [
     path("blog/", BlogView.as_view(), name="blog"),
     path("messages/", MessagesInboxView.as_view(), name="messages_inbox"),
     path("messages/<int:pk>/read/", MarkMessageReadView.as_view(), name="message_read"),
+    path("messages/<int:pk>/reply/", ReplyMessageView.as_view(), name="message_reply"),
 ]
 
 if settings.DEBUG:

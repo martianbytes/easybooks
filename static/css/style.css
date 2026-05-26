@@ -7937,3 +7937,25 @@ qty-box span {
   text-decoration: none;
 }
 .auth-card__footer a:hover { text-decoration: underline; }
+
+/* Recent transaction rows — title + date stacked */
+.dash-recent-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+  min-width: 0;
+}
+.dash-recent-title {
+  font-size: 0.82rem;
+  color: var(--color-primary-700);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: none;
+}
+.dash-recent-title:hover { color: var(--color-accent-500); text-decoration: underline; }
+.dash-recent-date {
+  font-size: 0.72rem;
+  color: #bbb;
+}

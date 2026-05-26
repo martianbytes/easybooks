@@ -31,8 +31,6 @@
             Messages
             {% if unread_messages_count > 0 %}<span class="pdb-nav-badge">{{ unread_messages_count }}</span>{% endif %}
           </a>
-          {% comment %} <a href="{% url 'accounts:change_password' %}" class="pdb-nav-item">
-          </a> {% endcomment %}
           <a href="{% url 'accounts:change_password' %}" class="pdb-nav-item">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
             Change Password
@@ -211,7 +209,10 @@
               <ul class="dash-recent-list">
                 {% for t in recent_sales %}
                 <li class="dash-recent-item">
-                  <span class="dash-recent-title">{{ t.book.title|truncatechars:28 }}</span>
+                  <div class="dash-recent-info">
+                    <a href="{% url 'books:detail' t.book.seller.username t.book.slug %}" class="dash-recent-title">{{ t.book.title|truncatechars:28 }}</a>
+                    <span class="dash-recent-date">{{ t.created_at|date:"M d, Y" }}</span>
+                  </div>
                   <span class="dash-recent-amount dash-recent-amount--green">+Rs {{ t.price }}</span>
                 </li>
                 {% endfor %}
@@ -226,6 +227,7 @@
               <div class="dash-breakdown-header">
                 <span class="dash-breakdown-dot dash-breakdown-dot--purchases"></span>
                 <h3 class="dash-breakdown-title">Purchases</h3>
+                <a href="{% url 'books:orders' %}" class="dash-breakdown-link">View all →</a>
               </div>
               <div class="dash-breakdown-stats">
                 <div class="dash-mini-stat">
@@ -249,7 +251,10 @@
               <ul class="dash-recent-list">
                 {% for t in recent_purchases %}
                 <li class="dash-recent-item">
-                  <span class="dash-recent-title">{{ t.book.title|truncatechars:28 }}</span>
+                  <div class="dash-recent-info">
+                    <a href="{% url 'books:detail' t.book.seller.username t.book.slug %}" class="dash-recent-title">{{ t.book.title|truncatechars:28 }}</a>
+                    <span class="dash-recent-date">{{ t.created_at|date:"M d, Y" }}</span>
+                  </div>
                   <span class="dash-recent-amount dash-recent-amount--red">−Rs {{ t.price }}</span>
                 </li>
                 {% endfor %}

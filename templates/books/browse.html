@@ -91,6 +91,7 @@
           </p>
           <select name="sort" class="sort-select" id="sort-select">
             <option value="newest" {% if selected_sort == 'newest' %}selected{% endif %}>Newest First</option>
+            <option value="popular" {% if selected_sort == 'popular' %}selected{% endif %}>Most Popular</option>
             <option value="price-low-to-high" {% if selected_sort == 'price-low-to-high' %}selected{% endif %}>Price: Low to High</option>
             <option value="price-high-to-low" {% if selected_sort == 'price-high-to-low' %}selected{% endif %}>Price: High to Low</option>
           </select>
@@ -100,14 +101,19 @@
           {% for book in books %}
             <div class="card">
               <div class="card-content">
-                {% if book.images.all %}
-                  {% with img=book.images.all.0 %}
-                    <img src="{% if img.image %}{{ img.image.url }}{% elif img.file %}{{ img.file.url }}{% elif img.url %}{{ img.url }}{% endif %}"
-                         alt="{{ book.title }}" class="cover-img" />
-                  {% endwith %}
-                {% else %}
-                  <img src="{% static 'images/default-book.jpg' %}" alt="{{ book.title }}" class="cover-img" />
-                {% endif %}
+                <div style="position:relative;">
+                  {% if book.images.all %}
+                    {% with img=book.images.all.0 %}
+                      <img src="{% if img.image %}{{ img.image.url }}{% elif img.file %}{{ img.file.url }}{% elif img.url %}{{ img.url }}{% endif %}"
+                           alt="{{ book.title }}" class="cover-img" />
+                    {% endwith %}
+                  {% else %}
+                    <img src="{% static 'images/default-book.jpg' %}" alt="{{ book.title }}" class="cover-img" />
+                  {% endif %}
+                  {% if book.condition %}
+                  <span class="book-card-condition book-card-cond-{{ book.condition|lower }}">{{ book.get_condition_display }}</span>
+                  {% endif %}
+                </div>
                 <h1 class="book-title">{{ book.title }}</h1>
                 {% if book.authors.all %}
                   <p class="author-name">

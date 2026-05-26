@@ -5,7 +5,7 @@ from django.urls import reverse_lazy, reverse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.views import View
-from .models import Book, Message, Transaction, CartItem
+from .models import Book, Message, Transaction, CartItem, MessageReply
 from .forms import CheckoutForm
 from django.http import JsonResponse
 import base64
@@ -93,6 +93,8 @@ class BrowseView(ListView):
             queryset = queryset.order_by("asking_price")
         elif sort == "price-high-to-low":
             queryset = queryset.order_by("-asking_price")
+        elif sort == "popular":
+            queryset = queryset.order_by("-views")
         else:
             queryset = queryset.order_by("-created_at")
 
@@ -636,19 +638,9 @@ class SalesView(LoginRequiredMixin, View):
         })
 
 
-class BestSellersView(ListView):
-    model = Book
-    template_name = 'books/bestsellers.html'
-    context_object_name = 'books'
-    paginate_by = 20
-
-    def get_queryset(self):
-        return Book.objects.filter(status='available').order_by('-views')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['genre_choices'] = Book.CATEGORY_CHOICES
-        return context
+class BestSellersView(View):
+    def get(self, request):
+        return redirect(reverse('books:browse') + '?sort=popular')
 
 
 class GenresView(TemplateView):
@@ -717,7 +709,7 @@ class MessagesInboxView(LoginRequiredMixin, View):
     def get(self, request):
         inbox = Message.objects.filter(
             seller=request.user
-        ).select_related('buyer', 'book').order_by('-created_at')
+        ).select_related('buyer', 'book').prefetch_related('replies__sender').order_by('-created_at')
         unread_count = inbox.filter(is_read=False).count()
         return render(request, 'books/messages_inbox.html', {
             'inbox': inbox,
@@ -734,3 +726,32 @@ class MarkMessageReadView(LoginRequiredMixin, View):
         msg.save(update_fields=['is_read'])
         from django.http import JsonResponse
         return JsonResponse({'ok': True})
+
+
+class ReplyMessageView(LoginRequiredMixin, View):
+    login_url = 'accounts:login'
+
+    def post(self, request, pk):
+        msg = get_object_or_404(Message, pk=pk)
+
+        # Only the seller or the buyer can reply
+        if request.user not in (msg.seller, msg.buyer):
+            return JsonResponse({'error': 'Forbidden'}, status=403)
+
+        body = request.POST.get('body', '').strip()
+        if not body:
+            return JsonResponse({'error': 'Reply cannot be empty.'}, status=400)
+
+        reply = MessageReply.objects.create(
+            message=msg,
+            sender=request.user,
+            body=body,
+        )
+
+        return JsonResponse({
+            'ok': True,
+            'sender': reply.sender.username,
+            'body': reply.body,
+            'created_at': reply.created_at.strftime('%b %d, %Y · %I:%M %p'),
+            'is_self': True,
+        })

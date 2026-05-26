@@ -140,16 +140,16 @@
             </span>
             <div>
               <p class="pdb-stat-value">{{ profile.total_listings }}</p>
-              <p class="pdb-stat-label">Total Books Listed</p>
+              <p class="pdb-stat-label">Books Listed</p>
             </div>
           </div>
           <div class="pdb-stat-card">
             <span class="pdb-stat-icon pdb-stat-orange">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
             </span>
             <div>
-              <p class="pdb-stat-value">{{ profile.user.sales.count }}</p>
-              <p class="pdb-stat-label">Books Sold</p>
+              <p class="pdb-stat-value">Rs {{ total_earned }}</p>
+              <p class="pdb-stat-label">Total Earned</p>
             </div>
           </div>
           <div class="pdb-stat-card">
@@ -157,10 +157,116 @@
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
             </span>
             <div>
-              <p class="pdb-stat-value">{{ profile.total_purchases }}</p>
-              <p class="pdb-stat-label">Books Purchased</p>
+              <p class="pdb-stat-value">Rs {{ total_spent }}</p>
+              <p class="pdb-stat-label">Total Spent</p>
             </div>
           </div>
+          <div class="pdb-stat-card">
+            <span class="pdb-stat-icon pdb-stat-purple">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            </span>
+            <div>
+              <p class="pdb-stat-value">{{ total_sales_count }}</p>
+              <p class="pdb-stat-label">Books Sold</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analytics Section -->
+        <div class="dash-analytics">
+
+          <!-- Sales & Purchases breakdown cards -->
+          <div class="dash-breakdown-grid">
+
+            <!-- Sales breakdown -->
+            <div class="dash-breakdown-card">
+              <div class="dash-breakdown-header">
+                <span class="dash-breakdown-dot dash-breakdown-dot--sales"></span>
+                <h3 class="dash-breakdown-title">Sales</h3>
+                <a href="{% url 'books:sales' %}" class="dash-breakdown-link">View all →</a>
+              </div>
+              <div class="dash-breakdown-stats">
+                <div class="dash-mini-stat">
+                  <p class="dash-mini-stat__val">{{ total_sales_count }}</p>
+                  <p class="dash-mini-stat__lbl">Total</p>
+                </div>
+                <div class="dash-mini-stat">
+                  <p class="dash-mini-stat__val">Rs {{ total_earned }}</p>
+                  <p class="dash-mini-stat__lbl">Earned</p>
+                </div>
+                <div class="dash-mini-stat">
+                  <p class="dash-mini-stat__val">Rs {{ highest_sale }}</p>
+                  <p class="dash-mini-stat__lbl">Highest</p>
+                </div>
+                <div class="dash-mini-stat">
+                  <p class="dash-mini-stat__val">Rs {{ lowest_sale }}</p>
+                  <p class="dash-mini-stat__lbl">Lowest</p>
+                </div>
+              </div>
+              {% if recent_sales %}
+              <ul class="dash-recent-list">
+                {% for t in recent_sales %}
+                <li class="dash-recent-item">
+                  <span class="dash-recent-title">{{ t.book.title|truncatechars:28 }}</span>
+                  <span class="dash-recent-amount dash-recent-amount--green">+Rs {{ t.price }}</span>
+                </li>
+                {% endfor %}
+              </ul>
+              {% else %}
+              <p class="dash-no-data">No sales yet.</p>
+              {% endif %}
+            </div>
+
+            <!-- Purchases breakdown -->
+            <div class="dash-breakdown-card">
+              <div class="dash-breakdown-header">
+                <span class="dash-breakdown-dot dash-breakdown-dot--purchases"></span>
+                <h3 class="dash-breakdown-title">Purchases</h3>
+              </div>
+              <div class="dash-breakdown-stats">
+                <div class="dash-mini-stat">
+                  <p class="dash-mini-stat__val">{{ total_purchases_count }}</p>
+                  <p class="dash-mini-stat__lbl">Total</p>
+                </div>
+                <div class="dash-mini-stat">
+                  <p class="dash-mini-stat__val">Rs {{ total_spent }}</p>
+                  <p class="dash-mini-stat__lbl">Spent</p>
+                </div>
+                <div class="dash-mini-stat">
+                  <p class="dash-mini-stat__val">Rs {{ highest_purchase }}</p>
+                  <p class="dash-mini-stat__lbl">Highest</p>
+                </div>
+                <div class="dash-mini-stat">
+                  <p class="dash-mini-stat__val">Rs {{ lowest_purchase }}</p>
+                  <p class="dash-mini-stat__lbl">Lowest</p>
+                </div>
+              </div>
+              {% if recent_purchases %}
+              <ul class="dash-recent-list">
+                {% for t in recent_purchases %}
+                <li class="dash-recent-item">
+                  <span class="dash-recent-title">{{ t.book.title|truncatechars:28 }}</span>
+                  <span class="dash-recent-amount dash-recent-amount--red">−Rs {{ t.price }}</span>
+                </li>
+                {% endfor %}
+              </ul>
+              {% else %}
+              <p class="dash-no-data">No purchases yet.</p>
+              {% endif %}
+            </div>
+
+          </div>
+
+          <!-- Chart -->
+          {% if chart_data_json != '{"labels": [], "sales": [], "purchases": []}' %}
+          <div class="dash-chart-card">
+            <h3 class="dash-chart-title">Sales vs Purchases — Last 6 Months</h3>
+            <div class="dash-chart-wrap">
+              <canvas id="dashChart"></canvas>
+            </div>
+          </div>
+          {% endif %}
+
         </div>
 
         <!-- Recent Listings -->
@@ -250,6 +356,11 @@
 
 
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="{% static 'js/profile.js' %}" defer></script>
+<script src="{% static 'js/dashboard.js' %}" defer></script>
+<script>
+  window.DASH_CHART_DATA = {{ chart_data_json|safe }};
+</script>
 
 {% endblock %}

@@ -295,6 +295,19 @@ class Message(models.Model):
         return f"Message from {self.buyer.username} to {self.seller.username} about {self.book.title}"
 
 
+class MessageReply(models.Model):
+    message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name="replies")
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="message_replies")
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"Reply by {self.sender.username} on message #{self.message.pk}"
+
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Cart Item
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

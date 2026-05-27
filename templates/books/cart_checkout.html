@@ -83,16 +83,14 @@
           <!-- Payment Method -->
           <div class="form-card">
             <h3 class="form-card-title">Payment Method</h3>
-            {% if form.payment_method.errors %}
-            <span class="field-error">{{ form.payment_method.errors.0 }}</span>
-            {% endif %}
+            <input type="hidden" name="payment_method" value="esewa" />
             <div class="payment-options-list">
-              {% for radio in form.payment_method %}
-              <label class="payment-option" for="{{ radio.id_for_label }}">
-                {{ radio.tag }}
-                <span class="payment-label-text">{{ radio.choice_label }}</span>
+              <label class="payment-option payment-option--selected">
+                <span class="payment-label-text">
+                  <img src="https://esewa.com.np/common/images/esewa_logo.png" alt="eSewa" style="height:22px;vertical-align:middle;margin-right:8px;" />
+                  eSewa
+                </span>
               </label>
-              {% endfor %}
             </div>
           </div>
 
@@ -137,7 +135,7 @@
             <span>Rs. {{ total }}</span>
           </div>
 
-          <button type="submit" class="btn-place-order">Place Order</button>
+          <button type="submit" class="btn-place-order">Pay with eSewa →</button>
           <a href="{% url 'books:cart' %}" class="back-link">← Back to cart</a>
 
           <ul class="checkout-trust-list">

@@ -8,11 +8,16 @@ from django.views import View
 from .models import Book, Message, Transaction, CartItem, MessageReply
 from .forms import CheckoutForm
 from django.http import JsonResponse
+from django.conf import settings
 import base64
 import binascii
+import hashlib
+import hmac
 import io
 import json
 import uuid
+import requests as http_requests
+
 from typing import cast
 import re
 from django.contrib.auth.decorators import login_required
@@ -25,6 +30,160 @@ from .models import Author, Book, Message
 
 IMAGE_FORMSET_PREFIX = "images"
 MAX_DATAURL_IMAGE_BYTES = 8 * 1024 * 1024  # 8 MB per reconstructed image
+
+# ---------------------------------------------------------------------------
+# eSewa helpers
+# ---------------------------------------------------------------------------
+
+def _esewa_build_signature(transaction_uuid, total_amount):
+    message = (
+        f"total_amount={total_amount},"
+        f"transaction_uuid={transaction_uuid},"
+        f"product_code={settings.ESEWA_PRODUCT_CODE}"
+    )
+    raw = hmac.new(
+        settings.ESEWA_SECRET_KEY.encode(),
+        message.encode(),
+        hashlib.sha256,
+    ).digest()
+    return base64.b64encode(raw).decode()
+
+
+def _esewa_redirect(request, primary_transaction, override_amount=None, is_cart=False):
+    total_amount = str(override_amount if override_amount is not None else primary_transaction.price)
+    transaction_uuid = primary_transaction.slug
+
+    signature = _esewa_build_signature(transaction_uuid, total_amount)
+
+    if is_cart:
+        success_url = request.build_absolute_uri(reverse('books:esewa_success')) + "?cart=1"
+        failure_url = request.build_absolute_uri(reverse('books:esewa_failure')) + "?cart=1"
+    else:
+        success_url = request.build_absolute_uri(reverse('books:esewa_success')) + f"?txn={primary_transaction.slug}"
+        failure_url = request.build_absolute_uri(reverse('books:esewa_failure')) + f"?txn={primary_transaction.slug}"
+
+    context = {
+        'esewa_url': settings.ESEWA_PAYMENT_URL,
+        'amount': total_amount,
+        'tax_amount': '0',
+        'total_amount': total_amount,
+        'transaction_uuid': transaction_uuid,
+        'product_code': settings.ESEWA_PRODUCT_CODE,
+        'product_service_charge': '0',
+        'product_delivery_charge': '0',
+        'success_url': success_url,
+        'failure_url': failure_url,
+        'signature': signature,
+        'signed_field_names': 'total_amount,transaction_uuid,product_code',
+    }
+    return render(request, 'books/esewa_redirect.html', context)
+
+
+def _esewa_verify(transaction_uuid, total_amount):
+    try:
+        url = (
+            f"{settings.ESEWA_VERIFY_URL}"
+            f"?product_code={settings.ESEWA_PRODUCT_CODE}"
+            f"&transaction_uuid={transaction_uuid}"
+            f"&total_amount={total_amount}"
+        )
+        resp = http_requests.get(url, timeout=10)
+        data = resp.json()
+        return data.get("status") == "COMPLETE"
+    except Exception:
+        return False
+
+
+class EsewaSuccessView(LoginRequiredMixin, View):
+    login_url = 'accounts:login'
+
+    def get(self, request):
+        encoded_data = request.GET.get('data', '')
+        is_cart = request.GET.get('cart') == '1'
+
+        if not encoded_data:
+            messages.error(request, "Invalid payment response from eSewa.")
+            return redirect('books:browse')
+
+        try:
+            decoded = base64.b64decode(encoded_data).decode()
+            payload = json.loads(decoded)
+        except Exception:
+            messages.error(request, "Could not decode eSewa response.")
+            return redirect('books:browse')
+
+        transaction_uuid = payload.get('transaction_uuid', '')
+        total_amount = payload.get('total_amount', '0').replace(',', '')
+        ref_id = payload.get('transaction_code', '')
+
+        verified = _esewa_verify(transaction_uuid, total_amount)
+
+        if not verified:
+            Transaction.objects.filter(slug=transaction_uuid).update(status='cancelled')
+            messages.error(request, "eSewa payment verification failed. Order cancelled.")
+            return redirect('books:browse')
+
+        if is_cart:
+            slugs = request.session.pop('cart_order_slugs', [transaction_uuid])
+            Transaction.objects.filter(slug__in=slugs).update(
+                status='completed', esewa_ref_id=ref_id
+            )
+            return redirect('books:cart_order_confirmed_success')
+        else:
+            t = get_object_or_404(Transaction, slug=transaction_uuid, buyer=request.user)
+            t.status = 'completed'
+            t.esewa_ref_id = ref_id
+            t.save(update_fields=['status', 'esewa_ref_id'])
+            return redirect('books:order_confirmed', order_slug=t.slug)
+
+
+class EsewaFailureView(LoginRequiredMixin, View):
+    login_url = 'accounts:login'
+
+    def get(self, request):
+        is_cart = request.GET.get('cart') == '1'
+        txn_slug = request.GET.get('txn', '')
+
+        if txn_slug:
+            t = Transaction.objects.filter(slug=txn_slug, buyer=request.user).first()
+            if t:
+                t.status = 'cancelled'
+                t.save(update_fields=['status'])
+                t.book.status = 'available'
+                t.book.save(update_fields=['status'])
+
+        if is_cart:
+            slugs = request.session.pop('cart_order_slugs', [])
+            if slugs:
+                txns = Transaction.objects.filter(slug__in=slugs, buyer=request.user)
+                for txn in txns:
+                    txn.book.status = 'available'
+                    txn.book.save(update_fields=['status'])
+                txns.update(status='cancelled')
+
+        messages.error(request, "Payment was cancelled or failed. Please try again.")
+        return redirect('books:cart' if is_cart else 'books:browse')
+
+
+class CartOrderConfirmedSuccessView(LoginRequiredMixin, View):
+    login_url = 'accounts:login'
+
+    def get(self, request):
+        slugs = request.session.pop('cart_order_slugs', [])
+        if not slugs:
+            transactions = Transaction.objects.filter(
+                buyer=request.user, status='completed'
+            ).order_by('-created_at')[:5]
+        else:
+            transactions = Transaction.objects.filter(
+                slug__in=slugs, buyer=request.user
+            ).select_related('book', 'book__seller')
+
+        total = sum(t.price for t in transactions)
+        return render(request, 'books/cart_order_confirmed.html', {
+            'transactions': transactions,
+            'total': total,
+        })
 
 
 class HomeView(TemplateView):
@@ -113,6 +272,8 @@ class BrowseView(ListView):
         context["max_price"] = self.request.GET.get("max_price", "")
         context["selected_sort"] = self.request.GET.get("sort", "newest")
         return context
+
+
 class SubscribeView(CreateView):
     def post(self, request):
         email = request.POST.get("email")
@@ -189,7 +350,7 @@ class CheckoutView(LoginRequiredMixin, View):
             book.status = 'reserved'
             book.save(update_fields=['status'])
 
-            return redirect('books:order_confirmed', order_slug=t.slug)
+            return _esewa_redirect(request, t)
 
         return render(request, 'books/checkout.html', {
             'book': book,
@@ -226,7 +387,6 @@ class ContactSellerView(LoginRequiredMixin, CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         self.book = get_object_or_404(Book, slug=self.kwargs["slug"])
-        # Sellers cannot message themselves
         if request.user.is_authenticated and request.user == self.book.seller:
             return redirect("books:detail", seller=self.book.seller.username, slug=self.book.slug)
         return super().dispatch(request, *args, **kwargs)
@@ -251,9 +411,6 @@ class ContactSellerView(LoginRequiredMixin, CreateView):
         })
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Author creation — plain POST, no AJAX/fetch needed
-# ─────────────────────────────────────────────────────────────────────────────
 class AuthorCreateView(LoginRequiredMixin, View):
     login_url = "accounts:login"
 
@@ -279,9 +436,6 @@ class AuthorCreateView(LoginRequiredMixin, View):
         return redirect("books:sell")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Book upsert (create + edit) — unchanged logic, updated _sell_context
-# ─────────────────────────────────────────────────────────────────────────────
 class BookUpsertView(LoginRequiredMixin, View):
     template_name = "books/sell.html"
     login_url = "accounts:login"
@@ -296,11 +450,9 @@ class BookUpsertView(LoginRequiredMixin, View):
         image_forms = BookImageFormSet(
             instance=instance,
             prefix=IMAGE_FORMSET_PREFIX,
-            # initial=[{"image_type": "cover"}],  # first slot defaults to cover
             initial=[{"image_type": "cover"}, {"image_type": "condition"}, {"image_type": "condition"}],
         )
 
-        # If we just came back from adding an author, pre-select it
         try:
             preselected_author_id = int(request.GET.get("author_added", 0))
         except (ValueError, TypeError):
@@ -455,9 +607,6 @@ class BookDeleteView(LoginRequiredMixin, View):
         messages.success(request, "Your listing has been deleted.")
         return redirect("books:browse")
 
-# ─────────────────────────────────────────────────────────────────────────────
-# CART VIEWS
-# ─────────────────────────────────────────────────────────────────────────────
 
 class CartView(LoginRequiredMixin, View):
     login_url = 'accounts:login'
@@ -472,7 +621,6 @@ class CartView(LoginRequiredMixin, View):
 
 
 class AddToCartView(LoginRequiredMixin, View):
-    """Adds a book to the user's cart. Called from book detail page."""
     login_url = 'accounts:login'
 
     def post(self, request, seller, slug):
@@ -506,10 +654,6 @@ class RemoveFromCartView(LoginRequiredMixin, View):
 
 
 class CartCheckoutView(LoginRequiredMixin, View):
-    """
-    Single checkout for all books in the cart.
-    Creates one Transaction per book, marks each reserved, clears the cart.
-    """
     login_url = 'accounts:login'
 
     def get(self, request):
@@ -519,7 +663,6 @@ class CartCheckoutView(LoginRequiredMixin, View):
             messages.info(request, "Your cart is empty.")
             return redirect('books:cart')
 
-        # Filter out any books that became unavailable since being added
         available = [item for item in cart_items if item.book.status == 'available' and item.book.seller != request.user]
         unavailable = [item for item in cart_items if item.book.status != 'available' or item.book.seller == request.user]
 
@@ -575,15 +718,14 @@ class CartCheckoutView(LoginRequiredMixin, View):
                     item.book.save(update_fields=['status'])
                     created_transactions.append(t)
 
-                # Clear all purchased items from cart
                 CartItem.objects.filter(
                     user=request.user,
                     book__in=[item.book for item in available]
                 ).delete()
 
-            # Pass slugs of all transactions via session to the confirmed page
             request.session['cart_order_slugs'] = [t.slug for t in created_transactions]
-            return redirect('books:cart_order_confirmed')
+            total_amount = sum(t.price for t in created_transactions)
+            return _esewa_redirect(request, created_transactions[0], override_amount=total_amount, is_cart=True)
 
         total = sum(item.book.asking_price for item in available)
         return render(request, 'books/cart_checkout.html', {
@@ -734,7 +876,6 @@ class ReplyMessageView(LoginRequiredMixin, View):
     def post(self, request, pk):
         msg = get_object_or_404(Message, pk=pk)
 
-        # Only the seller or the buyer can reply
         if request.user not in (msg.seller, msg.buyer):
             return JsonResponse({'error': 'Forbidden'}, status=403)
 

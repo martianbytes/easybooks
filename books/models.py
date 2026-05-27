@@ -250,6 +250,7 @@ class Transaction(models.Model):
 
     price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    esewa_ref_id = models.CharField(max_length=128, blank=True, null=True, db_index=True)
 
     slug = models.SlugField(max_length=300, unique=True, blank=True)
 

@@ -150,7 +150,7 @@
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
             </span>
             <div>
-              <p class="pdb-stat-value">Rs {{ total_earned }}</p>
+              <p class="pdb-stat-value">Rs {{ total_earned|floatformat:2 }}</p>
               <p class="pdb-stat-label">Total Earned</p>
             </div>
           </div>
@@ -159,7 +159,7 @@
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
             </span>
             <div>
-              <p class="pdb-stat-value">Rs {{ total_spent }}</p>
+              <p class="pdb-stat-value">Rs {{ total_spent|floatformat:2 }}</p>
               <p class="pdb-stat-label">Total Spent</p>
             </div>
           </div>
@@ -189,19 +189,19 @@
               </div>
               <div class="dash-breakdown-stats">
                 <div class="dash-mini-stat">
-                  <p class="dash-mini-stat__val">{{ total_sales_count }}</p>
+                  <p class="dash-mini-stat__val">{{ total_sales_count|floatformat:2 }}</p>
                   <p class="dash-mini-stat__lbl">Total</p>
                 </div>
                 <div class="dash-mini-stat">
-                  <p class="dash-mini-stat__val">Rs {{ total_earned }}</p>
+                  <p class="dash-mini-stat__val">Rs {{ total_earned|floatformat:2 }}</p>
                   <p class="dash-mini-stat__lbl">Earned</p>
                 </div>
                 <div class="dash-mini-stat">
-                  <p class="dash-mini-stat__val">Rs {{ highest_sale }}</p>
+                  <p class="dash-mini-stat__val">Rs {{ highest_sale|floatformat:2 }}</p>
                   <p class="dash-mini-stat__lbl">Highest</p>
                 </div>
                 <div class="dash-mini-stat">
-                  <p class="dash-mini-stat__val">Rs {{ lowest_sale }}</p>
+                  <p class="dash-mini-stat__val">Rs {{ lowest_sale|floatformat:2 }}</p>
                   <p class="dash-mini-stat__lbl">Lowest</p>
                 </div>
               </div>
@@ -231,19 +231,19 @@
               </div>
               <div class="dash-breakdown-stats">
                 <div class="dash-mini-stat">
-                  <p class="dash-mini-stat__val">{{ total_purchases_count }}</p>
+                  <p class="dash-mini-stat__val">{{ total_purchases_count|floatformat:2 }}</p>
                   <p class="dash-mini-stat__lbl">Total</p>
                 </div>
                 <div class="dash-mini-stat">
-                  <p class="dash-mini-stat__val">Rs {{ total_spent }}</p>
+                  <p class="dash-mini-stat__val">Rs {{ total_spent|floatformat:2 }}</p>
                   <p class="dash-mini-stat__lbl">Spent</p>
                 </div>
                 <div class="dash-mini-stat">
-                  <p class="dash-mini-stat__val">Rs {{ highest_purchase }}</p>
+                  <p class="dash-mini-stat__val">Rs {{ highest_purchase|floatformat:2 }}</p>
                   <p class="dash-mini-stat__lbl">Highest</p>
                 </div>
                 <div class="dash-mini-stat">
-                  <p class="dash-mini-stat__val">Rs {{ lowest_purchase }}</p>
+                  <p class="dash-mini-stat__val">Rs {{ lowest_purchase|floatformat:2 }}</p>
                   <p class="dash-mini-stat__lbl">Lowest</p>
                 </div>
               </div>

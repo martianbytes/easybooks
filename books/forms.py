@@ -518,6 +518,7 @@ class CheckoutForm(forms.Form):
     )
     payment_method = forms.ChoiceField(
         choices=PAYMENT_CHOICES,
+        initial="esewa",
         widget=forms.RadioSelect(attrs={"class": "payment-radio"}),
     )
     # ── Individual field validation ───────────────────────────────────────

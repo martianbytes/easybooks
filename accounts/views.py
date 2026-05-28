@@ -67,8 +67,8 @@ class ProfileView(LoginRequiredMixin, DetailView):
         ctx = super().get_context_data(**kwargs)
         user = self.request.user
 
-        # ── Sales analytics ──────────────────────────────────────────
-        sales_qs = Transaction.objects.filter(seller=user)
+        # ── Sales analytics (completed only) ─────────────────────────
+        sales_qs = Transaction.objects.filter(seller=user, status='completed')
         sales_agg = sales_qs.aggregate(
             total_earned=Sum('price'),
             highest_sale=Max('price'),
@@ -76,8 +76,8 @@ class ProfileView(LoginRequiredMixin, DetailView):
             total_sales=Count('id'),
         )
 
-        # ── Purchase analytics ───────────────────────────────────────
-        purchases_qs = Transaction.objects.filter(buyer=user)
+        # ── Purchase analytics (completed only) ──────────────────────
+        purchases_qs = Transaction.objects.filter(buyer=user, status='completed')
         purchases_agg = purchases_qs.aggregate(
             total_spent=Sum('price'),
             highest_purchase=Max('price'),
@@ -120,22 +120,27 @@ class ProfileView(LoginRequiredMixin, DetailView):
             'purchases': [purchases_data.get(m, 0) for m in month_labels],
         }
 
+        from books.models import Book as BookModel
         ctx.update({
-            # Sales
-            'total_earned': sales_agg['total_earned'] or 0,
-            'highest_sale': sales_agg['highest_sale'] or 0,
-            'lowest_sale': sales_agg['lowest_sale'] or 0,
+            # Sales (completed only)
+            'total_earned': round(float(sales_agg['total_earned'] or 0), 2),
+            'highest_sale': round(float(sales_agg['highest_sale'] or 0), 2),
+            'lowest_sale': round(float(sales_agg['lowest_sale'] or 0), 2),
             'total_sales_count': sales_agg['total_sales'] or 0,
-            # Purchases
-            'total_spent': purchases_agg['total_spent'] or 0,
-            'highest_purchase': purchases_agg['highest_purchase'] or 0,
-            'lowest_purchase': purchases_agg['lowest_purchase'] or 0,
+            # Purchases (completed only)
+            'total_spent': round(float(purchases_agg['total_spent'] or 0), 2),
+            'highest_purchase': round(float(purchases_agg['highest_purchase'] or 0), 2),
+            'lowest_purchase': round(float(purchases_agg['lowest_purchase'] or 0), 2),
             'total_purchases_count': purchases_agg['total_purchases'] or 0,
             # Chart
             'chart_data_json': json.dumps(chart_data),
-            # Recent transactions
+            # Recent completed transactions
             'recent_sales': sales_qs.select_related('book', 'buyer').order_by('-created_at')[:5],
             'recent_purchases': purchases_qs.select_related('book', 'seller').order_by('-created_at')[:5],
+            # Recent listings (most recently listed first)
+            'recent_listings': BookModel.objects.filter(
+                seller=user, is_active=True
+            ).prefetch_related('images', 'authors').order_by('-created_at')[:4],
         })
         return ctx
 

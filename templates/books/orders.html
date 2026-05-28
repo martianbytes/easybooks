@@ -51,8 +51,8 @@
           {% if order.status == 'order_request' or order.status == 'pending' %}
           <div class="order-card__actions">
 
-            {% if order._related_message %}
-            <a href="{% url 'books:messages_inbox' %}#msg-{{ order._related_message.pk }}" class="order-action-btn order-action-btn--message">
+            {% if order.related_message %}
+            <a href="{% url 'books:messages_inbox' %}#msg-{{ order.related_message.pk }}" class="order-action-btn order-action-btn--message">
               💬 Message Seller
             </a>
             {% else %}

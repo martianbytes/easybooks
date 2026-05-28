@@ -705,21 +705,11 @@ class CartCheckoutView(LoginRequiredMixin, View):
             return redirect('books:cart')
 
         total = sum(item.book.asking_price for item in available)
-        initial_data = {
-            'first_name': request.user.first_name,
-            'last_name': request.user.last_name,
-            'email': request.user.email,
-            'phone': getattr(request.user.profile, 'phone', ''),
-            'city': getattr(request.user.profile, 'city', ''),
-            'district': getattr(request.user.profile, 'district', ''),
-        }
-        form = CheckoutForm(initial=initial_data)
 
         return render(request, 'books/cart_checkout.html', {
             'available_items': available,
             'unavailable_items': unavailable,
             'total': total,
-            'form': form,
         })
 
     def post(self, request):
@@ -734,40 +724,25 @@ class CartCheckoutView(LoginRequiredMixin, View):
             messages.error(request, "None of the books in your cart are available.")
             return redirect('books:cart')
 
-        form = CheckoutForm(request.POST)
+        with transaction.atomic():
+            for item in available:
+                Transaction.objects.create(
+                    book=item.book,
+                    buyer=request.user,
+                    seller=item.book.seller,
+                    price=item.book.asking_price,
+                    status='order_request',
+                )
+                item.book.status = 'reserved'
+                item.book.save(update_fields=['status'])
 
-        if form.is_valid():
-            created_transactions = []
+            CartItem.objects.filter(
+                user=request.user,
+                book__in=[item.book for item in available]
+            ).delete()
 
-            with transaction.atomic():
-                for item in available:
-                    t = Transaction.objects.create(
-                        book=item.book,
-                        buyer=request.user,
-                        seller=item.book.seller,
-                        price=item.book.asking_price,
-                        status='order_request',
-                    )
-                    item.book.status = 'reserved'
-                    item.book.save(update_fields=['status'])
-                    created_transactions.append(t)
-
-                CartItem.objects.filter(
-                    user=request.user,
-                    book__in=[item.book for item in available]
-                ).delete()
-
-            request.session['cart_order_slugs'] = [t.slug for t in created_transactions]
-            total_amount = sum(t.price for t in created_transactions)
-            return _esewa_redirect(request, created_transactions[0], override_amount=total_amount, is_cart=True)
-
-        total = sum(item.book.asking_price for item in available)
-        return render(request, 'books/cart_checkout.html', {
-            'available_items': available,
-            'unavailable_items': [],
-            'total': total,
-            'form': form,
-        })
+        messages.success(request, f"Your order request for {len(available)} book(s) has been sent to the seller(s)!")
+        return redirect('books:orders')
 
 
 class CartOrderConfirmedView(LoginRequiredMixin, View):
@@ -865,10 +840,9 @@ class OrdersView(LoginRequiredMixin, View):
 
         # Attach related message to each order
         for order in orders:
-            related = Message.objects.filter(
+            setattr(order, 'related_message', Message.objects.filter(
                 buyer=request.user, book=order.book, seller=order.seller
-            ).first()
-            setattr(order, "_related_message", related)
+            ).first())
 
         return render(request, 'books/orders.html', {
             'orders': orders,

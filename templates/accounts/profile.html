@@ -150,7 +150,7 @@
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
             </span>
             <div>
-              <p class="pdb-stat-value">Rs {{ total_earned }}</p>
+              <p class="pdb-stat-value">Rs {{ total_earned|floatformat:2 }}</p>
               <p class="pdb-stat-label">Total Earned</p>
             </div>
           </div>
@@ -159,7 +159,7 @@
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
             </span>
             <div>
-              <p class="pdb-stat-value">Rs {{ total_spent }}</p>
+              <p class="pdb-stat-value">Rs {{ total_spent|floatformat:2 }}</p>
               <p class="pdb-stat-label">Total Spent</p>
             </div>
           </div>
@@ -193,15 +193,15 @@
                   <p class="dash-mini-stat__lbl">Total</p>
                 </div>
                 <div class="dash-mini-stat">
-                  <p class="dash-mini-stat__val">Rs {{ total_earned }}</p>
+                  <p class="dash-mini-stat__val">Rs {{ total_earned|floatformat:2 }}</p>
                   <p class="dash-mini-stat__lbl">Earned</p>
                 </div>
                 <div class="dash-mini-stat">
-                  <p class="dash-mini-stat__val">Rs {{ highest_sale }}</p>
+                  <p class="dash-mini-stat__val">Rs {{ highest_sale|floatformat:2 }}</p>
                   <p class="dash-mini-stat__lbl">Highest</p>
                 </div>
                 <div class="dash-mini-stat">
-                  <p class="dash-mini-stat__val">Rs {{ lowest_sale }}</p>
+                  <p class="dash-mini-stat__val">Rs {{ lowest_sale|floatformat:2 }}</p>
                   <p class="dash-mini-stat__lbl">Lowest</p>
                 </div>
               </div>
@@ -213,7 +213,7 @@
                     <a href="{% url 'books:detail' t.book.seller.username t.book.slug %}" class="dash-recent-title">{{ t.book.title|truncatechars:28 }}</a>
                     <span class="dash-recent-date">{{ t.created_at|date:"M d, Y" }}</span>
                   </div>
-                  <span class="dash-recent-amount dash-recent-amount--green">+Rs {{ t.price }}</span>
+                  <span class="dash-recent-amount dash-recent-amount--green">+Rs {{ t.price|floatformat:2 }}</span>
                 </li>
                 {% endfor %}
               </ul>
@@ -235,15 +235,15 @@
                   <p class="dash-mini-stat__lbl">Total</p>
                 </div>
                 <div class="dash-mini-stat">
-                  <p class="dash-mini-stat__val">Rs {{ total_spent }}</p>
+                  <p class="dash-mini-stat__val">Rs {{ total_spent|floatformat:2 }}</p>
                   <p class="dash-mini-stat__lbl">Spent</p>
                 </div>
                 <div class="dash-mini-stat">
-                  <p class="dash-mini-stat__val">Rs {{ highest_purchase }}</p>
+                  <p class="dash-mini-stat__val">Rs {{ highest_purchase|floatformat:2 }}</p>
                   <p class="dash-mini-stat__lbl">Highest</p>
                 </div>
                 <div class="dash-mini-stat">
-                  <p class="dash-mini-stat__val">Rs {{ lowest_purchase }}</p>
+                  <p class="dash-mini-stat__val">Rs {{ lowest_purchase|floatformat:2 }}</p>
                   <p class="dash-mini-stat__lbl">Lowest</p>
                 </div>
               </div>
@@ -255,7 +255,7 @@
                     <a href="{% url 'books:detail' t.book.seller.username t.book.slug %}" class="dash-recent-title">{{ t.book.title|truncatechars:28 }}</a>
                     <span class="dash-recent-date">{{ t.created_at|date:"M d, Y" }}</span>
                   </div>
-                  <span class="dash-recent-amount dash-recent-amount--red">−Rs {{ t.price }}</span>
+                  <span class="dash-recent-amount dash-recent-amount--red">−Rs {{ t.price|floatformat:2 }}</span>
                 </li>
                 {% endfor %}
               </ul>
@@ -287,19 +287,20 @@
               </span>
               My Recent Listings
             </h2>
-            <a href="{% url 'books:browse' %}" class="pdb-view-all">View All</a>
+            <a href="{% url 'books:sell' %}" class="pdb-view-all">+ New Listing</a>
           </div>
 
-          {% with listings=profile.user.listings.all %}
-          {% if listings %}
+          {% if recent_listings %}
           <div class="pdb-listings-grid">
-            {% for book in listings|slice:":4" %}
+            {% for book in recent_listings %}
             <div class="pdb-listing-card">
               <div class="pdb-listing-img-wrap">
                 {% if book.condition %}
-                <span class="pdb-condition-badge pdb-cond-{{ book.condition|lower }}">{{ book.condition }}</span>
+                <span class="pdb-condition-badge pdb-cond-{{ book.condition|lower }}">{{ book.get_condition_display }}</span>
                 {% endif %}
-                {% if book.images.first %}
+                {% if book.cover_image %}
+                <img src="{{ book.cover_image }}" alt="{{ book.title }}" class="pdb-listing-img" />
+                {% elif book.images.first %}
                 <img src="{{ book.images.first.image.url }}" alt="{{ book.title }}" class="pdb-listing-img" />
                 {% else %}
                 <div class="pdb-listing-img-placeholder">📖</div>
@@ -321,13 +322,18 @@
                     </svg>
                   </button>
                 </div>
+                <span class="pdb-status-badge pdb-status-{{ book.status }}">{{ book.get_status_display }}</span>
               </div>
               <div class="pdb-listing-body">
-                <p class="pdb-listing-genre">{{ book.category }}</p>
-                <h3 class="pdb-listing-title">{{ book.title }}</h3>
-                <p class="pdb-listing-author">{{ book.author }}</p>
+                <p class="pdb-listing-genre">{{ book.get_category_display }}</p>
+                <h3 class="pdb-listing-title">
+                  <a href="{% url 'books:detail' book.seller.username book.slug %}" class="pdb-listing-title-link">{{ book.title }}</a>
+                </h3>
+                <p class="pdb-listing-author">
+                  {% for author in book.authors.all %}{{ author.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}
+                </p>
                 <hr class="pdb-listing-divider" />
-                <p class="pdb-listing-price">Rs {{ book.asking_price }}</p>
+                <p class="pdb-listing-price">Rs {{ book.asking_price|floatformat:2 }}</p>
               </div>
             </div>
             {% endfor %}
@@ -335,7 +341,6 @@
           {% else %}
           <p class="pdb-empty-msg">No listings yet. <a href="{% url 'books:sell' %}">List your first book →</a></p>
           {% endif %}
-          {% endwith %}
         </div>
 
       </main>

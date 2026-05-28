@@ -239,9 +239,15 @@ class BookImage(models.Model):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class Transaction(models.Model):
     STATUS_CHOICES = [
+        ("order_request", "Order Requested"),
         ("pending", "Pending"),
         ("completed", "Completed"),
         ("cancelled", "Cancelled"),
+    ]
+
+    PAYMENT_METHOD_CHOICES = [
+        ("esewa", "eSewa"),
+        ("other", "Other"),
     ]
 
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
@@ -249,8 +255,10 @@ class Transaction(models.Model):
     seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sales")
 
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="order_request")
     esewa_ref_id = models.CharField(max_length=128, blank=True, null=True, db_index=True)
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, blank=True, null=True)
+    payment_remarks = models.TextField(blank=True, null=True)
 
     slug = models.SlugField(max_length=300, unique=True, blank=True)
 

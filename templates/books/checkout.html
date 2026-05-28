@@ -9,15 +9,15 @@
       <li class="sep">›</li>
       <li><a href="{% url 'books:detail' book.seller.username book.slug %}">{{ book.title }}</a></li>
       <li class="sep">›</li>
-      <li class="current">Checkout</li>
+      <li class="current">Place Order</li>
     </ol>
   </div>
 </nav>
 
 <section class="checkout-section">
   <div class="container">
-    <h1 class="checkout-title">Checkout</h1>
-    <p class="checkout-subtitle">Complete your order below</p>
+    <h1 class="checkout-title">Place Order</h1>
+    <p class="checkout-subtitle">Send a purchase request to the seller</p>
 
     {% if messages %} {% for message in messages %}
     <div class="alert alert-{{ message.tags }}">{{ message }}</div>
@@ -27,75 +27,40 @@
       {% csrf_token %}
 
       <div class="checkout-layout">
+        <!-- How it works -->
         <div class="checkout-forms">
-          <!-- Delivery Info -->
           <div class="form-card">
-            <h3 class="form-card-title">Delivery Information</h3>
-            <div class="form-grid">
-              <div class="form-group">
-                <label>First Name</label>
-                {{ form.first_name }} {% if form.first_name.errors %}
-                <span class="field-error">{{ form.first_name.errors.0 }}</span>
-                {% endif %}
-              </div>
+            <h3 class="form-card-title">How This Works</h3>
+            <ol class="checkout-how-list">
+              <li>
+                <span class="checkout-how-num">1</span>
+                <div>
+                  <strong>You place an order</strong>
+                  <p>Click "Place Order" to notify the seller that you want to buy this book.</p>
+                </div>
+              </li>
+              <li>
+                <span class="checkout-how-num">2</span>
+                <div>
+                  <strong>Seller contacts you</strong>
+                  <p>The seller will reach out to arrange how and where to hand over the book.</p>
+                </div>
+              </li>
+              <li>
+                <span class="checkout-how-num">3</span>
+                <div>
+                  <strong>You receive the book &amp; pay</strong>
+                  <p>Once you have the book in hand, you complete the payment — via eSewa or another method you agree on with the seller.</p>
+                </div>
+              </li>
+            </ol>
 
-              <div class="form-group">
-                <label>Last Name</label>
-                {{ form.last_name }} {% if form.last_name.errors %}
-                <span class="field-error">{{ form.last_name.errors.0 }}</span>
-                {% endif %}
-              </div>
-
-              <div class="form-group full">
-                <label>Email</label>
-                {{ form.email }} {% if form.email.errors %}
-                <span class="field-error">{{ form.email.errors.0 }}</span>
-                {% endif %}
-              </div>
-
-              <div class="form-group full">
-                <label>Phone Number</label>
-                {{ form.phone }} {% if form.phone.errors %}
-                <span class="field-error">{{ form.phone.errors.0 }}</span>
-                {% endif %}
-              </div>
-
-              <div class="form-group full">
-                <label>Address</label>
-                {{ form.address }} {% if form.address.errors %}
-                <span class="field-error">{{ form.address.errors.0 }}</span>
-                {% endif %}
-              </div>
-
-              <div class="form-group">
-                <label>City</label>
-                {{ form.city }} {% if form.city.errors %}
-                <span class="field-error">{{ form.city.errors.0 }}</span>
-                {% endif %}
-              </div>
-
-              <div class="form-group">
-                <label>District</label>
-                {{ form.district }} {% if form.district.errors %}
-                <span class="field-error">{{ form.district.errors.0 }}</span>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-
-          <!-- Payment Method -->
-          <div class="form-card">
-            <h3 class="form-card-title">Payment Method</h3>
-            {% if form.payment_method.errors %}
-            <span class="field-error">{{ form.payment_method.errors.0 }}</span>
-            {% endif %}
-            <div class="payment-options-list">
-              {% for radio in form.payment_method %}
-              <label class="payment-option" for="{{ radio.id_for_label }}">
-                {{ radio.tag }}
-                <span class="payment-label-text">{{ radio.choice_label }}</span>
-              </label>
-              {% endfor %}
+            <div class="checkout-buyer-info">
+              <p class="checkout-buyer-note">
+                Your order will be sent under your account:
+                <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+                ({{ request.user.email }})
+              </p>
             </div>
           </div>
         </div>
@@ -106,23 +71,14 @@
 
           <div class="summary-book">
             {% if book.cover_image %}
-            <img
-              src="{{ book.cover_image }}"
-              alt="{{ book.title }}"
-              class="summary-book-img"
-            />
+            <img src="{{ book.cover_image }}" alt="{{ book.title }}" class="summary-book-img" />
             {% else %}
             <div class="summary-book-img summary-no-img">📚</div>
             {% endif %}
             <div class="summary-book-info">
               <span class="summary-book-name">{{ book.title }}</span>
-              <span class="summary-book-seller"
-                >Sold by {{
-                book.seller.get_full_name|default:book.seller.username }}</span
-              >
-              <span class="summary-book-condition"
-                >Condition: {{ book.get_condition_display }}</span
-              >
+              <span class="summary-book-seller">Sold by {{ book.seller.get_full_name|default:book.seller.username }}</span>
+              <span class="summary-book-condition">Condition: {{ book.get_condition_display }}</span>
             </div>
             <span class="summary-book-price">Rs. {{ book.asking_price }}</span>
           </div>
@@ -130,13 +86,14 @@
           <hr class="summary-divider" />
 
           <div class="summary-row">
-            <span>Subtotal</span>
+            <span>Asking Price</span>
             <span>Rs. {{ book.asking_price }}</span>
           </div>
+          {% if book.is_negotiable %}
           <div class="summary-row">
-            <span>Delivery</span>
-            <span class="summary-free">Free</span>
+            <span style="color: var(--color-success, #16a34a); font-size: 0.85rem;">✓ Price is negotiable</span>
           </div>
+          {% endif %}
 
           <hr class="summary-divider" />
 
@@ -145,15 +102,17 @@
             <span>Rs. {{ book.asking_price }}</span>
           </div>
 
+          <p class="checkout-payment-note">
+            💡 Payment is made <strong>after you receive the book</strong>, not now.
+          </p>
+
           <button type="submit" class="btn-place-order">Place Order</button>
-          <a href="{% url 'books:detail' book.seller.username book.slug %}" class="back-link"
-            >← Back to book</a
-          >
+          <a href="{% url 'books:detail' book.seller.username book.slug %}" class="back-link">← Back to book</a>
 
           <ul class="checkout-trust-list">
-            <li>✓ Secure checkout</li>
-            <li>✓ 30-day return policy</li>
-            <li>✓ Buyer protection included</li>
+            <li>✓ No upfront payment required</li>
+            <li>✓ Pay only after receiving the book</li>
+            <li>✓ Seller is notified instantly</li>
           </ul>
         </aside>
       </div>

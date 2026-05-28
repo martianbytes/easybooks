@@ -1,6 +1,4 @@
-{% extends "base.html" %}
-{% block content %}
-{% load static %}
+{% extends "base.html" %} {% block content %} {% load static %}
 <!-- ═══════════════════════════════════════════
      BREADCRUMB
 ═══════════════════════════════════════════ -->
@@ -12,8 +10,12 @@
       <li><a href="{% url 'books:browse' %}">Browse</a></li>
       <li class="sep">›</li>
       {% if book.category %}
-        <li><a href="{% url 'books:browse' %}?category={{ book.category }}">{{ book.get_category_display }}</a></li>
-        <li class="sep">›</li>
+      <li>
+        <a href="{% url 'books:browse' %}?category={{ book.category }}"
+          >{{ book.get_category_display }}</a
+        >
+      </li>
+      <li class="sep">›</li>
       {% endif %}
       <li class="current">{{ book.title }}</li>
     </ol>
@@ -26,98 +28,112 @@
 <section class="detail-section">
   <div class="container">
     <div class="detail-layout">
-
       <!-- ────────────────────────────────────
            LEFT: IMAGE GALLERY
       ──────────────────────────────────────── -->
       <div class="detail-gallery">
-
         <!-- Main image -->
         <div class="gallery-main">
           {% if book.cover_image %}
-            <img
-              id="main-img"
-              src="{{ book.cover_image }}"
-              alt="{{ book.title }} cover"
-              class="gallery-main-img"
-            />
+          <img
+            id="main-img"
+            src="{{ book.cover_image }}"
+            alt="{{ book.title }} cover"
+            class="gallery-main-img"
+          />
           {% else %}
-            <div class="gallery-placeholder">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".3">
-                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                <path d="M3 9h18M9 21V9"/>
-              </svg>
-              <p>No image available</p>
-            </div>
-          {% endif %}
-
-          {% if book.status == 'sold' %}
-            <div class="gallery-sold-overlay">SOLD</div>
+          <div class="gallery-placeholder">
+            <svg
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              opacity=".3"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <path d="M3 9h18M9 21V9" />
+            </svg>
+            <p>No image available</p>
+          </div>
+          {% endif %} {% if book.status == 'sold' %}
+          <div class="gallery-sold-overlay">SOLD</div>
           {% elif book.status == 'reserved' %}
-            <div class="gallery-reserved-overlay">RESERVED</div>
+          <div class="gallery-reserved-overlay">RESERVED</div>
           {% endif %}
         </div>
 
         <!-- Thumbnail strip -->
         {% if book.images.count > 1 %}
         <div class="gallery-thumbs">
-          {% for img in book.images.all %}
-          {% if img.image %}
+          {% for img in book.images.all %} {% if img.image %}
           <a
             href="{{ img.image.url }}"
             class="thumb-btn {% if forloop.first %}active{% endif %}"
             title="{{ img.get_image_type_display }}"
           >
-            <img src="{{ img.image.url }}" alt="{{ img.get_image_type_display }}" />
+            <img
+              src="{{ img.image.url }}"
+              alt="{{ img.get_image_type_display }}"
+            />
           </a>
-          {% endif %}
-          {% endfor %}
+          {% endif %} {% endfor %}
         </div>
         {% endif %}
 
         <!-- Condition indicator -->
         <div class="condition-display">
           <span class="condition-dot condition-{{ book.condition }}"></span>
-          <span>Condition: <strong>{{ book.get_condition_display }}</strong></span>
+          <span
+            >Condition: <strong>{{ book.get_condition_display }}</strong></span
+          >
         </div>
-
       </div>
 
       <!-- ────────────────────────────────────
            MIDDLE: BOOK INFO
       ──────────────────────────────────────── -->
       <div class="detail-info">
-
         {% if book.category %}
-          <span class="detail-category-pill">{{ book.get_category_display }}</span>
+        <span class="detail-category-pill"
+          >{{ book.get_category_display }}</span
+        >
         {% endif %}
 
         <h1 class="detail-title">{{ book.title }}</h1>
 
         {% if book.subtitle %}
-          <p class="detail-subtitle">{{ book.subtitle }}</p>
+        <p class="detail-subtitle">{{ book.subtitle }}</p>
         {% endif %}
 
         <p class="detail-authors">
-          by
-          {% for author in book.authors.all %}
-            <a href="{% url 'books:browse' %}?author={{ author.id }}" class="author-link">{{ author.name }}</a>{% if not forloop.last %}, {% endif %}
-          {% endfor %}
+          by {% for author in book.authors.all %}
+          <a
+            href="{% url 'books:browse' %}?author={{ author.id }}"
+            class="author-link"
+            >{{ author.name }}</a
+          >{% if not forloop.last %}, {% endif %} {% endfor %}
         </p>
 
         <!-- Price block -->
         <div class="detail-price-block">
           <span class="detail-price">Rs. {{ book.asking_price }}</span>
           {% if book.original_price %}
-            <span class="detail-price-original">Rs. {{ book.original_price }}</span>
-          {% endif %}
-          {% if book.discount_percentage %}
-            <span class="detail-discount-badge">{{ book.discount_percentage }}% OFF</span>
+          <span class="detail-price-original"
+            >Rs. {{ book.original_price }}</span
+          >
+          {% endif %} {% if book.discount_percentage %}
+          <span class="detail-discount-badge"
+            >{{ book.discount_percentage }}% OFF</span
+          >
           {% endif %}
         </div>
 
         {% if book.is_negotiable %}
-          <p class="negotiable-note">💬 Price is negotiable :) feel free to ask</p>
+        <p class="negotiable-note">
+          💬 Price is negotiable :) feel free to ask
+        </p>
         {% endif %}
 
         <hr class="detail-divider" />
@@ -129,44 +145,45 @@
             <dt>Publisher</dt>
             <dd>{{ book.publisher }}</dd>
           </div>
-          {% endif %}
-          {% if book.published_year %}
+          {% endif %} {% if book.published_year %}
           <div class="meta-item">
             <dt>Published</dt>
             <dd>{{ book.published_year }}</dd>
           </div>
-          {% endif %}
-          {% if book.edition %}
+          {% endif %} {% if book.edition %}
           <div class="meta-item">
             <dt>Edition</dt>
             <dd>{{ book.edition }}</dd>
           </div>
-          {% endif %}
-          {% if book.num_pages %}
+          {% endif %} {% if book.num_pages %}
           <div class="meta-item">
             <dt>Pages</dt>
             <dd>{{ book.num_pages }}</dd>
           </div>
-          {% endif %}
-          {% if book.language %}
+          {% endif %} {% if book.language %}
           <div class="meta-item">
             <dt>Language</dt>
             <dd>{{ book.get_language_display }}</dd>
           </div>
-          {% endif %}
-          {% if book.isbn %}
+          {% endif %} {% if book.isbn %}
           <div class="meta-item">
             <dt>ISBN</dt>
             <dd>{{ book.isbn }}</dd>
           </div>
-          {% endif %}
-          {% if book.city %}
+          {% endif %} {% if book.city %}
           <div class="meta-item">
             <dt>Location</dt>
             <dd>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/>
-                <circle cx="12" cy="10" r="3"/>
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z" />
+                <circle cx="12" cy="10" r="3" />
               </svg>
               {{ book.city }}
             </dd>
@@ -191,59 +208,122 @@
           <p class="condition-notes-text">{{ book.condition_notes }}</p>
         </div>
         {% endif %}
-
       </div>
 
       <!-- ────────────────────────────────────
            RIGHT: STICKY ACTION CARD
       ──────────────────────────────────────── -->
       <aside class="detail-action-card">
-
         <!-- Availability status -->
         <div class="action-card-status action-status-{{ book.status }}">
           {% if book.status == 'available' %}
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            Available
-          {% elif book.status == 'reserved' %}
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-            Reserved
-          {% else %}
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
-            Sold
-          {% endif %}
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+          Available {% elif book.status == 'reserved' %}
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v4l3 3" />
+          </svg>
+          Reserved {% else %}
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M15 9l-6 6M9 9l6 6" />
+          </svg>
+          Sold {% endif %}
         </div>
 
         <!-- Price -->
         <div class="action-card-price">
           <span class="action-price-main">Rs. {{ book.asking_price }}</span>
           {% if book.original_price %}
-            <span class="action-price-orig">Rs. {{ book.original_price }}</span>
+          <span class="action-price-orig">Rs. {{ book.original_price }}</span>
           {% endif %}
         </div>
 
         <!-- CTA buttons or unavailable notice -->
-        {% if user.is_authenticated and user == book.seller %}
-          {# Seller sees edit/delete only, not buy/message #}
-        {% elif book.status == 'available' %}
+        {% if user.is_authenticated and user == book.seller %} {# Seller sees
+        edit/delete only, not buy/message #} {% elif book.status == 'available'
+        %}
         <div class="action-btn-group">
-          <a href="{% url 'books:checkout' book.seller.username book.slug %}" class="btn-action-primary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="9" cy="21" r="1"/>
-              <circle cx="20" cy="21" r="1"/>
-              <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/>
+          <a
+            href="{% url 'books:checkout' book.seller.username book.slug %}"
+            class="btn-action-primary"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="9" cy="21" r="1" />
+              <circle cx="20" cy="21" r="1" />
+              <path
+                d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"
+              />
             </svg>
             Buy Now
           </a>
           <!-- Add to Cart button -->
-          <form method="POST" action="{% url 'books:add_to_cart' book.seller.username book.slug %}">
+          <form
+            method="POST"
+            action="{% url 'books:add_to_cart' book.seller.username book.slug %}"
+          >
             {% csrf_token %}
             <button type="submit" class="btn-action-secondary">
               🛒 Add to Cart
             </button>
           </form>
-          <a href="{% url 'books:contact_seller' book.seller.username book.slug %}" class="btn-action-secondary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          <!-- Wishlist button — only for logged-in buyers (not the seller) -->
+          {% if request.user.is_authenticated and request.user != book.seller %}
+          <form
+            method="POST"
+            action="{% url 'books:toggle_wishlist' book.slug %}"
+          >
+            {% csrf_token %}
+            <button type="submit" class="btn-action-secondary">
+              ♡ Save to Wishlist
+            </button>
+          </form>
+          {% endif %}
+          <a
+            href="{% url 'books:contact_seller' book.seller.username book.slug %}"
+            class="btn-action-secondary"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"
+              />
             </svg>
             Message Seller
           </a>
@@ -261,19 +341,40 @@
           <div class="owner-action-divider">
             <span>Your listing</span>
           </div>
-          <a href="{% url 'books:edit' book.seller.username book.slug %}" class="btn-owner-edit">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          <a
+            href="{% url 'books:edit' book.seller.username book.slug %}"
+            class="btn-owner-edit"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
             </svg>
             Edit Listing
           </a>
           <button type="button" class="btn-owner-delete" id="delete-trigger">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="3 6 5 6 21 6"/>
-              <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-              <path d="M10 11v6M14 11v6"/>
-              <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+              <path d="M10 11v6M14 11v6" />
+              <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
             </svg>
             Delete Listing
           </button>
@@ -283,42 +384,76 @@
         <div class="delete-modal-overlay" id="delete-modal" aria-hidden="true">
           <div class="delete-modal">
             <div class="delete-modal__icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
             </div>
             <h3 class="delete-modal__title">Delete this listing?</h3>
-            <p class="delete-modal__body">This will permanently remove <strong>{{ book.title }}</strong> from EasyBooks. This action cannot be undone.</p>
+            <p class="delete-modal__body">
+              This will permanently remove
+              <strong>{{ book.title }}</strong> from EasyBooks. This action
+              cannot be undone.
+            </p>
             <div class="delete-modal__actions">
-              <button type="button" class="btn-modal-cancel" id="delete-cancel">Cancel</button>
-              <form method="POST" action="{% url 'books:delete' book.seller.username book.slug %}">
+              <button type="button" class="btn-modal-cancel" id="delete-cancel">
+                Cancel
+              </button>
+              <form
+                method="POST"
+                action="{% url 'books:delete' book.seller.username book.slug %}"
+              >
                 {% csrf_token %}
-                <button type="submit" class="btn-modal-confirm">Yes, delete it</button>
+                <button type="submit" class="btn-modal-confirm">
+                  Yes, delete it
+                </button>
               </form>
             </div>
           </div>
         </div>
 
         {% load static %}
-<script src="{% static 'js/detail.js' %}"></script>
+        <script src="{% static 'js/detail.js' %}"></script>
         {% endif %}
 
         <!-- Seller info -->
         <div class="seller-card">
-          <div class="seller-avatar">{{ book.seller.username|first|upper }}</div>
+          <div class="seller-avatar">
+            {{ book.seller.username|first|upper }}
+          </div>
           <div class="seller-info">
-            <p class="seller-name">{{ book.seller.get_full_name|default:book.seller.username }}</p>
+            <p class="seller-name">
+              {{ book.seller.get_full_name|default:book.seller.username }}
+            </p>
             <p class="seller-meta">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
+              <svg
+                width="11"
+                height="11"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
               </svg>
               Member seller
             </p>
           </div>
-          <a href="{% url 'books:browse' %}?seller={{ book.seller.id }}" class="seller-listings-link">
+          <a
+            href="{% url 'books:browse' %}?seller={{ book.seller.id }}"
+            class="seller-listings-link"
+          >
             All listings →
           </a>
         </div>
@@ -326,31 +461,64 @@
         <!-- Trust signals -->
         <ul class="action-trust-list">
           <li>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
             Secure checkout
           </li>
           <li>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
             30-day return policy
           </li>
           <li>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
             Buyer protection included
           </li>
         </ul>
 
         <!-- View count -->
         <p class="action-views">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-            <circle cx="12" cy="12" r="3"/>
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
           </svg>
           {{ book.views }} people viewed this listing
         </p>
-
       </aside>
-
-    </div><!-- /detail-layout -->
+    </div>
+    <!-- /detail-layout -->
   </div>
 </section>
 
@@ -365,27 +533,37 @@
         <span class="section-eyebrow">More like this</span>
         <p class="container-name">Related Books</p>
       </div>
-      <a href="{% url 'books:browse' %}?category={{ book.category }}" class="view-more">See all →</a>
+      <a
+        href="{% url 'books:browse' %}?category={{ book.category }}"
+        class="view-more"
+        >See all →</a
+      >
     </div>
     <div class="cards-container">
       {% for rel in related_books %}
       <div class="card">
         <div class="card-content">
           <div class="card-img-wrap">
-            <img src="{{ rel.cover_image }}" alt="{{ rel.title }}" class="cover-img" />
+            <img
+              src="{{ rel.cover_image }}"
+              alt="{{ rel.title }}"
+              class="cover-img"
+            />
           </div>
           <h3 class="book-title">{{ rel.title }}</h3>
           <p class="author-name">{{ rel.author }}</p>
           <div class="card-price-row">
             <p class="price">Rs.{{ rel.price }}</p>
           </div>
-          <a href="{% url 'books:detail' rel.seller.username rel.slug %}" class="feature-btn-buy-now">View Details</a>
+          <a
+            href="{% url 'books:detail' rel.seller.username rel.slug %}"
+            class="feature-btn-buy-now"
+            >View Details</a
+          >
         </div>
       </div>
       {% endfor %}
     </div>
   </div>
 </section>
-{% endif %}
-
-{% endblock content %}
+{% endif %} {% endblock content %}

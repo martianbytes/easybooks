@@ -828,6 +828,23 @@ class WishlistView(LoginRequiredMixin, View):
         saved = SavedBook.objects.filter(user=request.user).select_related('book', 'book__seller')
         return render(request, 'books/wishlist.html', {'saved': saved})
 
+class ToggleWishlistView(LoginRequiredMixin, View):
+    login_url = 'accounts:login'
+
+    def post(self, request, slug):
+        from accounts.models import SavedBook
+        book = get_object_or_404(Book, slug=slug)
+        existing = SavedBook.objects.filter(user=request.user, book=book).first()
+
+        if existing:
+            existing.delete()
+            messages.info(request, f'"{book.title}" removed from wishlist.')
+        else:
+            SavedBook.objects.create(user=request.user, book=book)
+            messages.success(request, f'"{book.title}" saved to wishlist!')
+
+        return redirect('books:detail', seller=book.seller.username, slug=book.slug)    
+
 
 class OrdersView(LoginRequiredMixin, View):
     login_url = 'accounts:login'

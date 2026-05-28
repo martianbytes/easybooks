@@ -5,7 +5,6 @@
 <section class="sales-page">
   <div class="container">
 
-    <!-- Header -->
     <div class="sales-header">
       <div class="sales-header__left">
         <a href="{% url 'accounts:profile' %}" class="sales-back-link">
@@ -13,73 +12,159 @@
           Back to Profile
         </a>
         <h1 class="sales-title">My Sales</h1>
-        <p class="sales-subtitle">Track all your completed and pending transactions</p>
+        <p class="sales-subtitle">Buyers who have requested your books</p>
       </div>
       <div class="sales-header__stat">
         <p class="sales-earned-label">Total Earned</p>
-        <p class="sales-earned-value">Rs {{ total_earned }}</p>
+        <p class="sales-earned-value">Rs {{ total_earned|floatformat:2 }}</p>
       </div>
     </div>
 
-    <!-- Filter tabs -->
     <div class="sales-filters">
       <a href="{% url 'books:sales' %}" class="sales-filter-tab {% if not status_filter %}active{% endif %}">All</a>
+      <a href="{% url 'books:sales' %}?status=order_request" class="sales-filter-tab {% if status_filter == 'order_request' %}active{% endif %}">New Requests</a>
       <a href="{% url 'books:sales' %}?status=completed" class="sales-filter-tab {% if status_filter == 'completed' %}active{% endif %}">Completed</a>
-      <a href="{% url 'books:sales' %}?status=pending" class="sales-filter-tab {% if status_filter == 'pending' %}active{% endif %}">Pending</a>
       <a href="{% url 'books:sales' %}?status=cancelled" class="sales-filter-tab {% if status_filter == 'cancelled' %}active{% endif %}">Cancelled</a>
     </div>
 
-    <!-- Table -->
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
     {% if sales %}
-    <div class="sales-table-wrap">
-      <table class="sales-table">
-        <thead>
-          <tr>
-            <th>Book</th>
-            <th>Buyer</th>
-            <th>Price</th>
-            <th>Status</th>
-            <th>Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for sale in sales %}
-          <tr class="sales-row" data-status="{{ sale.status }}">
-            <td class="sales-cell-book">
-              <a href="{% url 'books:detail' sale.book.seller.username sale.book.slug %}" class="sales-book-link">
-                {% if sale.book.images.first %}
-                <img src="{{ sale.book.images.first.image.url }}" alt="{{ sale.book.title }}" class="sales-book-thumb" />
-                {% else %}
-                <div class="sales-book-thumb-placeholder">📖</div>
-                {% endif %}
-                <span class="sales-book-title">{{ sale.book.title }}</span>
-              </a>
-            </td>
-            <td class="sales-cell-buyer">
-              <span class="sales-buyer-avatar">{{ sale.buyer.username|first|upper }}</span>
-              {{ sale.buyer.username }}
-            </td>
-            <td class="sales-cell-price">Rs {{ sale.price }}</td>
-            <td class="sales-cell-status">
-              <span class="sales-badge sales-badge--{{ sale.status }}">{{ sale.get_status_display }}</span>
-            </td>
-            <td class="sales-cell-date">{{ sale.created_at|date:"M d, Y" }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+    <div class="orders-list">
+      {% for sale in sales %}
+      <div class="order-card" data-status="{{ sale.status }}">
+        <div class="order-card__book">
+          <a href="{% url 'books:detail' sale.book.seller.username sale.book.slug %}" class="order-book-link">
+            {% if sale.book.images.first %}
+            <img src="{{ sale.book.images.first.image.url }}" alt="{{ sale.book.title }}" class="order-book-thumb" />
+            {% else %}
+            <div class="order-book-thumb-placeholder">📖</div>
+            {% endif %}
+            <div class="order-book-meta">
+              <span class="order-book-title">{{ sale.book.title }}</span>
+              <span class="order-book-price">Rs. {{ sale.price|floatformat:2 }}</span>
+            </div>
+          </a>
+        </div>
+
+        <div class="order-card__right">
+          <div class="order-card__status">
+            <span class="sales-badge sales-badge--{{ sale.status }}">{{ sale.get_status_display }}</span>
+            <span class="order-card__date">{{ sale.created_at|date:"M d, Y" }}</span>
+          </div>
+
+          <div class="sale-buyer-info">
+            <span class="sales-buyer-avatar">{{ sale.buyer.username|first|upper }}</span>
+            <div>
+              <span class="sale-buyer-name">{{ sale.buyer.get_full_name|default:sale.buyer.username }}</span>
+              <span class="sale-buyer-username">@{{ sale.buyer.username }}</span>
+              {% if sale.buyer.email %}
+              <span class="sale-buyer-email">{{ sale.buyer.email }}</span>
+              {% endif %}
+            </div>
+          </div>
+
+          {% if sale.status == 'order_request' or sale.status == 'pending' %}
+          <div class="order-card__actions">
+            <a href="{% url 'books:messages_inbox' %}" class="order-action-btn order-action-btn--message">
+              💬 Message Buyer
+            </a>
+
+            <!-- Seller complete -->
+            <button type="button" class="order-action-btn order-action-btn--esewa"
+              onclick="document.getElementById('seller-complete-{{ sale.slug }}').classList.toggle('order-other-form--visible')">
+              ✓ Mark as Completed
+            </button>
+            <div id="seller-complete-{{ sale.slug }}" class="order-other-form">
+              <form method="POST" action="{% url 'books:order_seller_complete' sale.slug %}">
+                {% csrf_token %}
+                <label class="order-remarks-label">Payment notes (optional)</label>
+                <textarea name="payment_remarks" class="order-remarks-textarea"
+                  placeholder="e.g. Buyer paid cash on pickup, received via eSewa, etc." rows="2"></textarea>
+                <button type="submit" class="order-action-btn order-action-btn--other-submit">
+                  Confirm Completion
+                </button>
+              </form>
+            </div>
+
+            <!-- Cancel -->
+            <form method="POST" action="{% url 'books:order_cancel' sale.slug %}"
+              onsubmit="return confirm('Cancel this order? The book will be listed as available again.')">
+              {% csrf_token %}
+              <button type="submit" class="order-action-btn order-action-btn--cancel">
+                ✕ Cancel Order
+              </button>
+            </form>
+          </div>
+          {% endif %}
+
+          {% if sale.status == 'completed' %}
+          <div class="order-card__completed-info">
+            {% if sale.payment_method == 'esewa' %}
+            <span class="order-payment-badge order-payment-badge--esewa">Paid via eSewa</span>
+            {% if sale.esewa_ref_id %}<span class="order-esewa-ref">Ref: {{ sale.esewa_ref_id }}</span>{% endif %}
+            {% elif sale.payment_method == 'other' %}
+            <span class="order-payment-badge order-payment-badge--other">Other Payment</span>
+            {% if sale.payment_remarks %}<span class="order-remarks-text">{{ sale.payment_remarks }}</span>{% endif %}
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
     </div>
     {% else %}
     <div class="sales-empty">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary-300)" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
       <p class="sales-empty__title">No sales yet</p>
-      <p class="sales-empty__sub">Once someone buys your listing it'll show up here.</p>
+      <p class="sales-empty__sub">When someone requests to buy your book, it'll show up here.</p>
       <a href="{% url 'books:sell' %}" class="sales-empty__cta">List a book →</a>
     </div>
     {% endif %}
 
   </div>
 </section>
+
+<style>
+.orders-list { display: flex; flex-direction: column; gap: 1.25rem; margin-top: 1.5rem; }
+.order-card { background: var(--color-surface, #fff); border: 1px solid var(--color-border, #e5e7eb); border-radius: 12px; padding: 1.25rem 1.5rem; display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap; }
+.order-card__book { flex: 1; min-width: 200px; }
+.order-book-link { display: flex; gap: 1rem; align-items: center; text-decoration: none; color: inherit; }
+.order-book-thumb { width: 64px; height: 80px; object-fit: cover; border-radius: 6px; }
+.order-book-thumb-placeholder { width: 64px; height: 80px; display: flex; align-items: center; justify-content: center; font-size: 2rem; background: var(--color-surface-alt, #f3f4f6); border-radius: 6px; }
+.order-book-meta { display: flex; flex-direction: column; gap: 0.25rem; }
+.order-book-title { font-weight: 600; font-size: 1rem; color: var(--color-text, #111); }
+.order-book-price { font-size: 0.95rem; font-weight: 600; color: var(--color-primary, #7c3aed); }
+.order-card__right { display: flex; flex-direction: column; gap: 0.6rem; min-width: 260px; }
+.order-card__status { display: flex; align-items: center; gap: 0.75rem; }
+.order-card__date { font-size: 0.8rem; color: var(--color-text-muted, #6b7280); }
+.sale-buyer-info { display: flex; align-items: center; gap: 0.75rem; }
+.sales-buyer-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--color-primary, #7c3aed); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
+.sale-buyer-name { display: block; font-weight: 600; font-size: 0.9rem; }
+.sale-buyer-username, .sale-buyer-email { display: block; font-size: 0.8rem; color: var(--color-text-muted, #6b7280); }
+.order-card__actions { display: flex; flex-direction: column; gap: 0.5rem; }
+.order-action-btn { display: inline-block; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; border: none; text-align: center; text-decoration: none; transition: opacity 0.15s; }
+.order-action-btn:hover { opacity: 0.85; }
+.order-action-btn--message { background: var(--color-surface-alt, #f3f4f6); color: var(--color-text, #111); border: 1px solid var(--color-border, #e5e7eb); }
+.order-action-btn--esewa { background: #60b246; color: #fff; }
+.order-action-btn--other { background: var(--color-surface-alt, #f3f4f6); color: var(--color-text, #111); border: 1px solid var(--color-border, #e5e7eb); }
+.order-action-btn--cancel { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; width: 100%; }
+.order-action-btn--other-submit { background: var(--color-primary, #7c3aed); color: #fff; width: 100%; margin-top: 0.5rem; }
+.order-complete-form, .order-card__actions form { margin: 0; }
+.order-other-form { display: none; background: var(--color-surface-alt, #f9fafb); border: 1px solid var(--color-border, #e5e7eb); border-radius: 8px; padding: 1rem; margin-top: 0.25rem; }
+.order-other-form--visible { display: block; }
+.order-remarks-label { display: block; font-size: 0.82rem; color: var(--color-text-muted, #6b7280); margin-bottom: 0.35rem; }
+.order-remarks-textarea { width: 100%; border: 1px solid var(--color-border, #e5e7eb); border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.85rem; resize: vertical; box-sizing: border-box; }
+.order-card__completed-info { display: flex; flex-direction: column; gap: 0.25rem; }
+.order-payment-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500; }
+.order-payment-badge--esewa { background: #dcfce7; color: #166534; }
+.order-payment-badge--other { background: #f3f4f6; color: #374151; }
+.order-esewa-ref, .order-remarks-text { font-size: 0.8rem; color: var(--color-text-muted, #6b7280); }
+</style>
 
 <script src="{% static 'js/sales.js' %}" defer></script>
 {% endblock %}

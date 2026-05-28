@@ -6,7 +6,6 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.views import View
 from .models import Book, Message, Transaction, CartItem, MessageReply
-from .forms import CheckoutForm
 from django.http import JsonResponse
 from django.conf import settings
 import base64
@@ -25,7 +24,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import transaction
 from django.views.decorators.http import require_POST
 from django.db.models import Q
-from .forms import AuthorForm, BookForm, BookImageFormSet
+from .forms import AuthorForm, BookForm, BookImageFormSet, CheckoutForm
 from .models import Author, Book, Message
 
 IMAGE_FORMSET_PREFIX = "images"
@@ -129,11 +128,14 @@ class EsewaSuccessView(LoginRequiredMixin, View):
                 status='completed', esewa_ref_id=ref_id
             )
             return redirect('books:cart_order_confirmed_success')
-        else:
+        if not is_cart:
             t = get_object_or_404(Transaction, slug=transaction_uuid, buyer=request.user)
             t.status = 'completed'
             t.esewa_ref_id = ref_id
-            t.save(update_fields=['status', 'esewa_ref_id'])
+            t.payment_method = 'esewa'
+            t.book.status = 'sold'
+            t.book.save(update_fields=['status'])
+            t.save(update_fields=['status', 'esewa_ref_id', 'payment_method'])
             return redirect('books:order_confirmed', order_slug=t.slug)
 
 
@@ -314,19 +316,8 @@ class CheckoutView(LoginRequiredMixin, View):
             messages.error(request, "You cannot buy your own book.")
             return redirect('books:detail', seller=book.seller.username, slug=slug)
 
-        initial_data = {
-            'first_name': request.user.first_name,
-            'last_name': request.user.last_name,
-            'email': request.user.email,
-            'phone': getattr(request.user.profile, 'phone', ''),
-            'city': getattr(request.user.profile, 'city', ''),
-            'district': getattr(request.user.profile, 'district', ''),
-        }
-        form = CheckoutForm(initial=initial_data)
-
         return render(request, 'books/checkout.html', {
             'book': book,
-            'form': form,
         })
 
     def post(self, request, seller, slug):
@@ -336,26 +327,18 @@ class CheckoutView(LoginRequiredMixin, View):
             messages.error(request, "You cannot buy your own book.")
             return redirect('books:detail', seller=book.seller.username, slug=slug)
 
-        form = CheckoutForm(request.POST)
+        t = Transaction.objects.create(
+            book=book,
+            buyer=request.user,
+            seller=book.seller,
+            price=book.asking_price,
+            status='order_request',
+        )
 
-        if form.is_valid():
-            t = Transaction.objects.create(
-                book=book,
-                buyer=request.user,
-                seller=book.seller,
-                price=book.asking_price,
-                status='pending',
-            )
+        book.status = 'reserved'
+        book.save(update_fields=['status'])
 
-            book.status = 'reserved'
-            book.save(update_fields=['status'])
-
-            return _esewa_redirect(request, t)
-
-        return render(request, 'books/checkout.html', {
-            'book': book,
-            'form': form,
-        })
+        return redirect('books:order_confirmed', order_slug=t.slug)
 
 
 class OrderConfirmedView(LoginRequiredMixin, View):
@@ -490,6 +473,56 @@ class BookUpsertView(LoginRequiredMixin, View):
         )
 
         if book_form.is_valid() and image_forms.is_valid():
+            # Check that a cover image is provided (new listing or existing cover kept)
+            cover_provided = False
+            if editing:
+                # Editing: cover is OK if existing cover image not being deleted
+                from .models import BookImage
+                existing_cover = BookImage.objects.filter(
+                    book=instance, image_type='cover'
+                ).exists()
+                if existing_cover:
+                    # Check it's not being marked for deletion
+                    for form in image_forms:
+                        if (form.instance.pk and
+                                form.instance.image_type == 'cover' and
+                                form.cleaned_data.get('DELETE')):
+                            existing_cover = False
+                            break
+                cover_provided = existing_cover
+
+            # Also check new upload in slot 0 (first form = cover slot)
+            if not cover_provided:
+                first_form = image_forms.forms[0] if image_forms.forms else None
+                if first_form:
+                    has_file = bool(first_form.cleaned_data.get('image'))
+                    # Also check data URL submitted for slot 0
+                    dataurl_key = f"{IMAGE_FORMSET_PREFIX}-0-image_dataurl"
+                    has_dataurl = bool(request.POST.get(dataurl_key, '').startswith('data:image/'))
+                    cover_provided = has_file or has_dataurl
+
+            if not cover_provided:
+                from django.forms.utils import ErrorList
+                # Inject error into the first image form so it renders inline
+                first_form = image_forms.forms[0] if image_forms.forms else None
+                cover_error = "A cover image is required."
+                if first_form:
+                    first_form.add_error('image', cover_error)
+                return render(
+                    request,
+                    self.template_name,
+                    _sell_context(
+                        book_form=book_form,
+                        image_forms=image_forms,
+                        image_data_urls=_collect_dataurl_values(request.POST),
+                        editing=editing,
+                        book=instance,
+                        preselected_author_id=0,
+                        author_error="",
+                        cover_error=cover_error,
+                    ),
+                )
+
             with transaction.atomic():
                 book = book_form.save(commit=False)
                 if not editing:
@@ -518,7 +551,7 @@ class BookUpsertView(LoginRequiredMixin, View):
 
 
 def _sell_context(*, book_form, image_forms, image_data_urls, editing, book,
-                  preselected_author_id=0, author_error=""):
+                  preselected_author_id=0, author_error="", cover_error=""):
     return {
         "book_form": book_form,
         "image_formset": image_forms,
@@ -528,6 +561,7 @@ def _sell_context(*, book_form, image_forms, image_data_urls, editing, book,
         "book": book,
         "preselected_author_id": preselected_author_id,
         "author_error": author_error,
+        "cover_error": cover_error,
     }
 
 
@@ -712,7 +746,7 @@ class CartCheckoutView(LoginRequiredMixin, View):
                         buyer=request.user,
                         seller=item.book.seller,
                         price=item.book.asking_price,
-                        status='pending',
+                        status='order_request',
                     )
                     item.book.status = 'reserved'
                     item.book.save(update_fields=['status'])
@@ -766,12 +800,13 @@ class SalesView(LoginRequiredMixin, View):
         ).select_related('book', 'buyer').order_by('-created_at')
 
         status_filter = request.GET.get('status', '')
-        if status_filter in ('pending', 'completed', 'cancelled'):
+        if status_filter in ('order_request', 'pending', 'completed', 'cancelled'):
             sales = sales.filter(status=status_filter)
 
         total_earned = Transaction.objects.filter(
             seller=request.user, status='completed'
         ).aggregate(total=Sum('price'))['total'] or 0
+        total_earned = round(float(total_earned), 2)
 
         return render(request, 'books/sales.html', {
             'sales': sales,
@@ -824,13 +859,106 @@ class OrdersView(LoginRequiredMixin, View):
 
     def get(self, request):
         status_filter = request.GET.get('status', '')
-        orders = Transaction.objects.filter(buyer=request.user).select_related('book', 'seller').order_by('-created_at')
-        if status_filter in ('pending', 'completed', 'cancelled'):
-            orders = orders.filter(status=status_filter)
+        orders = list(Transaction.objects.filter(buyer=request.user).select_related('book', 'seller', 'book__seller').order_by('-created_at'))
+        if status_filter in ('order_request', 'pending', 'completed', 'cancelled'):
+            orders = [o for o in orders if o.status == status_filter]
+
+        # Attach related message to each order
+        for order in orders:
+            related = Message.objects.filter(
+                buyer=request.user, book=order.book, seller=order.seller
+            ).first()
+            setattr(order, "_related_message", related)
+
         return render(request, 'books/orders.html', {
             'orders': orders,
             'status_filter': status_filter,
         })
+
+
+class CompleteOrderView(LoginRequiredMixin, View):
+    """Buyer marks an order as completed after receiving the book."""
+    login_url = 'accounts:login'
+
+    def post(self, request, order_slug):
+        order = get_object_or_404(Transaction, slug=order_slug, buyer=request.user)
+
+        if order.status not in ('order_request', 'pending'):
+            messages.error(request, "This order cannot be completed.")
+            return redirect('books:orders')
+
+        method = request.POST.get('payment_method', '')
+        remarks = request.POST.get('payment_remarks', '').strip()
+
+        if method == 'esewa':
+            order.status = 'pending'
+            order.payment_method = 'esewa'
+            order.save(update_fields=['status', 'payment_method'])
+            return _esewa_redirect(request, order)
+
+        elif method == 'other':
+            order.status = 'completed'
+            order.payment_method = 'other'
+            order.payment_remarks = remarks
+            order.book.status = 'sold'
+            order.book.save(update_fields=['status'])
+            order.save(update_fields=['status', 'payment_method', 'payment_remarks'])
+            messages.success(request, "Order marked as completed. Thank you!")
+            return redirect('books:orders')
+
+        messages.error(request, "Please select a payment method.")
+        return redirect('books:orders')
+
+
+class SellerCompleteOrderView(LoginRequiredMixin, View):
+    """Seller can mark an order complete if buyer hasn't done it yet."""
+    login_url = 'accounts:login'
+
+    def post(self, request, order_slug):
+        order = get_object_or_404(Transaction, slug=order_slug, seller=request.user)
+
+        if order.status not in ('order_request', 'pending'):
+            messages.error(request, "This order cannot be completed.")
+            return redirect('books:sales')
+
+        remarks = request.POST.get('payment_remarks', '').strip()
+        order.status = 'completed'
+        order.payment_method = 'other'
+        order.payment_remarks = remarks or 'Completed by seller'
+        order.book.status = 'sold'
+        order.book.save(update_fields=['status'])
+        order.save(update_fields=['status', 'payment_method', 'payment_remarks'])
+        messages.success(request, f"Order for \"{order.book.title}\" marked as completed.")
+        return redirect('books:sales')
+
+
+class CancelOrderView(LoginRequiredMixin, View):
+    """Either buyer or seller can cancel an order_request/pending order."""
+    login_url = 'accounts:login'
+
+    def post(self, request, order_slug):
+        # Allow both buyer and seller to cancel
+        order = Transaction.objects.filter(slug=order_slug).filter(
+            Q(buyer=request.user) | Q(seller=request.user)
+        ).first()
+
+        if not order:
+            messages.error(request, "Order not found.")
+            return redirect('books:orders')
+
+        if order.status not in ('order_request', 'pending'):
+            messages.error(request, "This order cannot be cancelled.")
+        else:
+            order.status = 'cancelled'
+            order.book.status = 'available'
+            order.book.save(update_fields=['status'])
+            order.save(update_fields=['status'])
+            messages.success(request, f"Order for \"{order.book.title}\" has been cancelled.")
+
+        # Redirect back to whichever page they came from
+        if order.seller == request.user and order.buyer != request.user:
+            return redirect('books:sales')
+        return redirect('books:orders')
 
 
 class AboutView(TemplateView):

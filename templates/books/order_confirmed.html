@@ -8,10 +8,11 @@
 
       <div class="confirmed-icon">✓</div>
 
-      <h1 class="confirmed-title">Order Placed Successfully!</h1>
+      <h1 class="confirmed-title">Order Request Sent!</h1>
       <p class="confirmed-subtitle">
         Thank you, <strong>{{ request.user.first_name|default:request.user.username }}</strong>!
-        Your payment via eSewa was successful. The seller will be in touch to arrange delivery.
+        The seller has been notified and will contact you to arrange the handover.
+        You'll pay <strong>after you receive the book</strong>.
       </p>
 
       <div class="confirmed-details">
@@ -30,19 +31,13 @@
           <span class="confirmed-detail-value">{{ book.seller.get_full_name|default:book.seller.username }}</span>
         </div>
         <div class="confirmed-detail-row">
-          <span class="confirmed-detail-label">Amount</span>
+          <span class="confirmed-detail-label">Price</span>
           <span class="confirmed-detail-value">Rs. {{ transaction.price }}</span>
         </div>
         <div class="confirmed-detail-row">
           <span class="confirmed-detail-label">Status</span>
           <span class="confirmed-status-badge">{{ transaction.get_status_display }}</span>
         </div>
-        {% if transaction.esewa_ref_id %}
-        <div class="confirmed-detail-row">
-          <span class="confirmed-detail-label">eSewa Ref</span>
-          <span class="confirmed-detail-value">{{ transaction.esewa_ref_id }}</span>
-        </div>
-        {% endif %}
         <div class="confirmed-detail-row">
           <span class="confirmed-detail-label">Date</span>
           <span class="confirmed-detail-value">{{ transaction.created_at|date:"F j, Y" }}</span>
@@ -52,15 +47,16 @@
       <div class="confirmed-next-steps">
         <h3>What happens next?</h3>
         <ol class="next-steps-list">
-          <li>The seller will be notified about your order.</li>
-          <li>The seller will contact you to arrange delivery.</li>
-          <li>Once you receive the book, the transaction will be marked completed.</li>
+          <li>The seller has received your order request.</li>
+          <li>The seller will message you to arrange pickup or delivery.</li>
+          <li>Once you have the book, go to <strong>My Orders</strong> in your dashboard to complete the payment.</li>
         </ol>
       </div>
 
       <div class="confirmed-actions">
         <a href="{% url 'books:browse' %}" class="btn-confirmed-browse">Continue Browsing</a>
         <a href="{% url 'books:contact_seller' book.seller.username book.slug %}" class="btn-confirmed-message">Message Seller</a>
+        <a href="{% url 'books:orders' %}" class="btn-confirmed-browse" style="background: var(--color-secondary, #6b7280);">My Orders</a>
       </div>
 
     </div>

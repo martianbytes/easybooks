@@ -263,6 +263,11 @@ function clearImageSlot(event, idx) {
       if (removeBtn) removeBtn.style.display = 'inline-flex';
       zone?.classList.add('has-image');
       if (dataUrl) dataUrl.value = src;
+      // Clear cover error once slot 0 is filled
+      if (idx === '0') {
+        const errEl = document.getElementById('cover-error-msg');
+        if (errEl) errEl.remove();
+      }
     };
     reader.readAsDataURL(input.files[0]);
   });
@@ -363,6 +368,32 @@ function clearImageSlot(event, idx) {
       e.preventDefault();
       showAuthorError('Please add at least one author.');
       document.getElementById('author-input')?.focus();
+      return;
+    }
+
+    // Validate cover image (slot 0 must have an image)
+    const zone0 = document.getElementById('zone-0');
+    const dataurl0 = document.getElementById('dataurl-0');
+    const fileInput0 = zone0?.closest('.image-form-group')?.querySelector('input[type="file"]');
+    const hasCover = zone0?.classList.contains('has-image') ||
+                     (dataurl0 && dataurl0.value.startsWith('data:image/')) ||
+                     (fileInput0 && fileInput0.files && fileInput0.files.length > 0);
+
+    if (!hasCover) {
+      e.preventDefault();
+      // Show error near the cover slot
+      let errEl = document.getElementById('cover-error-msg');
+      if (!errEl) {
+        errEl = document.createElement('div');
+        errEl.id = 'cover-error-msg';
+        errEl.className = 'ebf-alert';
+        const grid = document.getElementById('img-grid');
+        grid?.parentElement?.insertBefore(errEl, grid);
+      }
+      errEl.textContent = 'A cover image is required.';
+      errEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      zone0?.classList.add('img-zone--cover-shake');
+      setTimeout(() => zone0?.classList.remove('img-zone--cover-shake'), 600);
     }
   });
 })();

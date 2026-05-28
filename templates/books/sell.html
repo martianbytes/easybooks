@@ -281,15 +281,19 @@
 
           <div class="ebf-panel__body">
             <p class="ebf-hint ebf-hint--block">
-              Add up to 8 photos. The first slot is the cover image.
+              Add up to 8 photos. The first slot is the <strong>cover image</strong> <span style="color:#e53e3e;">*</span> (required).
             </p>
+
+            {% if cover_error %}
+            <div class="ebf-alert" id="cover-error-msg">{{ cover_error }}</div>
+            {% endif %}
 
             <div class="img-grid" id="img-grid">
               {% for form in image_formset %}
               <div class="img-slot image-form-group" data-index="{{ forloop.counter0 }}">
                 {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
 
-                <div class="img-zone {% if form.instance.pk and form.instance.image %}has-image{% endif %}"
+                <div class="img-zone {% if form.instance.pk and form.instance.image %}has-image{% endif %}{% if forloop.first %} img-zone--required{% endif %}"
                      id="zone-{{ forloop.counter0 }}"
                      onclick="triggerImagePicker(this)">
 

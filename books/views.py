@@ -5,7 +5,7 @@ from django.urls import reverse_lazy, reverse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.views import View
-from .models import Book, Message, Transaction, CartItem, MessageReply
+from .models import Book, Message, Transaction, CartItem, MessageReply, Conversation, ChatMessage
 from django.http import JsonResponse
 from django.conf import settings
 import base64
@@ -783,10 +783,10 @@ class SalesView(LoginRequiredMixin, View):
         ).aggregate(total=Sum('price'))['total'] or 0
         total_earned = round(float(total_earned), 2)
 
-        # Attach the related buyer→seller message so the template can link directly to that thread
+        # Attach the related conversation so the template can link directly to that thread
         sales = list(sales)
         for sale in sales:
-            setattr(sale, 'related_message', Message.objects.filter(
+            setattr(sale, 'related_conversation', Conversation.objects.filter(
                 buyer=sale.buyer, book=sale.book, seller=request.user
             ).first())
 
@@ -845,9 +845,9 @@ class OrdersView(LoginRequiredMixin, View):
         if status_filter in ('order_request', 'pending', 'completed', 'cancelled'):
             orders = [o for o in orders if o.status == status_filter]
 
-        # Attach related message to each order
+        # Attach related conversation to each order
         for order in orders:
-            setattr(order, 'related_message', Message.objects.filter(
+            setattr(order, 'related_conversation', Conversation.objects.filter(
                 buyer=request.user, book=order.book, seller=order.seller
             ).first())
 
@@ -954,54 +954,160 @@ class BlogView(TemplateView):
     template_name = 'books/blog.html'
 
 
+# ─────────────────────────────────────────────────────────────────
+# Messenger  (new system)
+# ─────────────────────────────────────────────────────────────────
+
 class MessagesInboxView(LoginRequiredMixin, View):
+    """
+    Renders the messenger shell.
+    All conversations where the current user is buyer OR seller,
+    sorted by most recent message.  An optional ?conv=<pk> query
+    param tells the template which conversation to open on load.
+    """
     login_url = 'accounts:login'
 
     def get(self, request):
-        inbox = Message.objects.filter(
-            seller=request.user
-        ).select_related('buyer', 'book').prefetch_related('replies__sender').order_by('-created_at')
-        unread_count = inbox.filter(is_read=False).count()
+        user = request.user
+        conversations = (
+            Conversation.objects
+            .filter(Q(buyer=user) | Q(seller=user))
+            .select_related('buyer', 'seller', 'book')
+            .order_by('-last_message_at')
+        )
+
+        # Total unread across all threads
+        total_unread = sum(c.unread_count_for(user) for c in conversations)
+
+        active_conv_pk = request.GET.get('conv')
+
         return render(request, 'books/messages_inbox.html', {
-            'inbox': inbox,
-            'unread_count': unread_count,
+            'conversations': conversations,
+            'total_unread': total_unread,
+            'active_conv_pk': active_conv_pk,
         })
 
 
-class MarkMessageReadView(LoginRequiredMixin, View):
+class ConversationMessagesView(LoginRequiredMixin, View):
+    """
+    AJAX — returns the full message list for a conversation as JSON,
+    and marks all incoming messages as read.
+    """
+    login_url = 'accounts:login'
+
+    def get(self, request, pk):
+        conv = get_object_or_404(Conversation, pk=pk)
+        user = request.user
+
+        if user not in (conv.buyer, conv.seller):
+            return JsonResponse({'error': 'Forbidden'}, status=403)
+
+        # Mark unread messages (sent by the other person) as read
+        # Query ChatMessage model directly to avoid static type-checker complaints
+        ChatMessage.objects.filter(conversation=conv, is_read=False).exclude(sender=user).update(is_read=True)
+
+        msgs = ChatMessage.objects.filter(conversation=conv).select_related('sender').order_by('created_at')
+        data = [
+            {
+                'id': m.pk,
+                'sender': m.sender.username,
+                'body': m.body,
+                'is_self': m.sender == user,
+                'created_at': m.created_at.strftime('%b %d · %I:%M %p'),
+            }
+            for m in msgs
+        ]
+
+        other = conv.other_participant(user)
+        return JsonResponse({
+            'ok': True,
+            'messages': data,
+            'other_username': other.username,
+            'book_title': conv.book.title if conv.book else None,
+            'book_url': (
+                reverse('books:detail', kwargs={
+                    'seller': conv.book.seller.username,
+                    'slug': conv.book.slug,
+                }) if conv.book else None
+            ),
+        })
+
+
+class SendChatMessageView(LoginRequiredMixin, View):
+    """
+    AJAX POST — appends a ChatMessage to an existing conversation.
+    """
     login_url = 'accounts:login'
 
     def post(self, request, pk):
-        msg = get_object_or_404(Message, pk=pk, seller=request.user)
-        msg.is_read = True
-        msg.save(update_fields=['is_read'])
-        from django.http import JsonResponse
-        return JsonResponse({'ok': True})
+        conv = get_object_or_404(Conversation, pk=pk)
+        user = request.user
 
-
-class ReplyMessageView(LoginRequiredMixin, View):
-    login_url = 'accounts:login'
-
-    def post(self, request, pk):
-        msg = get_object_or_404(Message, pk=pk)
-
-        if request.user not in (msg.seller, msg.buyer):
+        if user not in (conv.buyer, conv.seller):
             return JsonResponse({'error': 'Forbidden'}, status=403)
 
         body = request.POST.get('body', '').strip()
         if not body:
-            return JsonResponse({'error': 'Reply cannot be empty.'}, status=400)
+            return JsonResponse({'error': 'Message cannot be empty.'}, status=400)
 
-        reply = MessageReply.objects.create(
-            message=msg,
-            sender=request.user,
+        msg = ChatMessage.objects.create(
+            conversation=conv,
+            sender=user,
             body=body,
         )
 
         return JsonResponse({
             'ok': True,
-            'sender': reply.sender.username,
-            'body': reply.body,
-            'created_at': reply.created_at.strftime('%b %d, %Y · %I:%M %p'),
+            'id': msg.pk,
+            'sender': msg.sender.username,
+            'body': msg.body,
             'is_self': True,
+            'created_at': msg.created_at.strftime('%b %d · %I:%M %p'),
         })
+
+
+class StartConversationView(LoginRequiredMixin, View):
+    """
+    Called when the user clicks "Message Seller" (detail/orders page)
+    or "Message Buyer" (sales page).
+
+    GET  /messages/start/?book=<slug>&with=<username>
+         → get_or_create a Conversation, redirect to inbox with ?conv=<pk>
+    """
+    login_url = 'accounts:login'
+
+    def get(self, request):
+        user = request.user
+        book_slug = request.GET.get('book')
+        with_username = request.GET.get('with')
+
+        if not with_username:
+            return redirect('books:messages_inbox')
+
+        from django.contrib.auth.models import User as AuthUser
+        other = get_object_or_404(AuthUser, username=with_username)
+
+        if other == user:
+            return redirect('books:messages_inbox')
+
+        book = None
+        if book_slug:
+            book = Book.objects.filter(slug=book_slug).first()
+
+        # Determine who is buyer / seller.
+        # The seller is always the one who owns the book listing.
+        # If no book, the initiating user is treated as the buyer.
+        if book:
+            buyer  = user   if user  != book.seller else other
+            seller = other  if user  != book.seller else user
+        else:
+            buyer  = user
+            seller = other
+
+        conv, _ = Conversation.objects.get_or_create(
+            buyer=buyer,
+            seller=seller,
+            book=book,
+        )
+
+        return redirect(f"{reverse('books:messages_inbox')}?conv={conv.pk}")

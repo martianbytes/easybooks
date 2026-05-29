@@ -34,8 +34,9 @@ from .views import (
     ContactView,
     BlogView,
     MessagesInboxView,
-    MarkMessageReadView,
-    ReplyMessageView,
+    ConversationMessagesView,
+    SendChatMessageView,
+    StartConversationView,
 )
 
 app_name = "books"
@@ -77,8 +78,9 @@ urlpatterns = [
     path("contact/", ContactView.as_view(), name="contact"),
     path("blog/", BlogView.as_view(), name="blog"),
     path("messages/", MessagesInboxView.as_view(), name="messages_inbox"),
-    path("messages/<int:pk>/read/", MarkMessageReadView.as_view(), name="message_read"),
-    path("messages/<int:pk>/reply/", ReplyMessageView.as_view(), name="message_reply"),
+    path("messages/start/", StartConversationView.as_view(), name="start_conversation"),
+    path("messages/<int:pk>/messages/", ConversationMessagesView.as_view(), name="conversation_messages"),
+    path("messages/<int:pk>/send/", SendChatMessageView.as_view(), name="send_chat_message"),
 ]
 
 if settings.DEBUG:

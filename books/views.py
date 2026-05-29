@@ -783,6 +783,13 @@ class SalesView(LoginRequiredMixin, View):
         ).aggregate(total=Sum('price'))['total'] or 0
         total_earned = round(float(total_earned), 2)
 
+        # Attach the related buyer→seller message so the template can link directly to that thread
+        sales = list(sales)
+        for sale in sales:
+            setattr(sale, 'related_message', Message.objects.filter(
+                buyer=sale.buyer, book=sale.book, seller=request.user
+            ).first())
+
         return render(request, 'books/sales.html', {
             'sales': sales,
             'status_filter': status_filter,

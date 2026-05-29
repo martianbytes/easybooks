@@ -6,6 +6,66 @@
   <div class="container">
     <div class="confirmed-card">
 
+      {% if transaction.status == 'completed' and transaction.payment_method == 'esewa' %}
+      {# ── eSewa payment completed ── #}
+      <div class="confirmed-icon confirmed-icon--success">✓</div>
+
+      <h1 class="confirmed-title">Payment Successful!</h1>
+      <p class="confirmed-subtitle">
+        Thank you, <strong>{{ request.user.first_name|default:request.user.username }}</strong>!
+        Your eSewa payment has been verified and your order is now <strong>completed</strong>.
+      </p>
+
+      <div class="confirmed-details">
+        <h3 class="confirmed-details-title">Payment Details</h3>
+
+        <div class="confirmed-detail-row">
+          <span class="confirmed-detail-label">Order ID</span>
+          <span class="confirmed-detail-value">#{{ transaction.slug }}</span>
+        </div>
+        <div class="confirmed-detail-row">
+          <span class="confirmed-detail-label">Book</span>
+          <span class="confirmed-detail-value">{{ book.title }}</span>
+        </div>
+        <div class="confirmed-detail-row">
+          <span class="confirmed-detail-label">Seller</span>
+          <span class="confirmed-detail-value">{{ book.seller.get_full_name|default:book.seller.username }}</span>
+        </div>
+        <div class="confirmed-detail-row">
+          <span class="confirmed-detail-label">Amount Paid</span>
+          <span class="confirmed-detail-value">Rs. {{ transaction.price }}</span>
+        </div>
+        <div class="confirmed-detail-row">
+          <span class="confirmed-detail-label">Payment Method</span>
+          <span class="confirmed-detail-value">eSewa</span>
+        </div>
+        {% if transaction.esewa_ref_id %}
+        <div class="confirmed-detail-row">
+          <span class="confirmed-detail-label">eSewa Ref</span>
+          <span class="confirmed-detail-value">{{ transaction.esewa_ref_id }}</span>
+        </div>
+        {% endif %}
+        <div class="confirmed-detail-row">
+          <span class="confirmed-detail-label">Status</span>
+          <span class="confirmed-status-badge confirmed-status-badge--completed">{{ transaction.get_status_display }}</span>
+        </div>
+        <div class="confirmed-detail-row">
+          <span class="confirmed-detail-label">Date</span>
+          <span class="confirmed-detail-value">{{ transaction.created_at|date:"F j, Y" }}</span>
+        </div>
+      </div>
+
+      <div class="confirmed-next-steps">
+        <h3>What happens next?</h3>
+        <ol class="next-steps-list">
+          <li>Your payment has been confirmed — the seller has been notified.</li>
+          <li>Arrange book pickup or delivery with the seller.</li>
+          <li>Your order history is updated in <strong>My Orders</strong>.</li>
+        </ol>
+      </div>
+
+      {% else %}
+      {# ── Initial order request (not yet paid) ── #}
       <div class="confirmed-icon">✓</div>
 
       <h1 class="confirmed-title">Order Request Sent!</h1>
@@ -52,6 +112,8 @@
           <li>Once you have the book, go to <strong>My Orders</strong> in your dashboard to complete the payment.</li>
         </ol>
       </div>
+
+      {% endif %}
 
       <div class="confirmed-actions">
         <a href="{% url 'books:browse' %}" class="btn-confirmed-browse">Continue Browsing</a>

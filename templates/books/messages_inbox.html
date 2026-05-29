@@ -71,11 +71,23 @@
             <div class="inbox-item {% if not msg.is_read %}inbox-item--unread{% endif %}" data-msg-id="{{ msg.pk }}" data-read-url="{% url 'books:message_read' msg.pk %}">
               <!-- Top row: avatar + body + reply button -->
               <div class="inbox-item__row">
-                <div class="inbox-item__avatar">{{ msg.buyer.username|first|upper }}</div>
+                <div class="inbox-item__avatar">
+                  {% if request.user == msg.seller %}
+                    {{ msg.buyer.username|first|upper }}
+                  {% else %}
+                    {{ msg.seller.username|first|upper }}
+                  {% endif %}
+                </div>
                 <div class="inbox-item__body">
                   <div class="inbox-item__meta">
-                    <span class="inbox-item__sender">{{ msg.buyer.username }}</span>
-                    {% if not msg.is_read %}<span class="inbox-unread-dot"></span>{% endif %}
+                    <span class="inbox-item__sender">
+                      {% if request.user == msg.buyer %}
+                        You &rarr; {{ msg.seller.username }}
+                      {% else %}
+                        {{ msg.buyer.username }}
+                      {% endif %}
+                    </span>
+                    {% if not msg.is_read and request.user == msg.seller %}<span class="inbox-unread-dot"></span>{% endif %}
                     <span class="inbox-item__time">{{ msg.created_at|date:"M d, Y · g:i A" }}</span>
                   </div>
                   <a href="{% url 'books:detail' msg.book.seller.username msg.book.slug %}" class="inbox-item__book">

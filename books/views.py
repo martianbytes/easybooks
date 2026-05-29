@@ -951,10 +951,11 @@ class MessagesInboxView(LoginRequiredMixin, View):
     login_url = 'accounts:login'
 
     def get(self, request):
+        from django.db.models import Q
         inbox = Message.objects.filter(
-            seller=request.user
-        ).select_related('buyer', 'book').prefetch_related('replies__sender').order_by('-created_at')
-        unread_count = inbox.filter(is_read=False).count()
+            Q(seller=request.user) | Q(buyer=request.user)
+        ).select_related('buyer', 'seller', 'book').prefetch_related('replies__sender').order_by('-created_at')
+        unread_count = inbox.filter(is_read=False, seller=request.user).count()
         return render(request, 'books/messages_inbox.html', {
             'inbox': inbox,
             'unread_count': unread_count,
@@ -996,5 +997,5 @@ class ReplyMessageView(LoginRequiredMixin, View):
             'sender': reply.sender.username,
             'body': reply.body,
             'created_at': reply.created_at.strftime('%b %d, %Y · %I:%M %p'),
-            'is_self': True,
+            'is_self': reply.sender == request.user,
         })

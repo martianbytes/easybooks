@@ -64,7 +64,13 @@
 
               <div class="input-box">
                 <span class="details">Password <span class="ebf-req">*</span></span>
-                {{ form.password1 }}
+                <div style="position: relative;">
+                  {{ form.password1 }}
+                  <button type="button" onclick="togglePassword('id_password1', this)"
+                      style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:#888;">
+                      <i data-lucide="eye" width="18" height="18"></i>
+                  </button>
+                </div>
                 {% if form.password1.errors %}
                   <span class="ebf-field-error">{{ form.password1.errors|join:", " }}</span>
                 {% else %}
@@ -78,7 +84,13 @@
 
               <div class="input-box">
                 <span class="details">Confirm Password <span class="ebf-req">*</span></span>
-                {{ form.password2 }}
+                <div style="position: relative;">
+                  {{ form.password2 }}
+                  <button type="button" onclick="togglePassword('id_password2', this)"
+                      style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:#888;">
+                      <i data-lucide="eye" width="18" height="18"></i>
+                  </button>
+                </div>
                 {% if form.password2.errors %}
                   <span class="ebf-field-error">{{ form.password2.errors|join:", " }}</span>
                 {% else %}
@@ -101,4 +113,7 @@
 </section>
 
 <script src="{% static 'js/register.js' %}" defer></script>
+{% block extra_js %}
+<script src="{% static 'js/toggle_password.js' %}" defer></script>
+{% endblock %}
 {% endblock %}

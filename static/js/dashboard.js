@@ -1,4 +1,23 @@
 (function () {
+  var trigger = document.getElementById('pdb-orders-trigger');
+  var subnav  = document.getElementById('pdb-orders-subnav');
+  if (!trigger || !subnav) return;
+
+  // Auto-expand when a sub-link is the current page
+  if (subnav.querySelector('.pdb-nav-active')) {
+    trigger.classList.add('is-open');
+    trigger.setAttribute('aria-expanded', 'true');
+    subnav.classList.add('is-open');
+  }
+
+  trigger.addEventListener('click', function () {
+    var open = this.classList.toggle('is-open');
+    this.setAttribute('aria-expanded', open ? 'true' : 'false');
+    subnav.classList.toggle('is-open', open);
+  });
+})();
+
+(function () {
   var data = window.DASH_CHART_DATA;
   if (!data || !data.labels || data.labels.length === 0) return;
 

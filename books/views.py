@@ -1003,7 +1003,6 @@ class ConversationMessagesView(LoginRequiredMixin, View):
             return JsonResponse({'error': 'Forbidden'}, status=403)
 
         # Mark unread messages (sent by the other person) as read
-        # Query ChatMessage model directly to avoid static type-checker complaints
         ChatMessage.objects.filter(conversation=conv, is_read=False).exclude(sender=user).update(is_read=True)
 
         msgs = ChatMessage.objects.filter(conversation=conv).select_related('sender').order_by('created_at')
@@ -1104,10 +1103,10 @@ class StartConversationView(LoginRequiredMixin, View):
             buyer  = user
             seller = other
 
-        conv, _ = Conversation.objects.get_or_create(
+        conv, created = Conversation.objects.get_or_create(
             buyer=buyer,
             seller=seller,
-            book=book,
+            defaults={'book': book},  # book only set on first creation
         )
 
         return redirect(f"{reverse('books:messages_inbox')}?conv={conv.pk}")

@@ -70,7 +70,7 @@
 
           {% if sale.status == 'order_request' or sale.status == 'pending' %}
           <div class="order-card__actions">
-            <a href="{% url 'books:messages_inbox' %}{% if sale.related_message %}?open={{ sale.related_message.pk }}{% endif %}"
+            <a href="{% url 'books:start_conversation' %}?book={{ sale.book.slug }}&with={{ sale.buyer.username }}"
                class="order-action-btn order-action-btn--message">
               💬 Message Buyer
             </a>

@@ -241,7 +241,7 @@
               🛒 Add to Cart
             </button>
           </form>
-          <a href="{% url 'books:contact_seller' book.seller.username book.slug %}" class="btn-action-secondary">
+          <a href="{% url 'books:start_conversation' %}?book={{ book.slug }}&with={{ book.seller.username }}" class="btn-action-secondary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
             </svg>

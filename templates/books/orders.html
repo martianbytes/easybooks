@@ -51,15 +51,9 @@
           {% if order.status == 'order_request' or order.status == 'pending' %}
           <div class="order-card__actions">
 
-            {% if order.related_message %}
-            <a href="{% url 'books:messages_inbox' %}#msg-{{ order.related_message.pk }}" class="order-action-btn order-action-btn--message">
+            <a href="{% url 'books:start_conversation' %}?book={{ order.book.slug }}&with={{ order.book.seller.username }}" class="order-action-btn order-action-btn--message">
               💬 Message Seller
             </a>
-            {% else %}
-            <a href="{% url 'books:contact_seller' order.book.seller.username order.book.slug %}" class="order-action-btn order-action-btn--message">
-              💬 Message Seller
-            </a>
-            {% endif %}
 
             <!-- Complete via eSewa -->
             <form method="POST" action="{% url 'books:order_complete' order.slug %}" class="order-complete-form">

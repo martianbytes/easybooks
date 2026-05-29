@@ -369,11 +369,11 @@ class Conversation(models.Model):
 
     class Meta:
         ordering = ["-last_message_at"]
-        # Enforce one thread per buyer-seller-book combination.
+        # One thread per buyer-seller pair — book is just the opening context.
         constraints = [
             models.UniqueConstraint(
-                fields=["buyer", "seller", "book"],
-                name="unique_conversation_per_book",
+                fields=["buyer", "seller"],
+                name="unique_conversation_per_pair",
             )
         ]
         indexes = [
@@ -391,8 +391,6 @@ class Conversation(models.Model):
 
     def unread_count_for(self, user):
         """How many messages has `user` not read yet in this thread."""
-        # Query the ChatMessage model directly to avoid static type-checker
-        # complaints about the reverse relation attribute.
         return ChatMessage.objects.filter(conversation=self, is_read=False).exclude(sender=user).count()
 
 

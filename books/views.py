@@ -1138,3 +1138,45 @@ class StartConversationView(LoginRequiredMixin, View):
                 request.session[f'pending_book_{conv.pk}'] = book.pk
 
         return redirect(f"{reverse('books:messages_inbox')}?conv={conv.pk}")
+
+class DeleteConversationView(LoginRequiredMixin, View):
+    """
+    DELETE /messages/<pk>/delete/
+    Deletes the entire conversation and all its messages for the current user.
+    Only the participants can delete.
+    """
+    login_url = 'accounts:login'
+
+    def post(self, request, pk):
+        conv = get_object_or_404(Conversation, pk=pk)
+        user = request.user
+
+        if user not in (conv.buyer, conv.seller):
+            return JsonResponse({'error': 'Forbidden'}, status=403)
+
+        conv.delete()
+        return JsonResponse({'ok': True})
+
+
+class DeleteChatMessageView(LoginRequiredMixin, View):
+    """
+    DELETE /messages/message/<pk>/delete/
+    Deletes a single ChatMessage. Only the sender can delete their own message.
+    """
+    login_url = 'accounts:login'
+
+    def post(self, request, pk):
+        msg = get_object_or_404(ChatMessage, pk=pk)
+
+        if msg.sender != request.user:
+            return JsonResponse({'error': 'Forbidden'}, status=403)
+
+        conv_pk = msg.conversation_id  # type: ignore[attr-defined]
+        msg.delete()
+
+        # Update conversation's last_message_at to the new latest message
+        last = ChatMessage.objects.filter(conversation_id=conv_pk).order_by('-created_at').first()
+        if last:
+            Conversation.objects.filter(pk=conv_pk).update(last_message_at=last.created_at)
+
+        return JsonResponse({'ok': True})

@@ -23,9 +23,11 @@
   const headerName  = document.getElementById("msng-header-name");
   const headerBook  = document.getElementById("msng-header-book");
   const headerBookTitle = document.getElementById("msng-header-book-title");
+  const deleteConvBtn = document.getElementById("msng-delete-conv-btn");
 
   let activeConvId  = null;
   let activeSendUrl = null;
+  let activeDeleteConvUrl = null;
   let pollTimer     = null;
 
   // ── Helpers ────────────────────────────────────────────────
@@ -60,17 +62,35 @@
     row.dataset.msgId = msg.id;
 
     const initial = msg.sender.charAt(0).toUpperCase();
-
     const avatarHtml = msg.is_self ? "" :
       `<div class="msng-bubble-mini-avatar">${escapeHtml(initial)}</div>`;
 
+    const deleteBtnHtml = msg.is_self
+      ? `<button class="msng-msg-delete-btn" data-msg-id="${msg.id}" title="Delete message">
+           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+         </button>`
+      : "";
+
     row.innerHTML = `
       ${avatarHtml}
-      <div class="msng-bubble ${msg.is_self ? "msng-bubble--sent" : "msng-bubble--received"}">
-        ${escapeHtml(msg.body).replace(/\n/g, "<br>")}
-        <span class="msng-bubble__time">${escapeHtml(msg.created_at)}</span>
+      <div class="msng-bubble-wrap">
+        ${deleteBtnHtml}
+        <div class="msng-bubble ${msg.is_self ? "msng-bubble--sent" : "msng-bubble--received"}">
+          ${escapeHtml(msg.body).replace(/\n/g, "<br>")}
+          <span class="msng-bubble__time">${escapeHtml(msg.created_at)}</span>
+        </div>
       </div>
     `;
+
+    // Wire up the delete button
+    const deleteBtn = row.querySelector(".msng-msg-delete-btn");
+    if (deleteBtn) {
+      deleteBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        deleteMessage(msg.id, row);
+      });
+    }
+
     return row;
   }
 
@@ -94,15 +114,14 @@
     const convId   = convItem.dataset.convId;
     const fetchUrl = convItem.dataset.fetchUrl;
     const sendUrl  = convItem.dataset.sendUrl;
+    const deleteUrl = convItem.dataset.deleteUrl;
     const other    = convItem.dataset.other || "User";
-    const bookTitle = convItem.dataset.bookTitle || "";
-    const bookUrl  = convItem.dataset.bookUrl   || "";
 
-    // Stop previous poll
     if (pollTimer) clearInterval(pollTimer);
 
     activeConvId  = convId;
     activeSendUrl = sendUrl;
+    activeDeleteConvUrl = deleteUrl;
 
     setActiveItem(convId);
 
@@ -265,11 +284,56 @@
     sendBtn.disabled = textarea.value.trim() === "" || !activeConvId;
   }
 
+  // ── Delete a single message ─────────────────────────────────
+
+  async function deleteMessage(msgId, rowEl) {
+    if (!confirm("Delete this message?")) return;
+    try {
+      const res = await fetch(`/messages/message/${msgId}/delete/`, {
+        method: "POST",
+        headers: { "X-CSRFToken": csrf, "X-Requested-With": "XMLHttpRequest" },
+      });
+      const data = await res.json();
+      if (data.ok) {
+        rowEl.remove();
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  // ── Delete entire conversation ──────────────────────────────
+
+  async function deleteConversation() {
+    if (!activeDeleteConvUrl) return;
+    if (!confirm("Delete this entire conversation? This cannot be undone.")) return;
+    try {
+      const res = await fetch(activeDeleteConvUrl, {
+        method: "POST",
+        headers: { "X-CSRFToken": csrf, "X-Requested-With": "XMLHttpRequest" },
+      });
+      const data = await res.json();
+      if (data.ok) {
+        // Remove from sidebar and reset pane
+        const convItem = document.querySelector(`.msng-conv-item[data-conv-id="${activeConvId}"]`);
+        if (convItem) convItem.remove();
+        activeConvId = null;
+        activeSendUrl = null;
+        activeDeleteConvUrl = null;
+        if (pollTimer) clearInterval(pollTimer);
+        innerPane.style.display = "none";
+        emptyPane.style.display = "";
+      }
+    } catch (e) { /* ignore */ }
+  }
+
   // ── Event listeners ─────────────────────────────────────────
 
   convItems.forEach(item => {
     item.addEventListener("click", () => loadConversation(item));
   });
+
+  if (deleteConvBtn) {
+    deleteConvBtn.addEventListener("click", deleteConversation);
+  }
 
   textarea.addEventListener("input", autoGrow);
 

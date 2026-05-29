@@ -8632,6 +8632,56 @@ input[type="password"], input[type="text"] {
   text-align: left;
 }
 
+/* Delete conversation button in header */
+.msng-delete-conv-btn {
+  margin-left: auto;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  color: var(--text-muted, #999);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.msng-delete-conv-btn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* Per-message delete button — shown on hover */
+.msng-bubble-wrap {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+}
+.msng-bubble-row--self .msng-bubble-wrap {
+  flex-direction: row-reverse;
+}
+.msng-msg-delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: transparent;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+  margin-bottom: 4px;
+}
+.msng-bubble-row:hover .msng-msg-delete-btn {
+  color: var(--text-muted, #aaa);
+}
+.msng-msg-delete-btn:hover {
+  color: #dc2626 !important;
+  background: #fee2e2;
+}
+
 /* Input bar */
 .msng-input-bar {
   display: flex;

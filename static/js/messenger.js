@@ -48,6 +48,10 @@
     });
   }
 
+  // ── Active conversation book context ───────────────────────
+  let activeBookTitle = "";
+  let activeBookUrl   = "";
+
   // ── Render a single bubble row ──────────────────────────────
 
   function buildBubble(msg) {
@@ -68,6 +72,20 @@
       </div>
     `;
     return row;
+  }
+
+  // ── Render a book context pill ──────────────────────────────
+
+  function buildBookPill(title, url) {
+    const pill = document.createElement("div");
+    pill.className = "msng-book-pill";
+    const truncated = title.length > 40 ? title.slice(0, 38) + "…" : title;
+    pill.innerHTML =
+      `<svg class="msng-book-pill__icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>` +
+      (url
+        ? `<a href="${escapeHtml(url)}" target="_blank" title="${escapeHtml(title)}">${escapeHtml(truncated)}</a>`
+        : `<span title="${escapeHtml(title)}">${escapeHtml(truncated)}</span>`);
+    return pill;
   }
 
   // ── Load messages for a conversation ───────────────────────
@@ -92,16 +110,10 @@
     emptyPane.style.display = "none";
     innerPane.style.display = "flex";
 
-    // Update header
+    // Update header — name only; book context shown as pill in chat
     headerAvatar.textContent = other.charAt(0).toUpperCase();
     headerName.textContent   = other;
-    if (bookTitle) {
-      headerBookTitle.textContent = bookTitle;
-      headerBook.href = bookUrl;
-      headerBook.style.display = "inline-flex";
-    } else {
-      headerBook.style.display = "none";
-    }
+    headerBook.style.display = "none"; // pill replaces this
 
     // Enable input
     textarea.disabled = false;
@@ -134,7 +146,7 @@
       // Only re-render if this conv is still active
       if (String(activeConvId) !== String(convId)) return;
 
-      renderBubbles(data.messages);
+      renderBubbles(data.messages, data.book_title, data.book_url);
 
       // Update preview in list
       const lastMsg = data.messages[data.messages.length - 1];
@@ -147,7 +159,7 @@
     }
   }
 
-  function renderBubbles(messages) {
+  function renderBubbles(messages, bookTitle, bookUrl) {
     // Preserve scroll position if user has scrolled up
     const atBottom = bubblesEl.scrollHeight - bubblesEl.clientHeight - bubblesEl.scrollTop < 60;
 
@@ -159,6 +171,8 @@
     }
 
     let lastDate = "";
+    let lastBookTitle = null;
+
     messages.forEach(msg => {
       // Date separator
       const day = msg.created_at.split("·")[0].trim();
@@ -169,6 +183,13 @@
         sep.textContent = day;
         bubblesEl.appendChild(sep);
       }
+
+      // Book context pill — only when book changes
+      if (msg.book_title && msg.book_title !== lastBookTitle) {
+        lastBookTitle = msg.book_title;
+        bubblesEl.appendChild(buildBookPill(msg.book_title, msg.book_url));
+      }
+
       bubblesEl.appendChild(buildBubble(msg));
     });
 
@@ -200,12 +221,18 @@
       const data = await res.json();
 
       if (data.ok) {
+        // Book context pill if this message introduces a new book
+        const bookPills = Array.from(bubblesEl.querySelectorAll(".msng-book-pill"));
+        const lastPill = bookPills[bookPills.length - 1];
+        const lastPillTitle = lastPill ? (lastPill.querySelector("a,span") || {}).textContent : null;
+        if (data.book_title && data.book_title !== lastPillTitle) {
+          bubblesEl.appendChild(buildBookPill(data.book_title, data.book_url));
+        }
+
         // Append the new bubble
-        const msgs = Array.from(bubblesEl.querySelectorAll(".msng-bubble-row"));
-        // Check if we need a date separator
         const newDay = data.created_at.split("·")[0].trim();
-        const seps   = Array.from(bubblesEl.querySelectorAll(".msng-date-sep"));
-        const lastSep = seps[seps.length - 1];
+        const dateSeps = Array.from(bubblesEl.querySelectorAll(".msng-date-sep"));
+        const lastSep = dateSeps[dateSeps.length - 1];
         if (!lastSep || lastSep.textContent.trim() !== newDay) {
           const sep = document.createElement("div");
           sep.className = "msng-date-sep";

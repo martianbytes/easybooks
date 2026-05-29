@@ -35,33 +35,18 @@
     readObserver.observe(item);
   });
 
-  // ── Toggle reply form ──────────────────────────────────────────────
-  document.querySelectorAll('[data-toggle-reply]').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var id = this.dataset.toggleReply;
-      var form = document.getElementById('reply-form-' + id);
-      var thread = document.getElementById('thread-' + id);
-      if (!form) return;
-      var isHidden = form.style.display === 'none';
-      form.style.display = isHidden ? 'block' : 'none';
-      if (isHidden) {
-        thread.style.display = 'block';
-        form.querySelector('.reply-textarea').focus();
-      }
-    });
-  });
-
-  // ── Cancel reply ───────────────────────────────────────────────────
-  document.querySelectorAll('.reply-cancel-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var id = this.dataset.msgId;
-      var form = document.getElementById('reply-form-' + id);
-      if (form) {
-        form.style.display = 'none';
-        form.querySelector('.reply-textarea').value = '';
-      }
-    });
-  });
+  // ── Scroll to specific thread if ?open=<pk> is in the URL ─────────
+  var openParam = new URLSearchParams(window.location.search).get('open');
+  if (openParam) {
+    var targetThread = document.getElementById('thread-' + openParam);
+    if (targetThread) {
+      setTimeout(function () {
+        targetThread.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        var ta = targetThread.querySelector('.reply-textarea');
+        if (ta) ta.focus();
+      }, 100);
+    }
+  }
 
   // ── Send reply ─────────────────────────────────────────────────────
   document.querySelectorAll('.reply-send-btn').forEach(function (btn) {
@@ -88,7 +73,7 @@
         .then(function (data) {
           if (!data.ok) { alert(data.error || 'Failed to send.'); return; }
 
-          // Append bubble
+          // Append new reply bubble before the form
           var thread = document.getElementById('thread-' + id);
           var bubble = document.createElement('div');
           bubble.className = 'reply-bubble reply-bubble--self';
@@ -98,7 +83,7 @@
             '<span class="reply-bubble__time">' + data.created_at + '</span>';
           thread.insertBefore(bubble, form);
 
-          // Update reply count on button
+          // Update reply count on the Reply button
           var toggleBtn = document.querySelector('[data-toggle-reply="' + id + '"]');
           if (toggleBtn) {
             var countSpan = toggleBtn.querySelector('.reply-count');
@@ -114,7 +99,7 @@
           }
 
           textarea.value = '';
-          form.style.display = 'none';
+          textarea.focus();
         })
         .finally(function () {
           btn.disabled = false;

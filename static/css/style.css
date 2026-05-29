@@ -8116,3 +8116,57 @@ qty-box span {
   font-size: 0.72rem;
   color: #bbb;
 }
+
+/* ── Order cards (orders.html & sales.html shared) ─────────────────── */
+.orders-list { display: flex; flex-direction: column; gap: 1.25rem; margin-top: 1.5rem; }
+.order-card { background: var(--color-surface, #fff); border: 1px solid var(--color-border, #e5e7eb); border-radius: 12px; padding: 1.25rem 1.5rem; display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap; }
+.order-card__book { flex: 1; min-width: 200px; }
+.order-book-link { display: flex; gap: 1rem; align-items: center; text-decoration: none; color: inherit; }
+.order-book-thumb { width: 64px; height: 80px; object-fit: cover; border-radius: 6px; }
+.order-book-thumb-placeholder { width: 64px; height: 80px; display: flex; align-items: center; justify-content: center; font-size: 2rem; background: var(--color-surface-alt, #f3f4f6); border-radius: 6px; }
+.order-book-meta { display: flex; flex-direction: column; gap: 0.25rem; }
+.order-book-title { font-weight: 600; font-size: 1rem; color: var(--color-text, #111); }
+.order-book-seller { font-size: 0.85rem; color: var(--color-text-muted, #6b7280); }
+.order-book-price { font-size: 0.95rem; font-weight: 600; color: var(--color-primary, #7c3aed); }
+.order-card__right { display: flex; flex-direction: column; gap: 0.6rem; min-width: 260px; }
+.order-card__status { display: flex; align-items: center; gap: 0.75rem; }
+.order-card__date { font-size: 0.8rem; color: var(--color-text-muted, #6b7280); }
+.order-card__actions { display: flex; flex-direction: column; gap: 0.5rem; }
+.order-action-btn { display: inline-block; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; border: none; text-align: center; text-decoration: none; transition: opacity 0.15s; }
+.order-action-btn:hover { opacity: 0.85; }
+.order-action-btn--message { background: var(--color-surface-alt, #f3f4f6); color: var(--color-text, #111); border: 1px solid var(--color-border, #e5e7eb); }
+.order-action-btn--esewa { background: #60b246; color: #fff; }
+.order-action-btn--other { background: var(--color-surface-alt, #f3f4f6); color: var(--color-text, #111); border: 1px solid var(--color-border, #e5e7eb); }
+.order-action-btn--cancel { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; width: 100%; }
+.order-action-btn--other-submit { background: var(--color-primary, #7c3aed); color: #fff; width: 100%; margin-top: 0.5rem; }
+.order-complete-form, .order-card__actions form { margin: 0; }
+.order-other-form { display: none; background: var(--color-surface-alt, #f9fafb); border: 1px solid var(--color-border, #e5e7eb); border-radius: 8px; padding: 1rem; margin-top: 0.25rem; }
+.order-other-form--visible { display: block; }
+.order-remarks-label { display: block; font-size: 0.82rem; color: var(--color-text-muted, #6b7280); margin-bottom: 0.35rem; }
+.order-remarks-textarea { width: 100%; border: 1px solid var(--color-border, #e5e7eb); border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.85rem; resize: vertical; box-sizing: border-box; }
+.order-card__completed-info { display: flex; flex-direction: column; gap: 0.25rem; }
+.order-payment-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500; }
+.order-payment-badge--esewa { background: #dcfce7; color: #166534; }
+.order-payment-badge--other { background: #f3f4f6; color: #374151; }
+.order-esewa-ref, .order-remarks-text { font-size: 0.8rem; color: var(--color-text-muted, #6b7280); }
+
+/* sales.html-specific buyer info */
+.sale-buyer-info { display: flex; align-items: center; gap: 0.75rem; }
+.sales-buyer-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--color-primary, #7c3aed); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
+.sale-buyer-name { display: block; font-weight: 600; font-size: 0.9rem; }
+.sale-buyer-username, .sale-buyer-email { display: block; font-size: 0.8rem; color: var(--color-text-muted, #6b7280); }
+
+/* ── order_confirmed.html — eSewa completed state ───────────────────── */
+.confirmed-status-badge--completed {
+  background: #dcfce7;
+  color: #166534;
+  padding: 0.2rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.confirmed-icon--success {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+  border-color: #bbf7d0 !important;
+}

@@ -21,7 +21,6 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             My Listings
           </a>
-          <!-- Orders group -->
           <div class="pdb-nav-group">
             <button type="button" class="pdb-nav-group-trigger" id="pdb-orders-trigger" aria-expanded="false" aria-controls="pdb-orders-subnav">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
@@ -82,8 +81,13 @@
           {% if inbox %}
           <div class="inbox-list">
             {% for msg in inbox %}
-            <div class="inbox-item {% if not msg.is_read %}inbox-item--unread{% endif %}" data-msg-id="{{ msg.pk }}" data-read-url="{% url 'books:message_read' msg.pk %}">
-              <!-- Top row: avatar + body + reply button -->
+            {# Each conversation = the original message + all replies, flat #}
+            <div class="inbox-item {% if not msg.is_read %}inbox-item--unread{% endif %}"
+                 id="inbox-item-{{ msg.pk }}"
+                 data-msg-id="{{ msg.pk }}"
+                 data-read-url="{% url 'books:message_read' msg.pk %}">
+
+              <!-- Conversation header: avatar + meta + Reply button to focus bar -->
               <div class="inbox-item__row">
                 <div class="inbox-item__avatar">{{ msg.buyer.username|first|upper }}</div>
                 <div class="inbox-item__body">
@@ -96,7 +100,6 @@
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
                     {{ msg.book.title }}
                   </a>
-                  <p class="inbox-item__text">{{ msg.message }}</p>
                 </div>
                 <div class="inbox-item__actions">
                   <button type="button" class="inbox-reply-btn"
@@ -110,43 +113,37 @@
                 </div>
               </div>
 
-              <!-- Reply thread -->
-              <div class="reply-thread" id="thread-{{ msg.pk }}">
+              <!-- Flat chat thread: buyer's original message first, then all replies -->
+              <div class="chat-thread" id="thread-{{ msg.pk }}">
+                <!-- Buyer's opening message as a bubble -->
+                <div class="reply-bubble reply-bubble--other">
+                  <span class="reply-bubble__sender">{{ msg.buyer.username }}</span>
+                  <p class="reply-bubble__text">{{ msg.message }}</p>
+                  <span class="reply-bubble__time">{{ msg.created_at|date:"M d · g:i A" }}</span>
+                </div>
+                <!-- All replies in chronological order -->
                 {% for reply in msg.replies.all %}
-                <div class="reply-bubble {% if reply.sender == request.user %}reply-bubble--self{% endif %}">
+                <div class="reply-bubble {% if reply.sender == request.user %}reply-bubble--self{% else %}reply-bubble--other{% endif %}">
                   <span class="reply-bubble__sender">{{ reply.sender.username }}</span>
                   <p class="reply-bubble__text">{{ reply.body }}</p>
                   <span class="reply-bubble__time">{{ reply.created_at|date:"M d · g:i A" }}</span>
                 </div>
                 {% endfor %}
-
-                <!-- Inline reply form, hidden until Reply is clicked -->
-                <div class="reply-form-wrap" id="reply-form-{{ msg.pk }}" style="display:none;">
-                  <textarea class="reply-textarea" placeholder="Write a reply…" rows="2"
-                    data-msg-id="{{ msg.pk }}"
-                    data-reply-url="{% url 'books:message_reply' msg.pk %}"></textarea>
-                  <div class="reply-form-actions">
-                    <button type="button" class="reply-send-btn" data-msg-id="{{ msg.pk }}">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                      Send
-                    </button>
-                    <button type="button" class="reply-cancel-btn" data-msg-id="{{ msg.pk }}">Cancel</button>
-                  </div>
-                </div>
               </div>
+
             </div>
             {% endfor %}
           </div>
 
-          <!-- New message box at the bottom -->
+          <!-- Always-on message bar -->
           <div class="inbox-reply-bar">
-            <div class="inbox-reply-bar__context" id="reply-bar-context" style="display:none;">
-              <span id="reply-bar-label"></span>
+            <div class="inbox-reply-bar__context" id="reply-bar-context" style="display:flex;">
+              <span id="reply-bar-label">{{ inbox.0.buyer.username }} · {{ inbox.0.book.title }}</span>
               <button type="button" class="reply-bar-clear" id="reply-bar-clear">✕</button>
             </div>
             <div class="inbox-reply-bar__input">
-              <textarea class="reply-textarea" id="reply-bar-textarea" placeholder="New message…" rows="2" disabled></textarea>
-              <button type="button" class="reply-send-btn" id="reply-bar-send" disabled>
+              <textarea class="reply-textarea" id="reply-bar-textarea" placeholder="New message…" rows="2"></textarea>
+              <button type="button" class="reply-send-btn" id="reply-bar-send">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                 Send
               </button>

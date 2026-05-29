@@ -7759,8 +7759,9 @@ qty-box span {
   margin-left: 0.2rem;
 }
 
-/* ── Reply thread ──────────────────────────────────────────────── */
-.reply-thread {
+/* ── Reply thread (legacy) + Chat thread (flat layout) ─────────── */
+.reply-thread,
+.chat-thread {
   margin-top: 0.75rem;
   margin-left: 3.5rem;
   display: flex;
@@ -7772,6 +7773,11 @@ qty-box span {
   border-radius: 10px 10px 10px 2px;
   padding: 0.6rem 0.85rem;
   max-width: 85%;
+  align-self: flex-start;
+}
+.reply-bubble--other {
+  background: var(--color-linen-100);
+  border-radius: 10px 10px 10px 2px;
   align-self: flex-start;
 }
 .reply-bubble--self {

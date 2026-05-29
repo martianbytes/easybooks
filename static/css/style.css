@@ -5790,6 +5790,12 @@ qty-box span {
   display: block;
 }
 
+input[type="password"], input[type="text"] {
+  width: 100%;
+  padding-right: 40px;
+  box-sizing: border-box;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    PROFILE DASHBOARD — pdb-* namespace
    Paste this block into style.css (replaces old profile CSS)

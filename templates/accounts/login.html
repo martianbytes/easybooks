@@ -24,7 +24,13 @@
 
         <div class="input-group">
             <label for="{{ form.password.id_for_label }}">Password</label>
-            {{ form.password }}
+            <div style="position: relative;">
+                {{ form.password }}
+                <button type="button" onclick="togglePassword('id_password', this)"
+                    style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:#888;">
+                    <i data-lucide="eye" width="18" height="18"></i>
+                </button>
+            </div>
             {{ form.password.errors }}
         </div>
 
@@ -42,4 +48,7 @@
         </p>
     </form>
 </div>
+{% block extra_js %}
+<script src="{% static 'js/toggle_password.js' %}" defer></script>
+{% endblock %}
 {% endblock %}

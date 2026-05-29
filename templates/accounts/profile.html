@@ -203,7 +203,7 @@
               </div>
               <div class="dash-breakdown-stats">
                 <div class="dash-mini-stat">
-                  <p class="dash-mini-stat__val">{{ total_sales_count }}</p>
+                  <p class="dash-mini-stat__val">{{ total_sales_count|floatformat:2 }}</p>
                   <p class="dash-mini-stat__lbl">Total</p>
                 </div>
                 <div class="dash-mini-stat">
@@ -245,7 +245,7 @@
               </div>
               <div class="dash-breakdown-stats">
                 <div class="dash-mini-stat">
-                  <p class="dash-mini-stat__val">{{ total_purchases_count }}</p>
+                  <p class="dash-mini-stat__val">{{ total_purchases_count|floatformat:2 }}</p>
                   <p class="dash-mini-stat__lbl">Total</p>
                 </div>
                 <div class="dash-mini-stat">

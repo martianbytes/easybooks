@@ -51,26 +51,34 @@
           {% if order.status == 'order_request' or order.status == 'pending' %}
           <div class="order-card__actions">
 
-            {% if order.related_message %}
-            <a href="{% url 'books:messages_inbox' %}#msg-{{ order.related_message.pk }}" class="order-action-btn order-action-btn--message">
-              💬 Message Seller
-            </a>
-            {% else %}
-            <a href="{% url 'books:contact_seller' order.book.seller.username order.book.slug %}" class="order-action-btn order-action-btn--message">
-              💬 Message Seller
-            </a>
-            {% endif %}
+           <div class="order-action-row">
 
-            <!-- Complete via eSewa -->
-            <form method="POST" action="{% url 'books:order_complete' order.slug %}" class="order-complete-form">
-              {% csrf_token %}
-              <input type="hidden" name="payment_method" value="esewa">
-              <button type="submit" class="order-action-btn order-action-btn--esewa"
-                onclick="return confirm('Complete this order via eSewa? You will be redirected to make the payment.')">
-                ✓ Complete via eSewa
-              </button>
-            </form>
+  {% if order.related_message %}
+  <a href="{% url 'books:messages_inbox' %}#msg-{{ order.related_message.pk }}" 
+     class="order-action-btn order-action-btn--message" title="Message Seller">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+  </a>
+  {% else %}
+  <a href="{% url 'books:contact_seller' order.book.seller.username order.book.slug %}" 
+     class="order-action-btn order-action-btn--message" title="Message Seller">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+  </a>
+  {% endif %}
 
+  <!-- Complete via eSewa -->
+  <form method="POST" action="{% url 'books:order_complete' order.slug %}" class="order-complete-form order-action-row__esewa">
+    {% csrf_token %}
+    <input type="hidden" name="payment_method" value="esewa">
+    <button type="submit" class="order-action-btn order-action-btn--esewa"
+      title="Complete via eSewa"
+      onclick="return confirm('Complete this order via eSewa? You will be redirected to make the payment.')">
+      
+<img src="{% static 'images/esewa-icon.png' %}" alt="eSewa" class="esewa-btn-icon">
+
+    </button>
+  </form>
+
+</div>
             <!-- Complete via Other Method -->
             <button type="button" class="order-action-btn order-action-btn--other"
               data-toggle-other-form="other-form-{{ order.slug }}">

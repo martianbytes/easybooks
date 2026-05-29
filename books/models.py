@@ -338,3 +338,90 @@ class CartItem(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s cart → {self.book.title}"
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Conversation  (new messenger system)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+class Conversation(models.Model):
+    """
+    A persistent thread between exactly one buyer and one seller.
+    Optionally anchored to a book (the listing that started the chat),
+    but the thread lives on even if they talk about other things.
+    There can only be ONE conversation per (buyer, seller, book) trio —
+    subsequent "Message Seller" clicks just reopen the existing thread.
+    """
+    buyer = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="buyer_conversations"
+    )
+    seller = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="seller_conversations"
+    )
+    # The book that triggered the conversation (nullable so we can have
+    # seller→buyer convos started from the orders/sales page too).
+    book = models.ForeignKey(
+        Book, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="conversations"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    # Denormalised for fast inbox sorting — updated whenever a new ChatMessage is saved.
+    last_message_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-last_message_at"]
+        # One thread per buyer-seller pair — book is just the opening context.
+        constraints = [
+            models.UniqueConstraint(
+                fields=["buyer", "seller"],
+                name="unique_conversation_per_pair",
+            )
+        ]
+        indexes = [
+            models.Index(fields=["buyer", "last_message_at"]),
+            models.Index(fields=["seller", "last_message_at"]),
+        ]
+
+    def __str__(self):
+        book_part = f" re: {self.book.title}" if self.book else ""
+        return f"{self.buyer.username} ↔ {self.seller.username}{book_part}"
+
+    def other_participant(self, user):
+        """Return the other person in this conversation."""
+        return self.seller if user == self.buyer else self.buyer
+
+    def unread_count_for(self, user):
+        """How many messages has `user` not read yet in this thread."""
+        return ChatMessage.objects.filter(conversation=self, is_read=False).exclude(sender=user).count()
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ChatMessage  (new messenger system)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+class ChatMessage(models.Model):
+    conversation = models.ForeignKey(
+        Conversation, on_delete=models.CASCADE, related_name="chat_messages"
+    )
+    sender = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="chat_messages_sent"
+    )
+    body = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+        indexes = [
+            models.Index(fields=["conversation", "created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.sender.username}: {self.body[:60]}"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Keep the conversation's last_message_at in sync.
+        # Use getattr to avoid static type-checker errors about the implicit
+        # "<field>_id" attribute that Django provides at runtime.
+        conv_id = getattr(self, "conversation_id", None) or (self.conversation.pk if self.conversation else None)
+        if conv_id is not None:
+            Conversation.objects.filter(pk=conv_id).update(last_message_at=self.created_at)

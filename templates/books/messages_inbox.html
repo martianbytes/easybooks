@@ -21,7 +21,6 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             My Listings
           </a>
-          <!-- Orders group -->
           <div class="pdb-nav-group">
             <button type="button" class="pdb-nav-group-trigger" id="pdb-orders-trigger" aria-expanded="false" aria-controls="pdb-orders-subnav">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
@@ -42,7 +41,7 @@
           <a href="{% url 'books:messages_inbox' %}" class="pdb-nav-item pdb-nav-active" style="position:relative;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
             Messages
-            {% if unread_messages_count > 0 %}<span class="pdb-nav-badge">{{ unread_messages_count }}</span>{% endif %}
+            {% if total_unread > 0 %}<span class="pdb-nav-badge">{{ total_unread }}</span>{% endif %}
           </a>
           <a href="{% url 'accounts:change_password' %}" class="pdb-nav-item">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
@@ -59,114 +58,135 @@
         </nav>
       </aside>
 
-      <!-- ── MAIN CONTENT ── -->
+      <!-- ── MAIN ── -->
       <main class="pdb-main">
-        <div class="pdb-edit-card">
+        <div class="msng-shell">
 
-          <div class="pdb-edit-header">
-            <div class="pdb-edit-title-wrap">
-              <span class="pdb-edit-title-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-              </span>
-              <div>
-                <h1 class="pdb-edit-title">Messages
-                  {% if unread_count > 0 %}<span class="inbox-unread-pill">{{ unread_count }} unread</span>{% endif %}
-                </h1>
-                <p class="pdb-edit-subtitle">Messages buyers have sent you about your listings.</p>
-              </div>
+          <!-- ══ CONVERSATION LIST ══ -->
+          <div class="msng-list" id="msng-list">
+            <div class="msng-list__header">
+              <h2 class="msng-list__title">Messages</h2>
+              {% if total_unread > 0 %}<span class="msng-unread-pill">{{ total_unread }}</span>{% endif %}
             </div>
-          </div>
 
-          <div class="pdb-edit-divider"></div>
-
-          {% if inbox %}
-          <div class="inbox-list">
-            {% for msg in inbox %}
-            <div class="inbox-item {% if not msg.is_read %}inbox-item--unread{% endif %}" data-msg-id="{{ msg.pk }}" data-read-url="{% url 'books:message_read' msg.pk %}">
-              <!-- Top row: avatar + body + reply button -->
-              <div class="inbox-item__row">
-                <div class="inbox-item__avatar">{{ msg.buyer.username|first|upper }}</div>
-                <div class="inbox-item__body">
-                  <div class="inbox-item__meta">
-                    <span class="inbox-item__sender">{{ msg.buyer.username }}</span>
-                    {% if not msg.is_read %}<span class="inbox-unread-dot"></span>{% endif %}
-                    <span class="inbox-item__time">{{ msg.created_at|date:"M d, Y · g:i A" }}</span>
-                  </div>
-                  <a href="{% url 'books:detail' msg.book.seller.username msg.book.slug %}" class="inbox-item__book">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
-                    {{ msg.book.title }}
-                  </a>
-                  <p class="inbox-item__text">{{ msg.message }}</p>
-                </div>
-                <div class="inbox-item__actions">
-                  <button type="button" class="inbox-reply-btn"
-                    data-msg-id="{{ msg.pk }}"
-                    data-reply-url="{% url 'books:message_reply' msg.pk %}"
-                    data-sender="{{ msg.buyer.username }}"
-                    data-book="{{ msg.book.title }}">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 00-4-4H4"/></svg>
-                    Reply {% if msg.replies.count %}<span class="reply-count">({{ msg.replies.count }})</span>{% endif %}
-                  </button>
-                </div>
-              </div>
-
-              <!-- Reply thread -->
-              <div class="reply-thread" id="thread-{{ msg.pk }}">
-                {% for reply in msg.replies.all %}
-                <div class="reply-bubble {% if reply.sender == request.user %}reply-bubble--self{% endif %}">
-                  <span class="reply-bubble__sender">{{ reply.sender.username }}</span>
-                  <p class="reply-bubble__text">{{ reply.body }}</p>
-                  <span class="reply-bubble__time">{{ reply.created_at|date:"M d · g:i A" }}</span>
-                </div>
-                {% endfor %}
-
-                <!-- Inline reply form, hidden until Reply is clicked -->
-                <div class="reply-form-wrap" id="reply-form-{{ msg.pk }}" style="display:none;">
-                  <textarea class="reply-textarea" placeholder="Write a reply…" rows="2"
-                    data-msg-id="{{ msg.pk }}"
-                    data-reply-url="{% url 'books:message_reply' msg.pk %}"></textarea>
-                  <div class="reply-form-actions">
-                    <button type="button" class="reply-send-btn" data-msg-id="{{ msg.pk }}">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                      Send
+            {% if conversations %}
+              {% for conv in conversations %}
+                {# Determine the other person's name from Python side #}
+                {% if conv.buyer == request.user %}
+                  {% with other_name=conv.seller.username %}
+                    <button type="button"
+                      class="msng-conv-item"
+                      data-conv-id="{{ conv.pk }}"
+                      data-other="{{ other_name }}"
+                      data-book-title="{% if conv.book %}{{ conv.book.title }}{% endif %}"
+                      data-book-url="{% if conv.book %}{% url 'books:detail' conv.book.seller.username conv.book.slug %}{% endif %}"
+                      data-fetch-url="{% url 'books:conversation_messages' conv.pk %}"
+                      data-send-url="{% url 'books:send_chat_message' conv.pk %}">
+                      <div class="msng-conv-avatar">{{ other_name|slice:":1"|upper }}</div>
+                      <div class="msng-conv-info">
+                        <div class="msng-conv-top">
+                          <span class="msng-conv-name">{{ other_name }}</span>
+                          <span class="msng-conv-time">{{ conv.last_message_at|timesince }} ago</span>
+                        </div>
+                        {% if conv.book %}<span class="msng-conv-book">📖 {{ conv.book.title|truncatechars:28 }}</span>{% endif %}
+                        <span class="msng-conv-preview" id="preview-{{ conv.pk }}"></span>
+                      </div>
+                      <span class="msng-conv-badge" id="badge-{{ conv.pk }}" style="display:none;"></span>
                     </button>
-                    <button type="button" class="reply-cancel-btn" data-msg-id="{{ msg.pk }}">Cancel</button>
-                  </div>
+                  {% endwith %}
+                {% else %}
+                  {% with other_name=conv.buyer.username %}
+                    <button type="button"
+                      class="msng-conv-item"
+                      data-conv-id="{{ conv.pk }}"
+                      data-other="{{ other_name }}"
+                      data-book-title="{% if conv.book %}{{ conv.book.title }}{% endif %}"
+                      data-book-url="{% if conv.book %}{% url 'books:detail' conv.book.seller.username conv.book.slug %}{% endif %}"
+                      data-fetch-url="{% url 'books:conversation_messages' conv.pk %}"
+                      data-send-url="{% url 'books:send_chat_message' conv.pk %}">
+                      <div class="msng-conv-avatar">{{ other_name|slice:":1"|upper }}</div>
+                      <div class="msng-conv-info">
+                        <div class="msng-conv-top">
+                          <span class="msng-conv-name">{{ other_name }}</span>
+                          <span class="msng-conv-time">{{ conv.last_message_at|timesince }} ago</span>
+                        </div>
+                        {% if conv.book %}<span class="msng-conv-book">📖 {{ conv.book.title|truncatechars:28 }}</span>{% endif %}
+                        <span class="msng-conv-preview" id="preview-{{ conv.pk }}"></span>
+                      </div>
+                      <span class="msng-conv-badge" id="badge-{{ conv.pk }}" style="display:none;"></span>
+                    </button>
+                  {% endwith %}
+                {% endif %}
+              {% endfor %}
+            {% else %}
+              <div class="msng-list__empty">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-gray-300)" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                <p>No conversations yet.</p>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- ══ CHAT PANE ══ -->
+          <div class="msng-chat" id="msng-chat">
+
+            <!-- Empty / placeholder state -->
+            <div class="msng-chat__empty" id="msng-empty">
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--color-gray-300)" stroke-width="1.2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              <p class="msng-chat__empty-title">Select a conversation</p>
+              <p class="msng-chat__empty-sub">Choose a chat from the left to start messaging.</p>
+            </div>
+
+            <!-- Active chat wrapper (JS shows this) -->
+            <div class="msng-chat__inner" id="msng-inner" style="display:none; flex-direction:column; height:100%;">
+
+              <!-- Header -->
+              <div class="msng-chat__header">
+                <div class="msng-header-avatar" id="msng-header-avatar"></div>
+                <div class="msng-header-info">
+                  <span class="msng-header-name" id="msng-header-name"></span>
+                  <a class="msng-header-book" id="msng-header-book" href="#" target="_blank" style="display:none;">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+                    Started about: <span id="msng-header-book-title"></span>
+                  </a>
                 </div>
               </div>
-            </div>
-            {% endfor %}
-          </div>
 
-          <!-- New message box at the bottom -->
-          <div class="inbox-reply-bar">
-            <div class="inbox-reply-bar__context" id="reply-bar-context" style="display:none;">
-              <span id="reply-bar-label"></span>
-              <button type="button" class="reply-bar-clear" id="reply-bar-clear">✕</button>
-            </div>
-            <div class="inbox-reply-bar__input">
-              <textarea class="reply-textarea" id="reply-bar-textarea" placeholder="New message…" rows="2" disabled></textarea>
-              <button type="button" class="reply-send-btn" id="reply-bar-send" disabled>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                Send
-              </button>
-            </div>
-          </div>
+              <!-- Bubble area -->
+              <div class="msng-bubbles" id="msng-bubbles">
+                <div class="msng-bubbles__loading" id="msng-loading">
+                  <span class="msng-loading-dot"></span>
+                  <span class="msng-loading-dot"></span>
+                  <span class="msng-loading-dot"></span>
+                </div>
+              </div>
 
-          {% else %}
-          <div class="sales-empty" style="padding:4rem 1rem;">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary-300)" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-            <p class="sales-empty__title">No messages yet</p>
-            <p class="sales-empty__sub">When buyers message you about your listings, they'll appear here.</p>
-          </div>
-          {% endif %}
+              <!-- Input bar -->
+              <div class="msng-input-bar">
+                <textarea
+                  class="msng-textarea"
+                  id="msng-textarea"
+                  placeholder="Aa"
+                  rows="1"
+                  maxlength="2000"></textarea>
+                <button type="button" class="msng-send-btn" id="msng-send-btn" disabled>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+              </div>
 
-        </div>
+            </div><!-- /.msng-chat__inner -->
+          </div><!-- /.msng-chat -->
+
+        </div><!-- /.msng-shell -->
       </main>
+
     </div>
   </div>
 </section>
 
+<script>
+  window.MSNG_CSRF = "{{ csrf_token }}";
+  window.MSNG_ACTIVE = "{{ active_conv_pk|default:'' }}";
+</script>
 <script src="{% static 'js/dashboard.js' %}" defer></script>
-<script src="{% static 'js/messages_inbox.js' %}" defer></script>
+<script src="{% static 'js/messenger.js' %}" defer></script>
 {% endblock %}

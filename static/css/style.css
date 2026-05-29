@@ -8537,6 +8537,41 @@ input[type="password"], input[type="text"] {
 .msng-date-sep::before { left: 0; }
 .msng-date-sep::after  { right: 0; }
 
+/* Book context pill — shown once at top of each conversation */
+.msng-book-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin: 8px auto 14px;
+  width: fit-content;
+  max-width: 70%;
+  padding: 5px 13px 5px 10px;
+  border-radius: 999px;
+  background: var(--color-surface-raised, #f0f2f5);
+  border: 1px solid var(--border-default, #e0e0e0);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-secondary, #555);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+  user-select: none;
+}
+.msng-book-pill a {
+  color: var(--color-primary-600);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.msng-book-pill a:hover { text-decoration: underline; }
+.msng-book-pill__icon {
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
 /* Message bubbles */
 .msng-bubble-row {
   display: flex;
@@ -8595,6 +8630,56 @@ input[type="password"], input[type="text"] {
 }
 .msng-bubble--received .msng-bubble__time {
   text-align: left;
+}
+
+/* Delete conversation button in header */
+.msng-delete-conv-btn {
+  margin-left: auto;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  color: var(--text-muted, #999);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.msng-delete-conv-btn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* Per-message delete button — shown on hover */
+.msng-bubble-wrap {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+}
+.msng-bubble-row--self .msng-bubble-wrap {
+  flex-direction: row-reverse;
+}
+.msng-msg-delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: transparent;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+  margin-bottom: 4px;
+}
+.msng-bubble-row:hover .msng-msg-delete-btn {
+  color: var(--text-muted, #aaa);
+}
+.msng-msg-delete-btn:hover {
+  color: #dc2626 !important;
+  background: #fee2e2;
 }
 
 /* Input bar */

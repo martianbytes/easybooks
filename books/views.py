@@ -1005,7 +1005,7 @@ class ConversationMessagesView(LoginRequiredMixin, View):
         # Mark unread messages (sent by the other person) as read
         ChatMessage.objects.filter(conversation=conv, is_read=False).exclude(sender=user).update(is_read=True)
 
-        msgs = ChatMessage.objects.filter(conversation=conv).select_related('sender').order_by('created_at')
+        msgs = ChatMessage.objects.filter(conversation=conv).select_related('sender', 'book', 'book__seller').order_by('created_at')
         data = [
             {
                 'id': m.pk,
@@ -1013,6 +1013,13 @@ class ConversationMessagesView(LoginRequiredMixin, View):
                 'body': m.body,
                 'is_self': m.sender == user,
                 'created_at': m.created_at.strftime('%b %d · %I:%M %p'),
+                'book_title': m.book.title if m.book else None,
+                'book_url': (
+                    reverse('books:detail', kwargs={
+                        'seller': m.book.seller.username,
+                        'slug': m.book.slug,
+                    }) if m.book else None
+                ),
             }
             for m in msgs
         ]
@@ -1022,13 +1029,6 @@ class ConversationMessagesView(LoginRequiredMixin, View):
             'ok': True,
             'messages': data,
             'other_username': other.username,
-            'book_title': conv.book.title if conv.book else None,
-            'book_url': (
-                reverse('books:detail', kwargs={
-                    'seller': conv.book.seller.username,
-                    'slug': conv.book.slug,
-                }) if conv.book else None
-            ),
         })
 
 
@@ -1049,10 +1049,19 @@ class SendChatMessageView(LoginRequiredMixin, View):
         if not body:
             return JsonResponse({'error': 'Message cannot be empty.'}, status=400)
 
+        # Pick up any pending book context set by StartConversationView
+        session_key = f'pending_book_{conv.pk}'
+        pending_book_id = request.session.pop(session_key, None)
+        book_obj = None
+        if pending_book_id:
+            from books.models import Book as BookModel
+            book_obj = BookModel.objects.filter(pk=pending_book_id).first()
+
         msg = ChatMessage.objects.create(
             conversation=conv,
             sender=user,
             body=body,
+            book=book_obj,
         )
 
         return JsonResponse({
@@ -1062,6 +1071,13 @@ class SendChatMessageView(LoginRequiredMixin, View):
             'body': msg.body,
             'is_self': True,
             'created_at': msg.created_at.strftime('%b %d · %I:%M %p'),
+            'book_title': msg.book.title if msg.book else None,
+            'book_url': (
+                reverse('books:detail', kwargs={
+                    'seller': msg.book.seller.username,
+                    'slug': msg.book.slug,
+                }) if msg.book else None
+            ),
         })
 
 
@@ -1106,7 +1122,61 @@ class StartConversationView(LoginRequiredMixin, View):
         conv, created = Conversation.objects.get_or_create(
             buyer=buyer,
             seller=seller,
-            defaults={'book': book},  # book only set on first creation
+            defaults={'book': book},
         )
 
+        # If this is a new book context on an existing thread, create a
+        # system-style opening message tagged with the book so the UI can
+        # render an inline book pill as a context-switch marker.
+        if book and not created:
+            last = conv.chat_messages.order_by('-created_at').first()  # type: ignore[attr-defined]
+            last_book_id = last.book_id if last else None  # type: ignore[attr-defined]
+            if last_book_id != book.pk:
+                # Tag the next real message by storing a zero-body sentinel?
+                # No — just stash the pending book in the session so
+                # SendChatMessageView can attach it to the first new message.
+                request.session[f'pending_book_{conv.pk}'] = book.pk
+
         return redirect(f"{reverse('books:messages_inbox')}?conv={conv.pk}")
+
+class DeleteConversationView(LoginRequiredMixin, View):
+    """
+    DELETE /messages/<pk>/delete/
+    Deletes the entire conversation and all its messages for the current user.
+    Only the participants can delete.
+    """
+    login_url = 'accounts:login'
+
+    def post(self, request, pk):
+        conv = get_object_or_404(Conversation, pk=pk)
+        user = request.user
+
+        if user not in (conv.buyer, conv.seller):
+            return JsonResponse({'error': 'Forbidden'}, status=403)
+
+        conv.delete()
+        return JsonResponse({'ok': True})
+
+
+class DeleteChatMessageView(LoginRequiredMixin, View):
+    """
+    DELETE /messages/message/<pk>/delete/
+    Deletes a single ChatMessage. Only the sender can delete their own message.
+    """
+    login_url = 'accounts:login'
+
+    def post(self, request, pk):
+        msg = get_object_or_404(ChatMessage, pk=pk)
+
+        if msg.sender != request.user:
+            return JsonResponse({'error': 'Forbidden'}, status=403)
+
+        conv_pk = msg.conversation_id  # type: ignore[attr-defined]
+        msg.delete()
+
+        # Update conversation's last_message_at to the new latest message
+        last = ChatMessage.objects.filter(conversation_id=conv_pk).order_by('-created_at').first()
+        if last:
+            Conversation.objects.filter(pk=conv_pk).update(last_message_at=last.created_at)
+
+        return JsonResponse({'ok': True})

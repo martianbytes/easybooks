@@ -81,7 +81,8 @@
                       data-book-title="{% if conv.book %}{{ conv.book.title }}{% endif %}"
                       data-book-url="{% if conv.book %}{% url 'books:detail' conv.book.seller.username conv.book.slug %}{% endif %}"
                       data-fetch-url="{% url 'books:conversation_messages' conv.pk %}"
-                      data-send-url="{% url 'books:send_chat_message' conv.pk %}">
+                      data-send-url="{% url 'books:send_chat_message' conv.pk %}"
+                      data-delete-url="{% url 'books:delete_conversation' conv.pk %}">
                       <div class="msng-conv-avatar">{{ other_name|slice:":1"|upper }}</div>
                       <div class="msng-conv-info">
                         <div class="msng-conv-top">
@@ -103,7 +104,8 @@
                       data-book-title="{% if conv.book %}{{ conv.book.title }}{% endif %}"
                       data-book-url="{% if conv.book %}{% url 'books:detail' conv.book.seller.username conv.book.slug %}{% endif %}"
                       data-fetch-url="{% url 'books:conversation_messages' conv.pk %}"
-                      data-send-url="{% url 'books:send_chat_message' conv.pk %}">
+                      data-send-url="{% url 'books:send_chat_message' conv.pk %}"
+                      data-delete-url="{% url 'books:delete_conversation' conv.pk %}">
                       <div class="msng-conv-avatar">{{ other_name|slice:":1"|upper }}</div>
                       <div class="msng-conv-info">
                         <div class="msng-conv-top">
@@ -149,6 +151,9 @@
                     Started about: <span id="msng-header-book-title"></span>
                   </a>
                 </div>
+                <button type="button" class="msng-delete-conv-btn" id="msng-delete-conv-btn" title="Delete conversation">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                </button>
               </div>
 
               <!-- Bubble area -->

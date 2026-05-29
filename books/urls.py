@@ -37,6 +37,8 @@ from .views import (
     ConversationMessagesView,
     SendChatMessageView,
     StartConversationView,
+    DeleteConversationView,
+    DeleteChatMessageView,
 )
 
 app_name = "books"
@@ -81,6 +83,8 @@ urlpatterns = [
     path("messages/start/", StartConversationView.as_view(), name="start_conversation"),
     path("messages/<int:pk>/messages/", ConversationMessagesView.as_view(), name="conversation_messages"),
     path("messages/<int:pk>/send/", SendChatMessageView.as_view(), name="send_chat_message"),
+    path("messages/<int:pk>/delete/", DeleteConversationView.as_view(), name="delete_conversation"),
+    path("messages/message/<int:pk>/delete/", DeleteChatMessageView.as_view(), name="delete_chat_message"),
 ]
 
 if settings.DEBUG:

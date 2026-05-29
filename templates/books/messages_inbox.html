@@ -99,14 +99,18 @@
                   <p class="inbox-item__text">{{ msg.message }}</p>
                 </div>
                 <div class="inbox-item__actions">
-                  <button type="button" class="inbox-reply-btn" data-toggle-reply="{{ msg.pk }}">
+                  <button type="button" class="inbox-reply-btn"
+                    data-msg-id="{{ msg.pk }}"
+                    data-reply-url="{% url 'books:message_reply' msg.pk %}"
+                    data-sender="{{ msg.buyer.username }}"
+                    data-book="{{ msg.book.title }}">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 00-4-4H4"/></svg>
                     Reply {% if msg.replies.count %}<span class="reply-count">({{ msg.replies.count }})</span>{% endif %}
                   </button>
                 </div>
               </div>
 
-              <!-- Reply thread (below row, full width) -->
+              <!-- Reply thread -->
               <div class="reply-thread" id="thread-{{ msg.pk }}">
                 {% for reply in msg.replies.all %}
                 <div class="reply-bubble {% if reply.sender == request.user %}reply-bubble--self{% endif %}">
@@ -116,19 +120,39 @@
                 </div>
                 {% endfor %}
 
-                <div class="reply-form-wrap" id="reply-form-{{ msg.pk }}">
-                  <textarea class="reply-textarea" placeholder="Write a reply…" rows="2" data-msg-id="{{ msg.pk }}" data-reply-url="{% url 'books:message_reply' msg.pk %}"></textarea>
+                <!-- Inline reply form, hidden until Reply is clicked -->
+                <div class="reply-form-wrap" id="reply-form-{{ msg.pk }}" style="display:none;">
+                  <textarea class="reply-textarea" placeholder="Write a reply…" rows="2"
+                    data-msg-id="{{ msg.pk }}"
+                    data-reply-url="{% url 'books:message_reply' msg.pk %}"></textarea>
                   <div class="reply-form-actions">
                     <button type="button" class="reply-send-btn" data-msg-id="{{ msg.pk }}">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                       Send
                     </button>
+                    <button type="button" class="reply-cancel-btn" data-msg-id="{{ msg.pk }}">Cancel</button>
                   </div>
                 </div>
               </div>
             </div>
             {% endfor %}
           </div>
+
+          <!-- New message box at the bottom -->
+          <div class="inbox-reply-bar">
+            <div class="inbox-reply-bar__context" id="reply-bar-context" style="display:none;">
+              <span id="reply-bar-label"></span>
+              <button type="button" class="reply-bar-clear" id="reply-bar-clear">✕</button>
+            </div>
+            <div class="inbox-reply-bar__input">
+              <textarea class="reply-textarea" id="reply-bar-textarea" placeholder="New message…" rows="2" disabled></textarea>
+              <button type="button" class="reply-send-btn" id="reply-bar-send" disabled>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Send
+              </button>
+            </div>
+          </div>
+
           {% else %}
           <div class="sales-empty" style="padding:4rem 1rem;">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary-300)" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
@@ -143,5 +167,6 @@
   </div>
 </section>
 
+<script src="{% static 'js/dashboard.js' %}" defer></script>
 <script src="{% static 'js/messages_inbox.js' %}" defer></script>
 {% endblock %}

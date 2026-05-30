@@ -34,6 +34,7 @@ MAX_DATAURL_IMAGE_BYTES = 8 * 1024 * 1024  # 8 MB per reconstructed image
 # eSewa helpers
 # ---------------------------------------------------------------------------
 
+
 def _esewa_build_signature(transaction_uuid, total_amount):
     message = (
         f"total_amount={total_amount},"
@@ -49,17 +50,22 @@ def _esewa_build_signature(transaction_uuid, total_amount):
 
 
 def _esewa_redirect(request, primary_transaction, override_amount=None, is_cart=False):
-    total_amount = str(override_amount if override_amount is not None else primary_transaction.price)
+    total_amount = str(
+        override_amount if override_amount is not None else primary_transaction.price)
     transaction_uuid = primary_transaction.slug
 
     signature = _esewa_build_signature(transaction_uuid, total_amount)
 
     if is_cart:
-        success_url = request.build_absolute_uri(reverse('books:esewa_success')) + "?cart=1"
-        failure_url = request.build_absolute_uri(reverse('books:esewa_failure')) + "?cart=1"
+        success_url = request.build_absolute_uri(
+            reverse('books:esewa_success')) + "?cart=1"
+        failure_url = request.build_absolute_uri(
+            reverse('books:esewa_failure')) + "?cart=1"
     else:
-        success_url = request.build_absolute_uri(reverse('books:esewa_success')) + f"?txn={primary_transaction.slug}"
-        failure_url = request.build_absolute_uri(reverse('books:esewa_failure')) + f"?txn={primary_transaction.slug}"
+        success_url = request.build_absolute_uri(
+            reverse('books:esewa_success')) + f"?txn={primary_transaction.slug}"
+        failure_url = request.build_absolute_uri(
+            reverse('books:esewa_failure')) + f"?txn={primary_transaction.slug}"
 
     context = {
         'esewa_url': settings.ESEWA_PAYMENT_URL,
@@ -118,8 +124,10 @@ class EsewaSuccessView(LoginRequiredMixin, View):
         verified = _esewa_verify(transaction_uuid, total_amount)
 
         if not verified:
-            Transaction.objects.filter(slug=transaction_uuid).update(status='cancelled')
-            messages.error(request, "eSewa payment verification failed. Order cancelled.")
+            Transaction.objects.filter(
+                slug=transaction_uuid).update(status='cancelled')
+            messages.error(
+                request, "eSewa payment verification failed. Order cancelled.")
             return redirect('books:browse')
 
         if is_cart:
@@ -129,7 +137,8 @@ class EsewaSuccessView(LoginRequiredMixin, View):
             )
             return redirect('books:cart_order_confirmed_success')
         if not is_cart:
-            t = get_object_or_404(Transaction, slug=transaction_uuid, buyer=request.user)
+            t = get_object_or_404(
+                Transaction, slug=transaction_uuid, buyer=request.user)
             t.status = 'completed'
             t.esewa_ref_id = ref_id
             t.payment_method = 'esewa'
@@ -147,7 +156,8 @@ class EsewaFailureView(LoginRequiredMixin, View):
         txn_slug = request.GET.get('txn', '')
 
         if txn_slug:
-            t = Transaction.objects.filter(slug=txn_slug, buyer=request.user).first()
+            t = Transaction.objects.filter(
+                slug=txn_slug, buyer=request.user).first()
             if t:
                 t.status = 'cancelled'
                 t.save(update_fields=['status'])
@@ -157,13 +167,15 @@ class EsewaFailureView(LoginRequiredMixin, View):
         if is_cart:
             slugs = request.session.pop('cart_order_slugs', [])
             if slugs:
-                txns = Transaction.objects.filter(slug__in=slugs, buyer=request.user)
+                txns = Transaction.objects.filter(
+                    slug__in=slugs, buyer=request.user)
                 for txn in txns:
                     txn.book.status = 'available'
                     txn.book.save(update_fields=['status'])
                 txns.update(status='cancelled')
 
-        messages.error(request, "Payment was cancelled or failed. Please try again.")
+        messages.error(
+            request, "Payment was cancelled or failed. Please try again.")
         return redirect('books:cart' if is_cart else 'books:browse')
 
 
@@ -346,7 +358,8 @@ class OrderConfirmedView(LoginRequiredMixin, View):
     login_url = 'accounts:login'
 
     def get(self, request, order_slug):
-        order = get_object_or_404(Transaction, slug=order_slug, buyer=request.user)
+        order = get_object_or_404(
+            Transaction, slug=order_slug, buyer=request.user)
         return render(request, 'books/order_confirmed.html', {
             'transaction': order,
             'book': order.book,
@@ -383,7 +396,8 @@ class ContactSellerView(LoginRequiredMixin, CreateView):
         form.instance.buyer = self.request.user
         form.instance.book = self.book
         form.instance.seller = self.book.seller
-        messages.success(self.request, f"Message sent to {self.book.seller.username}!")
+        messages.success(
+            self.request, f"Message sent to {self.book.seller.username}!")
         response = super().form_valid(form)
         return response
 
@@ -412,6 +426,14 @@ class AuthorCreateView(LoginRequiredMixin, View):
         if not re.match(r"^[a-zA-Z0-9\s\.\-\'\,]+$", name):
             return JsonResponse({"ok": False, "error": "Author name contains invalid characters."}, status=400)
 
+        if not re.match(r"^[a-zA-Z]", name):
+            return JsonResponse({"ok": False, "error": "Author name must start with a letter."}, status=400)
+
+        if re.search(r"([^a-zA-Z0-9\s])\1{2,}", name):
+            return JsonResponse({"ok": False, "error": "Author name cannot have repeated special characters like '......'."}, status=400)
+
+        if len(name) > 100:
+            return JsonResponse({"ok": False, "error": "Author name is too long (max 100 characters)."}, status=400)
         author, created = Author.objects.get_or_create(name=name)
         return JsonResponse({"ok": True, "id": author.pk, "name": author.name, "created": created})
 
@@ -433,7 +455,8 @@ class BookUpsertView(LoginRequiredMixin, View):
         image_forms = BookImageFormSet(
             instance=instance,
             prefix=IMAGE_FORMSET_PREFIX,
-            initial=[{"image_type": "cover"}, {"image_type": "condition"}, {"image_type": "condition"}],
+            initial=[{"image_type": "cover"}, {
+                "image_type": "condition"}, {"image_type": "condition"}],
         )
 
         try:
@@ -498,7 +521,8 @@ class BookUpsertView(LoginRequiredMixin, View):
                     has_file = bool(first_form.cleaned_data.get('image'))
                     # Also check data URL submitted for slot 0
                     dataurl_key = f"{IMAGE_FORMSET_PREFIX}-0-image_dataurl"
-                    has_dataurl = bool(request.POST.get(dataurl_key, '').startswith('data:image/'))
+                    has_dataurl = bool(request.POST.get(
+                        dataurl_key, '').startswith('data:image/'))
                     cover_provided = has_file or has_dataurl
 
             if not cover_provided:
@@ -646,7 +670,8 @@ class CartView(LoginRequiredMixin, View):
     login_url = 'accounts:login'
 
     def get(self, request):
-        cart_items = CartItem.objects.filter(user=request.user).select_related('book')
+        cart_items = CartItem.objects.filter(
+            user=request.user).select_related('book')
         total = sum(item.book.asking_price for item in cart_items)
         return render(request, 'books/cart.html', {
             'cart_items': cart_items,
@@ -691,17 +716,21 @@ class CartCheckoutView(LoginRequiredMixin, View):
     login_url = 'accounts:login'
 
     def get(self, request):
-        cart_items = CartItem.objects.filter(user=request.user).select_related('book')
+        cart_items = CartItem.objects.filter(
+            user=request.user).select_related('book')
 
         if not cart_items.exists():
             messages.info(request, "Your cart is empty.")
             return redirect('books:cart')
 
-        available = [item for item in cart_items if item.book.status == 'available' and item.book.seller != request.user]
-        unavailable = [item for item in cart_items if item.book.status != 'available' or item.book.seller == request.user]
+        available = [item for item in cart_items if item.book.status ==
+                     'available' and item.book.seller != request.user]
+        unavailable = [item for item in cart_items if item.book.status !=
+                       'available' or item.book.seller == request.user]
 
         if not available:
-            messages.error(request, "None of the books in your cart are available for purchase.")
+            messages.error(
+                request, "None of the books in your cart are available for purchase.")
             return redirect('books:cart')
 
         total = sum(item.book.asking_price for item in available)
@@ -713,15 +742,18 @@ class CartCheckoutView(LoginRequiredMixin, View):
         })
 
     def post(self, request):
-        cart_items = CartItem.objects.filter(user=request.user).select_related('book')
+        cart_items = CartItem.objects.filter(
+            user=request.user).select_related('book')
 
         if not cart_items.exists():
             return redirect('books:cart')
 
-        available = [item for item in cart_items if item.book.status == 'available' and item.book.seller != request.user]
+        available = [item for item in cart_items if item.book.status ==
+                     'available' and item.book.seller != request.user]
 
         if not available:
-            messages.error(request, "None of the books in your cart are available.")
+            messages.error(
+                request, "None of the books in your cart are available.")
             return redirect('books:cart')
 
         with transaction.atomic():
@@ -741,7 +773,8 @@ class CartCheckoutView(LoginRequiredMixin, View):
                 book__in=[item.book for item in available]
             ).delete()
 
-        messages.success(request, f"Your order request for {len(available)} book(s) has been sent to the seller(s)!")
+        messages.success(
+            request, f"Your order request for {len(available)} book(s) has been sent to the seller(s)!")
         return redirect('books:orders')
 
 
@@ -809,7 +842,8 @@ class GenresView(TemplateView):
         context = super().get_context_data(**kwargs)
         genres = []
         for slug, label in Book.CATEGORY_CHOICES:
-            count = Book.objects.filter(category=slug, status='available').count()
+            count = Book.objects.filter(
+                category=slug, status='available').count()
             genres.append({'slug': slug, 'label': label, 'count': count})
         context['genres'] = genres
         return context
@@ -832,7 +866,8 @@ class WishlistView(LoginRequiredMixin, View):
 
     def get(self, request):
         from accounts.models import SavedBook
-        saved = SavedBook.objects.filter(user=request.user).select_related('book', 'book__seller')
+        saved = SavedBook.objects.filter(
+            user=request.user).select_related('book', 'book__seller')
         return render(request, 'books/wishlist.html', {'saved': saved})
 
 
@@ -841,7 +876,8 @@ class OrdersView(LoginRequiredMixin, View):
 
     def get(self, request):
         status_filter = request.GET.get('status', '')
-        orders = list(Transaction.objects.filter(buyer=request.user).select_related('book', 'seller', 'book__seller').order_by('-created_at'))
+        orders = list(Transaction.objects.filter(buyer=request.user).select_related(
+            'book', 'seller', 'book__seller').order_by('-created_at'))
         if status_filter in ('order_request', 'pending', 'completed', 'cancelled'):
             orders = [o for o in orders if o.status == status_filter]
 
@@ -862,7 +898,8 @@ class CompleteOrderView(LoginRequiredMixin, View):
     login_url = 'accounts:login'
 
     def post(self, request, order_slug):
-        order = get_object_or_404(Transaction, slug=order_slug, buyer=request.user)
+        order = get_object_or_404(
+            Transaction, slug=order_slug, buyer=request.user)
 
         if order.status not in ('order_request', 'pending'):
             messages.error(request, "This order cannot be completed.")
@@ -883,7 +920,8 @@ class CompleteOrderView(LoginRequiredMixin, View):
             order.payment_remarks = remarks
             order.book.status = 'sold'
             order.book.save(update_fields=['status'])
-            order.save(update_fields=['status', 'payment_method', 'payment_remarks'])
+            order.save(update_fields=[
+                       'status', 'payment_method', 'payment_remarks'])
             messages.success(request, "Order marked as completed. Thank you!")
             return redirect('books:orders')
 
@@ -896,7 +934,8 @@ class SellerCompleteOrderView(LoginRequiredMixin, View):
     login_url = 'accounts:login'
 
     def post(self, request, order_slug):
-        order = get_object_or_404(Transaction, slug=order_slug, seller=request.user)
+        order = get_object_or_404(
+            Transaction, slug=order_slug, seller=request.user)
 
         if order.status not in ('order_request', 'pending'):
             messages.error(request, "This order cannot be completed.")
@@ -908,8 +947,10 @@ class SellerCompleteOrderView(LoginRequiredMixin, View):
         order.payment_remarks = remarks or 'Completed by seller'
         order.book.status = 'sold'
         order.book.save(update_fields=['status'])
-        order.save(update_fields=['status', 'payment_method', 'payment_remarks'])
-        messages.success(request, f"Order for \"{order.book.title}\" marked as completed.")
+        order.save(update_fields=[
+                   'status', 'payment_method', 'payment_remarks'])
+        messages.success(
+            request, f"Order for \"{order.book.title}\" marked as completed.")
         return redirect('books:sales')
 
 
@@ -934,7 +975,8 @@ class CancelOrderView(LoginRequiredMixin, View):
             order.book.status = 'available'
             order.book.save(update_fields=['status'])
             order.save(update_fields=['status'])
-            messages.success(request, f"Order for \"{order.book.title}\" has been cancelled.")
+            messages.success(
+                request, f"Order for \"{order.book.title}\" has been cancelled.")
 
         # Redirect back to whichever page they came from
         if order.seller == request.user and order.buyer != request.user:
@@ -1003,9 +1045,11 @@ class ConversationMessagesView(LoginRequiredMixin, View):
             return JsonResponse({'error': 'Forbidden'}, status=403)
 
         # Mark unread messages (sent by the other person) as read
-        ChatMessage.objects.filter(conversation=conv, is_read=False).exclude(sender=user).update(is_read=True)
+        ChatMessage.objects.filter(conversation=conv, is_read=False).exclude(
+            sender=user).update(is_read=True)
 
-        msgs = ChatMessage.objects.filter(conversation=conv).select_related('sender', 'book', 'book__seller').order_by('created_at')
+        msgs = ChatMessage.objects.filter(conversation=conv).select_related(
+            'sender', 'book', 'book__seller').order_by('created_at')
         data = [
             {
                 'id': m.pk,
@@ -1113,10 +1157,10 @@ class StartConversationView(LoginRequiredMixin, View):
         # The seller is always the one who owns the book listing.
         # If no book, the initiating user is treated as the buyer.
         if book:
-            buyer  = user   if user  != book.seller else other
-            seller = other  if user  != book.seller else user
+            buyer = user if user != book.seller else other
+            seller = other if user != book.seller else user
         else:
-            buyer  = user
+            buyer = user
             seller = other
 
         conv, created = Conversation.objects.get_or_create(
@@ -1129,8 +1173,10 @@ class StartConversationView(LoginRequiredMixin, View):
         # system-style opening message tagged with the book so the UI can
         # render an inline book pill as a context-switch marker.
         if book and not created:
-            last = conv.chat_messages.order_by('-created_at').first()  # type: ignore[attr-defined]
-            last_book_id = last.book_id if last else None  # type: ignore[attr-defined]
+            last = conv.chat_messages.order_by(
+                '-created_at').first()  # type: ignore[attr-defined]
+            # type: ignore[attr-defined]
+            last_book_id = last.book_id if last else None
             if last_book_id != book.pk:
                 # Tag the next real message by storing a zero-body sentinel?
                 # No — just stash the pending book in the session so
@@ -1138,6 +1184,7 @@ class StartConversationView(LoginRequiredMixin, View):
                 request.session[f'pending_book_{conv.pk}'] = book.pk
 
         return redirect(f"{reverse('books:messages_inbox')}?conv={conv.pk}")
+
 
 class DeleteConversationView(LoginRequiredMixin, View):
     """
@@ -1175,8 +1222,10 @@ class DeleteChatMessageView(LoginRequiredMixin, View):
         msg.delete()
 
         # Update conversation's last_message_at to the new latest message
-        last = ChatMessage.objects.filter(conversation_id=conv_pk).order_by('-created_at').first()
+        last = ChatMessage.objects.filter(
+            conversation_id=conv_pk).order_by('-created_at').first()
         if last:
-            Conversation.objects.filter(pk=conv_pk).update(last_message_at=last.created_at)
+            Conversation.objects.filter(pk=conv_pk).update(
+                last_message_at=last.created_at)
 
         return JsonResponse({'ok': True})

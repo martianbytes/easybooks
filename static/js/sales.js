@@ -6,7 +6,14 @@
       if (!panel) return;
       var isVisible = panel.style.display !== 'none';
       panel.style.display = isVisible ? 'none' : 'block';
-      btn.classList.toggle('obtn--outline', !isVisible);
+      // Toggle active state visually
+      if (isVisible) {
+        btn.classList.remove('obtn--outline');
+        btn.classList.add('obtn--primary');
+      } else {
+        btn.classList.remove('obtn--primary');
+        btn.classList.add('obtn--outline');
+      }
     });
   });
 })();

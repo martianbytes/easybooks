@@ -50,6 +50,7 @@ def _esewa_build_signature(transaction_uuid, total_amount):
 
 def _esewa_redirect(request, primary_transaction, override_amount=None, is_cart=False):
     total_amount = str(override_amount if override_amount is not None else primary_transaction.price)
+
     transaction_uuid = primary_transaction.slug
 
     signature = _esewa_build_signature(transaction_uuid, total_amount)
@@ -99,37 +100,86 @@ class EsewaSuccessView(LoginRequiredMixin, View):
     def get(self, request):
         encoded_data = request.GET.get('data', '')
         is_cart = request.GET.get('cart') == '1'
+        txn_slug = request.GET.get('txn', '')
 
+        sandbox = getattr(settings, 'ESEWA_SANDBOX', False)
+
+        if sandbox:
+            # In sandbox, try to get txn_slug from URL param first.
+            # If missing (eSewa overwrote our params), decode it from the data payload.
+            if not txn_slug and encoded_data:
+                try:
+                    decoded = base64.b64decode(encoded_data).decode()
+                    payload = json.loads(decoded)
+                    txn_slug = payload.get('transaction_uuid', '')
+                except Exception:
+                    pass
+
+            ref_id = f"SANDBOX-{txn_slug[:8].upper()}" if txn_slug else "SANDBOX"
+
+            if is_cart:
+                slugs = request.session.pop('cart_order_slugs', [])
+                Transaction.objects.filter(slug__in=slugs, buyer=request.user).update(
+                    status='completed', esewa_ref_id=ref_id, payment_method='esewa'
+                )
+                return redirect('books:cart_order_confirmed_success')
+
+            if not txn_slug:
+                messages.error(request, "Could not identify order after eSewa payment. Please contact support.")
+                return redirect('books:orders')
+
+            t = Transaction.objects.filter(slug=txn_slug).first()
+            if not t:
+                messages.error(request, "Order not found. It may have been cancelled. Please place a new order.")
+                return redirect('books:orders')
+            t.status = 'completed'
+            t.esewa_ref_id = ref_id
+            t.payment_method = 'esewa'
+            t.book.status = 'sold'
+            t.book.save(update_fields=['status'])
+            t.save(update_fields=['status', 'esewa_ref_id', 'payment_method'])
+            return redirect('books:order_confirmed', order_slug=t.slug)
+
+        # Production: expect encoded data from eSewa
         if not encoded_data:
-            messages.error(request, "Invalid payment response from eSewa.")
-            return redirect('books:browse')
+            if txn_slug:
+                Transaction.objects.filter(
+                    slug=txn_slug, buyer=request.user, status='pending'
+                ).update(status='order_request', payment_method='')
+            messages.error(request, "Invalid payment response from eSewa. Please try again.")
+            return redirect('books:orders')
 
         try:
             decoded = base64.b64decode(encoded_data).decode()
             payload = json.loads(decoded)
         except Exception:
-            messages.error(request, "Could not decode eSewa response.")
-            return redirect('books:browse')
+            if txn_slug:
+                Transaction.objects.filter(
+                    slug=txn_slug, buyer=request.user, status='pending'
+                ).update(status='order_request', payment_method='')
+            messages.error(request, "Could not read eSewa response. Please try again.")
+            return redirect('books:orders')
 
         transaction_uuid = payload.get('transaction_uuid', '')
         total_amount = payload.get('total_amount', '0').replace(',', '')
         ref_id = payload.get('transaction_code', '')
 
         verified = _esewa_verify(transaction_uuid, total_amount)
-
         if not verified:
-            Transaction.objects.filter(slug=transaction_uuid).update(status='cancelled')
-            messages.error(request, "eSewa payment verification failed. Order cancelled.")
-            return redirect('books:browse')
+            Transaction.objects.filter(
+                slug=txn_slug, buyer=request.user, status='pending'
+            ).update(status='order_request', payment_method='')
+            messages.error(request, "eSewa payment could not be verified. Please try again or use another payment method.")
+            return redirect('books:orders')
 
         if is_cart:
-            slugs = request.session.pop('cart_order_slugs', [transaction_uuid])
-            Transaction.objects.filter(slug__in=slugs).update(
-                status='completed', esewa_ref_id=ref_id
+            slugs = request.session.pop('cart_order_slugs', [])
+            Transaction.objects.filter(slug__in=slugs, buyer=request.user).update(
+                status='completed', esewa_ref_id=ref_id, payment_method='esewa'
             )
             return redirect('books:cart_order_confirmed_success')
         if not is_cart:
-            t = get_object_or_404(Transaction, slug=transaction_uuid, buyer=request.user)
+            t = get_object_or_404(Transaction, slug=txn_slug, buyer=request.user)
             t.status = 'completed'
             t.esewa_ref_id = ref_id
             t.payment_method = 'esewa'
@@ -147,24 +197,19 @@ class EsewaFailureView(LoginRequiredMixin, View):
         txn_slug = request.GET.get('txn', '')
 
         if txn_slug:
-            t = Transaction.objects.filter(slug=txn_slug, buyer=request.user).first()
-            if t:
-                t.status = 'cancelled'
-                t.save(update_fields=['status'])
-                t.book.status = 'available'
-                t.book.save(update_fields=['status'])
+            Transaction.objects.filter(
+                slug=txn_slug, buyer=request.user, status='pending'
+            ).update(status='order_request', payment_method='')
 
         if is_cart:
             slugs = request.session.pop('cart_order_slugs', [])
             if slugs:
-                txns = Transaction.objects.filter(slug__in=slugs, buyer=request.user)
-                for txn in txns:
-                    txn.book.status = 'available'
-                    txn.book.save(update_fields=['status'])
-                txns.update(status='cancelled')
+                Transaction.objects.filter(
+                    slug__in=slugs, buyer=request.user, status='pending'
+                ).update(status='order_request', payment_method='')
 
-        messages.error(request, "Payment was cancelled or failed. Please try again.")
-        return redirect('books:cart' if is_cart else 'books:browse')
+        messages.error(request, "eSewa payment was cancelled or failed. Your order is still open — please try again or use another payment method.")
+        return redirect('books:cart' if is_cart else 'books:orders')
 
 
 class CartOrderConfirmedSuccessView(LoginRequiredMixin, View):

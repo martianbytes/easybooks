@@ -207,6 +207,12 @@
         bodyEl.textContent    = opts.body    || '';
         confirmBtn.textContent = opts.confirmText || 'Confirm';
         confirmBtn.className  = 'cm-btn cm-btn--confirm' + (opts.danger ? ' cm-btn--danger' : '');
+        var iconWrap = modal.querySelector('.cm-icon-wrap');
+        if (opts.danger) {
+          iconWrap.classList.add('cm-icon-wrap--danger');
+        } else {
+          iconWrap.classList.remove('cm-icon-wrap--danger');
+        }
         modal.style.display   = 'flex';
         cancelBtn.focus();
         return new Promise(function (res) { _resolve = res; });

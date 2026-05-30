@@ -53,7 +53,7 @@
             <span class="ocard__date">{{ order.created_at|date:"M d, Y" }}</span>
           </div>
 
-          {% if order.status == 'order_request' or order.status == 'pending' %}
+          {% if order.status == 'order_request' %}
           <div class="ocard__actions">
 
             <a href="{% url 'books:start_conversation' %}?book={{ order.book.slug }}&with={{ order.book.seller.username }}"
@@ -66,8 +66,8 @@
               {% csrf_token %}
               <input type="hidden" name="payment_method" value="esewa">
               <button type="submit" class="obtn obtn--esewa"
-                data-confirm-title="Complete via eSewa?"
-                data-confirm-body="You will be redirected to make the payment."
+                data-confirm-title="Pay via eSewa?"
+                data-confirm-body="You will be redirected to eSewa to complete your payment."
                 data-confirm-text="Yes, proceed"
                 data-confirm-form>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
@@ -105,6 +105,59 @@
               </button>
             </form>
 
+          </div>
+          {% endif %}
+
+          {% if order.status == 'pending' %}
+          <div class="ocard__actions">
+            <span class="opill opill--pending" style="justify-content:center;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Awaiting eSewa Confirmation
+            </span>
+            <span class="ocard__ref" style="text-align:center;font-size:0.75rem;color:var(--text-muted);">If your payment failed or timed out, use the options below.</span>
+
+            <form method="POST" action="{% url 'books:order_complete' order.slug %}">
+              {% csrf_token %}
+              <input type="hidden" name="payment_method" value="esewa">
+              <button type="submit" class="obtn obtn--esewa"
+                data-confirm-title="Retry eSewa Payment?"
+                data-confirm-body="You will be redirected to eSewa to complete your payment."
+                data-confirm-text="Yes, retry"
+                data-confirm-form>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+                Retry via eSewa
+              </button>
+            </form>
+
+            <button type="button" class="obtn obtn--outline" data-toggle-other-form="other-form-{{ order.slug }}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x="22" y1="10"/></svg>
+              Pay Another Way
+            </button>
+
+            <div id="other-form-{{ order.slug }}" class="ocard__expand" style="display:none;">
+              <form method="POST" action="{% url 'books:order_complete' order.slug %}">
+                {% csrf_token %}
+                <input type="hidden" name="payment_method" value="other">
+                <textarea name="payment_remarks" class="ocard__textarea"
+                  placeholder="How did you pay? (e.g. cash, bank transferâ¦)" rows="2"></textarea>
+                <button type="submit" class="obtn obtn--primary" style="width:100%;margin-top:0.5rem;">
+                  Mark as Completed
+                </button>
+              </form>
+            </div>
+
+            <form method="POST" action="{% url 'books:order_cancel' order.slug %}"
+              class="js-confirm-form"
+              data-confirm-title="Cancel this order?"
+              data-confirm-body="The book will become available again."
+              data-confirm-text="Yes, cancel it"
+              data-confirm-danger="true">
+              {% csrf_token %}
+              <button type="submit" class="obtn obtn--danger">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                Cancel Order
+              </button>
+            </form>
           </div>
           {% endif %}
 

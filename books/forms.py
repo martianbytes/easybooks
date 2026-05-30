@@ -201,6 +201,16 @@ class BookForm(forms.ModelForm):
 
         # Check for invalid special characters
         # Allowed: letters, numbers, spaces, . , - & ' : ( ) + /
+        if not re.match(r"^[a-zA-Z0-9]", title):
+            raise forms.ValidationError(
+                "Title must start with a letter or number."
+            )
+
+        if re.search(r"([^a-zA-Z0-9\s])\1{2,}", title):
+            raise forms.ValidationError(
+                "Title cannot contain repeated special characters like '......'."
+            )
+
         if not re.match(r"^[a-zA-Z0-9\s.,\-&':()+/]+$", title):
             raise forms.ValidationError(
                 "Title contains invalid characters. "
@@ -558,7 +568,7 @@ class CheckoutForm(forms.Form):
         if not re.search(r"[aeiouAEIOU]", first_name):
             raise forms.ValidationError("Please enter a real first name.")
 
-        if re.search(r"(.)\1{3,}", first_name):
+        if re.search(r"(.)\1{2,}", first_name):
             raise forms.ValidationError("Please enter a real first name.")
 
         return first_name
@@ -598,7 +608,7 @@ class CheckoutForm(forms.Form):
         if not re.search(r"[aeiouAEIOU]", last_name):
             raise forms.ValidationError("Please enter a real last name.")
 
-        if re.search(r"(.)\1{3,}", last_name):
+        if re.search(r"(.)\1{2,}", last_name):
             raise forms.ValidationError("Please enter a real last name.")
 
         return last_name

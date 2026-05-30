@@ -287,7 +287,13 @@
   // ── Delete a single message ─────────────────────────────────
 
   async function deleteMessage(msgId, rowEl) {
-    if (!confirm("Delete this message?")) return;
+    const ok = await window.confirmModal({
+      title: "Delete this message?",
+      body: "This message will be permanently removed.",
+      confirmText: "Yes, delete it",
+      danger: true,
+    });
+    if (!ok) return;
     try {
       const res = await fetch(`/messages/message/${msgId}/delete/`, {
         method: "POST",
@@ -304,7 +310,13 @@
 
   async function deleteConversation() {
     if (!activeDeleteConvUrl) return;
-    if (!confirm("Delete this entire conversation? This cannot be undone.")) return;
+    const ok = await window.confirmModal({
+      title: "Delete conversation?",
+      body: "This will permanently remove the entire thread. This cannot be undone.",
+      confirmText: "Yes, delete it",
+      danger: true,
+    });
+    if (!ok) return;
     try {
       const res = await fetch(activeDeleteConvUrl, {
         method: "POST",

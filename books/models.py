@@ -257,6 +257,7 @@ class Transaction(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="order_request")
     esewa_ref_id = models.CharField(max_length=128, blank=True, null=True, db_index=True)
+    esewa_attempt_uuid = models.CharField(max_length=64, blank=True, null=True, db_index=True)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, blank=True, null=True)
     payment_remarks = models.TextField(blank=True, null=True)
 

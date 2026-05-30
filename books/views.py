@@ -249,6 +249,10 @@ class BrowseView(ListView):
             except ValueError:
                 pass
 
+        seller = self.request.GET.get("seller")
+        if seller:
+            queryset = queryset.filter(seller__username=seller)
+
         sort = self.request.GET.get("sort", "newest")
         if sort == "price-low-to-high":
             queryset = queryset.order_by("asking_price")

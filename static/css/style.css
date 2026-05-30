@@ -6390,24 +6390,55 @@ input[type="password"], input[type="text"] {
   padding: 14px 14px 16px;
 }
 
+.pdb-listing-status-label {
+  display: inline-block;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: #1a7f4b;
+  background-color: #d1fae5;
+  border-radius: 999px;
+  padding: 2px 10px;
+  margin: 6px 0 0;
+  letter-spacing: 0.03em;
+}
+
+.pdb-status-sold .pdb-listing-status-label {
+  color: #b91c1c;
+  background-color: #fee2e2;
+}
+
+.pdb-status-reserved .pdb-listing-status-label {
+  color: #92400e;
+  background-color: #fef3c7;
+}
+
 .pdb-listing-genre {
   font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: var(--tracking-widest);
   color: var(--text-muted);
-  margin: 0 0 4px;
+  margin: 0 0 6px;
+}
+
+.pdb-listing-label {
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary, #555);
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .pdb-listing-title {
   font-size: var(--text-base);
   font-weight: var(--weight-semibold);
   color: var(--text-primary);
-  margin: 0 0 4px;
+  margin: 0 0 5px;
   line-height: var(--leading-snug);
 }
 
 .pdb-listing-author {
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
   color: var(--text-muted);
   margin: 0;
 }

@@ -16,14 +16,7 @@
   <div class="container">
     <h1 class="checkout-title">Place Order</h1>
     <p class="checkout-subtitle">Send purchase requests to the sellers</p>
-
-    {% if messages %}
-      {% for message in messages %}
-      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
-
-    {% if unavailable_items %}
+{% if unavailable_items %}
     <div class="alert alert-warning">
       The following books are no longer available and will be excluded:
       {% for item in unavailable_items %}

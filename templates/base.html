@@ -120,7 +120,18 @@
       </div>
     </nav>
 
-    {% comment %} all other contents here {% endcomment %} {% block content %}{% endblock content %} {% comment %} footer {% endcomment %}
+    {% comment %} all other contents here {% endcomment %}
+    {% if messages %}
+    <div class="global-messages">
+      {% for message in messages %}
+      <div class="global-message global-message--{{ message.tags }}">
+        <span>{{ message }}</span>
+        <button type="button" class="global-message__close" onclick="this.parentElement.remove()">&#x2715;</button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% block content %}{% endblock content %} {% comment %} footer {% endcomment %}
     <footer class="footer-section">
       <div class="container">
         <div class="footer-inner">
@@ -175,6 +186,102 @@
     </footer>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>lucide.createIcons();</script>
+
+    <!-- ── Custom confirm modal ── -->
+    <div id="confirm-modal" style="display:none;" aria-modal="true" role="dialog">
+      <div class="cm-backdrop"></div>
+      <div class="cm-box">
+        <div class="cm-icon-wrap">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <h3 class="cm-title" id="cm-title"></h3>
+        <p class="cm-body" id="cm-body"></p>
+        <div class="cm-actions">
+          <button type="button" class="cm-btn cm-btn--cancel" id="cm-cancel">Cancel</button>
+          <button type="button" class="cm-btn cm-btn--confirm" id="cm-confirm">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    (function () {
+      var modal     = document.getElementById('confirm-modal');
+      var titleEl   = document.getElementById('cm-title');
+      var bodyEl    = document.getElementById('cm-body');
+      var confirmBtn = document.getElementById('cm-confirm');
+      var cancelBtn  = document.getElementById('cm-cancel');
+      var backdrop   = modal.querySelector('.cm-backdrop');
+      var _resolve   = null;
+
+      function openModal(opts) {
+        titleEl.textContent   = opts.title   || 'Are you sure?';
+        bodyEl.textContent    = opts.body    || '';
+        confirmBtn.textContent = opts.confirmText || 'Confirm';
+        confirmBtn.className  = 'cm-btn cm-btn--confirm' + (opts.danger ? ' cm-btn--danger' : '');
+        var iconWrap = modal.querySelector('.cm-icon-wrap');
+        if (opts.danger) {
+          iconWrap.classList.add('cm-icon-wrap--danger');
+        } else {
+          iconWrap.classList.remove('cm-icon-wrap--danger');
+        }
+        modal.style.display   = 'flex';
+        cancelBtn.focus();
+        return new Promise(function (res) { _resolve = res; });
+      }
+
+      function close(val) {
+        modal.style.display = 'none';
+        if (_resolve) { _resolve(val); _resolve = null; }
+      }
+
+      confirmBtn.addEventListener('click', function () { close(true); });
+      cancelBtn.addEventListener('click',  function () { close(false); });
+      backdrop.addEventListener('click',   function () { close(false); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display !== 'none') close(false);
+      });
+
+      window.confirmModal = openModal;
+
+      // ── Intercept data-confirm-form buttons and js-confirm-form forms ──
+      document.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-confirm-form]');
+        if (!btn) return;
+        e.preventDefault();
+        var form = btn.closest('form');
+        if (!form) return;
+        window.confirmModal({
+          title:       btn.dataset.confirmTitle || 'Are you sure?',
+          body:        btn.dataset.confirmBody  || '',
+          confirmText: btn.dataset.confirmText  || 'Confirm',
+          danger:      btn.dataset.confirmDanger === 'true',
+        }).then(function (ok) { if (ok) form.submit(); });
+      });
+
+      document.addEventListener('submit', function (e) {
+        var form = e.target.closest('.js-confirm-form');
+        if (!form) return;
+        e.preventDefault();
+        window.confirmModal({
+          title:       form.dataset.confirmTitle || 'Are you sure?',
+          body:        form.dataset.confirmBody  || '',
+          confirmText: form.dataset.confirmText  || 'Confirm',
+          danger:      form.dataset.confirmDanger === 'true',
+        }).then(function (ok) { if (ok) form.submit(); });
+      });
+    })();
+    </script>
+
     {% block extra_js %}{% endblock %}
+  <script>
+    // Auto-dismiss global messages after 4s
+    setTimeout(function() {
+      document.querySelectorAll('.global-message').forEach(function(el) {
+        el.style.transition = 'opacity 0.4s';
+        el.style.opacity = '0';
+        setTimeout(function() { el.remove(); }, 400);
+      });
+    }, 4000);
+  </script>
   </body>
 </html>

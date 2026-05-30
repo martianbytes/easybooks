@@ -2,128 +2,134 @@
 {% load static %}
 {% block content %}
 
-<section class="sales-page">
+<section class="orders-page">
   <div class="container">
 
-    <div class="sales-header">
-      <div class="sales-header__left">
-        <a href="{% url 'accounts:profile' %}" class="sales-back-link">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    <div class="orders-page-header">
+      <div>
+        <a href="{% url 'accounts:profile' %}" class="orders-back-link">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
           Back to Profile
         </a>
-        <h1 class="sales-title">My Sales</h1>
-        <p class="sales-subtitle">Buyers who have requested your books</p>
+        <h1 class="orders-page-title">My Sales</h1>
+        <p class="orders-page-sub">Buyers who have requested your books</p>
       </div>
-      <div class="sales-header__stat">
-        <p class="sales-earned-label">Total Earned</p>
-        <p class="sales-earned-value">Rs {{ total_earned|floatformat:2 }}</p>
+      <div class="orders-earned-box">
+        <span class="orders-earned-label">Total Earned</span>
+        <span class="orders-earned-value">Rs {{ total_earned|floatformat:2 }}</span>
       </div>
     </div>
 
-    <div class="sales-filters">
-      <a href="{% url 'books:sales' %}" class="sales-filter-tab {% if not status_filter %}active{% endif %}">All</a>
-      <a href="{% url 'books:sales' %}?status=order_request" class="sales-filter-tab {% if status_filter == 'order_request' %}active{% endif %}">New Requests</a>
-      <a href="{% url 'books:sales' %}?status=completed" class="sales-filter-tab {% if status_filter == 'completed' %}active{% endif %}">Completed</a>
-      <a href="{% url 'books:sales' %}?status=cancelled" class="sales-filter-tab {% if status_filter == 'cancelled' %}active{% endif %}">Cancelled</a>
+    <div class="orders-filters">
+      <a href="{% url 'books:sales' %}" class="orders-filter-tab {% if not status_filter %}active{% endif %}">All</a>
+      <a href="{% url 'books:sales' %}?status=order_request" class="orders-filter-tab {% if status_filter == 'order_request' %}active{% endif %}">New Requests</a>
+      <a href="{% url 'books:sales' %}?status=completed" class="orders-filter-tab {% if status_filter == 'completed' %}active{% endif %}">Completed</a>
+      <a href="{% url 'books:sales' %}?status=cancelled" class="orders-filter-tab {% if status_filter == 'cancelled' %}active{% endif %}">Cancelled</a>
     </div>
-
-    {% if messages %}
-    {% for message in messages %}
-    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-    {% endfor %}
-    {% endif %}
-
-    {% if sales %}
-    <div class="orders-list">
+{% if sales %}
+    <div class="olist">
       {% for sale in sales %}
-      <div class="order-card" data-status="{{ sale.status }}">
-        <div class="order-card__book">
-          <a href="{% url 'books:detail' sale.book.seller.username sale.book.slug %}" class="order-book-link">
-            {% if sale.book.images.first %}
-            <img src="{{ sale.book.images.first.image.url }}" alt="{{ sale.book.title }}" class="order-book-thumb" />
-            {% else %}
-            <div class="order-book-thumb-placeholder">📖</div>
-            {% endif %}
-            <div class="order-book-meta">
-              <span class="order-book-title">{{ sale.book.title }}</span>
-              <span class="order-book-price">Rs. {{ sale.price|floatformat:2 }}</span>
-            </div>
-          </a>
+      <div class="ocard">
+
+        <!-- Book thumbnail -->
+        <a href="{% url 'books:detail' sale.book.seller.username sale.book.slug %}" class="ocard__thumb-link">
+          {% if sale.book.images.first %}
+          <img src="{{ sale.book.images.first.image.url }}" alt="{{ sale.book.title }}" class="ocard__thumb" />
+          {% else %}
+          <div class="ocard__thumb ocard__thumb--empty">📖</div>
+          {% endif %}
+        </a>
+
+        <!-- Main info -->
+        <div class="ocard__info">
+          <a href="{% url 'books:detail' sale.book.seller.username sale.book.slug %}" class="ocard__title">{{ sale.book.title }}</a>
+          <span class="ocard__price">Rs. {{ sale.price|floatformat:2 }}</span>
+          <!-- Buyer info inline -->
+          <div class="ocard__buyer">
+            <span class="ocard__buyer-avatar">{{ sale.buyer.username|first|upper }}</span>
+            <span class="ocard__buyer-name">{{ sale.buyer.get_full_name|default:sale.buyer.username }}</span>
+            <span class="ocard__buyer-handle">@{{ sale.buyer.username }}</span>
+          </div>
         </div>
 
-        <div class="order-card__right">
-          <div class="order-card__status">
-            <span class="sales-badge sales-badge--{{ sale.status }}">{{ sale.get_status_display }}</span>
-            <span class="order-card__date">{{ sale.created_at|date:"M d, Y" }}</span>
-          </div>
-
-          <div class="sale-buyer-info">
-            <span class="sales-buyer-avatar">{{ sale.buyer.username|first|upper }}</span>
-            <div>
-              <span class="sale-buyer-name">{{ sale.buyer.get_full_name|default:sale.buyer.username }}</span>
-              <span class="sale-buyer-username">@{{ sale.buyer.username }}</span>
-              {% if sale.buyer.email %}
-              <span class="sale-buyer-email">{{ sale.buyer.email }}</span>
-              {% endif %}
-            </div>
+        <!-- Right: status + actions -->
+        <div class="ocard__right">
+          <div class="ocard__meta">
+            <span class="obadge obadge--{{ sale.status }}">{{ sale.get_status_display }}</span>
+            <span class="ocard__date">{{ sale.created_at|date:"M d, Y" }}</span>
           </div>
 
           {% if sale.status == 'order_request' or sale.status == 'pending' %}
-          <div class="order-card__actions">
+          <div class="ocard__actions">
+
             <a href="{% url 'books:start_conversation' %}?book={{ sale.book.slug }}&with={{ sale.buyer.username }}"
-               class="order-action-btn order-action-btn--message">
-              💬 Message Buyer
+               class="obtn obtn--ghost">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              Message Buyer
             </a>
 
-            <!-- Seller complete -->
-            <button type="button" class="order-action-btn order-action-btn--esewa"
-              onclick="document.getElementById('seller-complete-{{ sale.slug }}').classList.toggle('order-other-form--visible')">
-              ✓ Mark as Completed
+            <button type="button" class="obtn obtn--primary"
+              data-toggle-other-form="seller-complete-{{ sale.slug }}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Mark as Completed
             </button>
-            <div id="seller-complete-{{ sale.slug }}" class="order-other-form">
+
+            <div id="seller-complete-{{ sale.slug }}" class="ocard__expand" style="display:none;">
               <form method="POST" action="{% url 'books:order_seller_complete' sale.slug %}">
                 {% csrf_token %}
-                <label class="order-remarks-label">Payment notes (optional)</label>
-                <textarea name="payment_remarks" class="order-remarks-textarea"
-                  placeholder="e.g. Buyer paid cash on pickup, received via eSewa, etc." rows="2"></textarea>
-                <button type="submit" class="order-action-btn order-action-btn--other-submit">
+                <textarea name="payment_remarks" class="ocard__textarea"
+                  placeholder="Payment notes: e.g. cash on pickup, eSewa transfer…" rows="2"></textarea>
+                <button type="submit" class="obtn obtn--primary" style="width:100%;margin-top:0.5rem;">
                   Confirm Completion
                 </button>
               </form>
             </div>
 
-            <!-- Cancel -->
             <form method="POST" action="{% url 'books:order_cancel' sale.slug %}"
-              onsubmit="return confirm('Cancel this order? The book will be listed as available again.')">
+              class="js-confirm-form"
+              data-confirm-title="Cancel this order?"
+              data-confirm-body="The book will be listed as available again."
+              data-confirm-text="Yes, cancel it"
+              data-confirm-danger="true">
               {% csrf_token %}
-              <button type="submit" class="order-action-btn order-action-btn--cancel">
-                ✕ Cancel Order
+              <button type="submit" class="obtn obtn--danger">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                Cancel Order
               </button>
             </form>
+
           </div>
           {% endif %}
 
           {% if sale.status == 'completed' %}
-          <div class="order-card__completed-info">
+          <div class="ocard__payment-info">
             {% if sale.payment_method == 'esewa' %}
-            <span class="order-payment-badge order-payment-badge--esewa">Paid via eSewa</span>
-            {% if sale.esewa_ref_id %}<span class="order-esewa-ref">Ref: {{ sale.esewa_ref_id }}</span>{% endif %}
+              <span class="opill opill--esewa">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Paid via eSewa
+              </span>
+              {% if sale.esewa_ref_id %}<span class="ocard__ref">Ref: {{ sale.esewa_ref_id }}</span>{% endif %}
             {% elif sale.payment_method == 'other' %}
-            <span class="order-payment-badge order-payment-badge--other">Other Payment</span>
-            {% if sale.payment_remarks %}<span class="order-remarks-text">{{ sale.payment_remarks }}</span>{% endif %}
+              <span class="opill opill--other">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                Other Payment
+              </span>
+              {% if sale.payment_remarks %}<span class="ocard__ref">{{ sale.payment_remarks }}</span>{% endif %}
             {% endif %}
           </div>
           {% endif %}
+
         </div>
       </div>
       {% endfor %}
     </div>
+
     {% else %}
-    <div class="sales-empty">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary-300)" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-      <p class="sales-empty__title">No sales yet</p>
-      <p class="sales-empty__sub">When someone requests to buy your book, it'll show up here.</p>
-      <a href="{% url 'books:sell' %}" class="sales-empty__cta">List a book →</a>
+    <div class="orders-empty">
+      <div class="orders-empty__icon">💰</div>
+      <p class="orders-empty__title">No sales yet</p>
+      <p class="orders-empty__sub">When someone requests to buy your book, it'll show up here.</p>
+      <a href="{% url 'books:sell' %}" class="orders-empty__cta">List a book →</a>
     </div>
     {% endif %}
 

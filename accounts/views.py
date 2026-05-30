@@ -177,3 +177,20 @@ class ChangePasswordView(LoginRequiredMixin, PasswordChangeView):
     def form_valid(self, form):
         messages.success(self.request, "Password changed successfully.")
         return super().form_valid(form)
+
+class PublicProfileView(DetailView):
+    template_name = "accounts/public_profile.html"
+    context_object_name = "profile_user"
+
+    def get_object(self, queryset=None):
+        from django.shortcuts import get_object_or_404
+        return get_object_or_404(User, username=self.kwargs["username"])
+
+    def get_context_data(self, **kwargs):
+        from books.models import Book
+        context = super().get_context_data(**kwargs)
+        user = self.get_object()
+        context["listings"] = Book.objects.filter(
+            seller=user, status="available"
+        ).prefetch_related("images", "authors").order_by("-created_at")
+        return context

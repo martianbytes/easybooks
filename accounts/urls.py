@@ -11,6 +11,7 @@ from .views import (
     EditProfileView,
     BecomeSellerView,
     ChangePasswordView,
+    PublicProfileView,
 )
 
 app_name = "accounts"
@@ -20,6 +21,7 @@ urlpatterns = [
     path("login/", UserLoginView.as_view(), name="login"),
     path("logout/", UserLogoutView.as_view(), name="logout"),
     path("profile/", ProfileView.as_view(), name="profile"),
+    path("profile/<str:username>/", PublicProfileView.as_view(), name="public_profile"),
     path("profile/edit/", EditProfileView.as_view(), name="edit_profile"),
     path("become-seller/", BecomeSellerView.as_view(), name="become_seller"),
     path("change-password/", ChangePasswordView.as_view(), name="change_password"),

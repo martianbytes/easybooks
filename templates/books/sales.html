@@ -26,14 +26,7 @@
       <a href="{% url 'books:sales' %}?status=completed" class="orders-filter-tab {% if status_filter == 'completed' %}active{% endif %}">Completed</a>
       <a href="{% url 'books:sales' %}?status=cancelled" class="orders-filter-tab {% if status_filter == 'cancelled' %}active{% endif %}">Cancelled</a>
     </div>
-
-    {% if messages %}
-      {% for message in messages %}
-      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
-
-    {% if sales %}
+{% if sales %}
     <div class="olist">
       {% for sale in sales %}
       <div class="ocard">

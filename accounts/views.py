@@ -140,7 +140,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
             # Recent listings (most recently listed first)
             'recent_listings': BookModel.objects.filter(
                 seller=user, is_active=True
-            ).prefetch_related('images', 'authors').order_by('-created_at')[:4],
+            ).exclude(status='sold').prefetch_related('images', 'authors').order_by('-created_at')[:4],
         })
         return ctx
 

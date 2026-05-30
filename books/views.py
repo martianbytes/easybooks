@@ -51,7 +51,10 @@ def _esewa_build_signature(transaction_uuid, total_amount):
 def _esewa_redirect(request, primary_transaction, override_amount=None, is_cart=False):
     total_amount = str(override_amount if override_amount is not None else primary_transaction.price)
 
-    transaction_uuid = primary_transaction.slug
+    # Generate a fresh UUID every attempt so eSewa never sees a duplicate
+    transaction_uuid = str(uuid.uuid4())
+    primary_transaction.esewa_attempt_uuid = transaction_uuid
+    primary_transaction.save(update_fields=['esewa_attempt_uuid'])
 
     signature = _esewa_build_signature(transaction_uuid, total_amount)
 
@@ -105,32 +108,40 @@ class EsewaSuccessView(LoginRequiredMixin, View):
         sandbox = getattr(settings, 'ESEWA_SANDBOX', False)
 
         if sandbox:
-            # In sandbox, try to get txn_slug from URL param first.
-            # If missing (eSewa overwrote our params), decode it from the data payload.
-            if not txn_slug and encoded_data:
+            # eSewa sends back transaction_uuid (our attempt uuid) in the data payload
+            attempt_uuid = ''
+            if encoded_data:
                 try:
-                    decoded = base64.b64decode(encoded_data).decode()
+                    decoded = base64.b64decode(encoded_data + '==').decode('utf-8')
                     payload = json.loads(decoded)
-                    txn_slug = payload.get('transaction_uuid', '')
-                except Exception:
-                    pass
+                    attempt_uuid = payload.get('transaction_uuid', '')
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).error(f"eSewa decode error: {e} | data: {encoded_data[:50]}")
 
-            ref_id = f"SANDBOX-{txn_slug[:8].upper()}" if txn_slug else "SANDBOX"
+            ref_id = f"SANDBOX-{attempt_uuid[:8].upper()}" if attempt_uuid else f"SANDBOX-{txn_slug[:8].upper()}"
 
             if is_cart:
                 slugs = request.session.pop('cart_order_slugs', [])
-                Transaction.objects.filter(slug__in=slugs, buyer=request.user).update(
+                Transaction.objects.filter(slug__in=slugs).update(
                     status='completed', esewa_ref_id=ref_id, payment_method='esewa'
                 )
                 return redirect('books:cart_order_confirmed_success')
 
-            if not txn_slug:
-                messages.error(request, "Could not identify order after eSewa payment. Please contact support.")
-                return redirect('books:orders')
-
-            t = Transaction.objects.filter(slug=txn_slug).first()
+            # Look up by esewa_attempt_uuid — the uuid we generated and sent to eSewa
+            t = None
+            if attempt_uuid:
+                t = Transaction.objects.filter(esewa_attempt_uuid=attempt_uuid).first()
+            # Fallback to txn_slug from URL param
+            if not t and txn_slug:
+                t = Transaction.objects.filter(slug=txn_slug).first()
             if not t:
-                messages.error(request, "Order not found. It may have been cancelled. Please place a new order.")
+                # Last resort: find the most recent pending esewa order for this user
+                t = Transaction.objects.filter(
+                    status='pending', payment_method='esewa'
+                ).order_by('-created_at').first()
+            if not t:
+                messages.error(request, "Order not found. Please contact support.")
                 return redirect('books:orders')
             t.status = 'completed'
             t.esewa_ref_id = ref_id

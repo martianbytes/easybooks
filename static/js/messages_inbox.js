@@ -34,52 +34,13 @@
     readObserver.observe(item);
   });
 
-  // ── Per-message inline reply toggle ───────────────────────────────
-  document.querySelectorAll('.inbox-reply-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var id      = btn.dataset.msgId;
-      var form    = document.getElementById('reply-form-' + id);
-      var thread  = document.getElementById('thread-' + id);
-      if (!form) return;
-      var opening = form.style.display === 'none';
-      form.style.display  = opening ? 'block' : 'none';
-      thread.style.display = 'block';
-      if (opening) form.querySelector('.reply-textarea').focus();
-    });
-  });
-
-  // ── Per-message cancel ────────────────────────────────────────────
-  document.querySelectorAll('.reply-cancel-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var id   = btn.dataset.msgId;
-      var form = document.getElementById('reply-form-' + id);
-      if (form) {
-        form.style.display = 'none';
-        form.querySelector('.reply-textarea').value = '';
-      }
-    });
-  });
-
-  // ── Per-message send ──────────────────────────────────────────────
-  document.querySelectorAll('.reply-send-btn:not(#reply-bar-send)').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      sendReply(
-        btn.dataset.msgId,
-        document.getElementById('reply-form-' + btn.dataset.msgId).querySelector('.reply-textarea'),
-        btn,
-        function (id) {
-          document.getElementById('reply-form-' + id).style.display = 'none';
-        }
-      );
-    });
-  });
-
-  // ── Bottom new-message bar ─────────────────────────────────────────
+  // ── Bottom message bar state ───────────────────────────────────────
   var barTextarea = document.getElementById('reply-bar-textarea');
   var barSend     = document.getElementById('reply-bar-send');
   var barContext  = document.getElementById('reply-bar-context');
   var barLabel    = document.getElementById('reply-bar-label');
   var barClear    = document.getElementById('reply-bar-clear');
+
   var activeMsgId    = null;
   var activeReplyUrl = null;
 
@@ -88,47 +49,103 @@
     activeReplyUrl = replyUrl;
     barLabel.textContent     = sender + ' · ' + book;
     barContext.style.display = 'flex';
-    barTextarea.disabled     = false;
-    barSend.disabled         = false;
     barTextarea.focus();
   }
 
-  // Auto-activate first conversation so bar is ready immediately
+  // Seed bar with the first conversation on load
   var firstBtn = document.querySelector('.inbox-reply-btn');
   if (firstBtn) {
-    activateBar(
-      firstBtn.dataset.msgId,
-      firstBtn.dataset.replyUrl,
-      firstBtn.dataset.sender,
-      firstBtn.dataset.book
-    );
+    activeMsgId    = firstBtn.dataset.msgId;
+    activeReplyUrl = firstBtn.dataset.replyUrl;
   }
 
-  // Clicking Reply on a different message also switches the bar context
+  // Clicking Reply on any message switches the active conversation
   document.querySelectorAll('.inbox-reply-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       activateBar(btn.dataset.msgId, btn.dataset.replyUrl, btn.dataset.sender, btn.dataset.book);
+      // Scroll the bar into view
+      barTextarea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
   });
 
+  // Clear resets back to first conversation (never disables the bar)
   if (barClear) {
     barClear.addEventListener('click', function () {
-      activeMsgId = activeReplyUrl = null;
-      barContext.style.display = 'none';
-      barTextarea.disabled = true;
-      barSend.disabled     = true;
-      barTextarea.value    = '';
+      barTextarea.value = '';
+      if (firstBtn) {
+        activateBar(firstBtn.dataset.msgId, firstBtn.dataset.replyUrl, firstBtn.dataset.sender, firstBtn.dataset.book);
+      }
     });
   }
 
+  // Send via button
   if (barSend) {
     barSend.addEventListener('click', function () {
-      if (!activeMsgId || !activeReplyUrl) return;
-      sendReply(activeMsgId, barTextarea, barSend, function () {
+      doSend();
+    });
+  }
+
+  // Send via Enter (Shift+Enter = newline)
+  if (barTextarea) {
+    barTextarea.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        doSend();
+      }
+    });
+  }
+
+  function doSend() {
+    if (!activeMsgId || !activeReplyUrl) return;
+    var body = barTextarea.value.trim();
+    if (!body) { barTextarea.focus(); return; }
+
+    barSend.disabled    = true;
+    barSend.textContent = 'Sending…';
+
+    fetch(activeReplyUrl, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'body=' + encodeURIComponent(body),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.ok) { alert(data.error || 'Failed to send.'); return; }
+
+        // Append the new bubble to the flat chat thread
+        var thread = document.getElementById('thread-' + activeMsgId);
+        var bubble = document.createElement('div');
+        bubble.className = 'reply-bubble reply-bubble--self';
+        bubble.innerHTML =
+          '<span class="reply-bubble__sender">' + escapeHtml(data.sender) + '</span>' +
+          '<p class="reply-bubble__text">' + escapeHtml(data.body) + '</p>' +
+          '<span class="reply-bubble__time">' + data.created_at + '</span>';
+        thread.appendChild(bubble);
+
+        // Scroll the new bubble into view
+        bubble.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        // Update reply count on the Reply button
+        var replyBtn = document.querySelector('.inbox-reply-btn[data-msg-id="' + activeMsgId + '"]');
+        if (replyBtn) {
+          var countSpan = replyBtn.querySelector('.reply-count');
+          if (countSpan) {
+            countSpan.textContent = '(' + (parseInt(countSpan.textContent.replace(/\D/g, ''), 10) + 1) + ')';
+          } else {
+            var s = document.createElement('span');
+            s.className = 'reply-count';
+            s.textContent = '(1)';
+            replyBtn.appendChild(s);
+          }
+        }
+
         barTextarea.value = '';
         barTextarea.focus();
-      }, activeReplyUrl);
-    });
+      })
+      .finally(function () {
+        barSend.disabled = false;
+        barSend.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Send';
+      });
   }
 
   // ── Auto-activate ?open=<pk> thread ───────────────────────────────
@@ -138,58 +155,13 @@
     if (triggerBtn) {
       activateBar(triggerBtn.dataset.msgId, triggerBtn.dataset.replyUrl, triggerBtn.dataset.sender, triggerBtn.dataset.book);
       setTimeout(function () {
-        barTextarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.getElementById('inbox-item-' + openParam)
+          .scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
     }
   }
 
-  // ── Shared send helper ────────────────────────────────────────────
-  function sendReply(msgId, textarea, btn, onSuccess, overrideUrl) {
-    var body = textarea.value.trim();
-    if (!body) { textarea.focus(); return; }
-    var url = overrideUrl || textarea.dataset.replyUrl;
-    btn.disabled    = true;
-    btn.textContent = 'Sending…';
-
-    fetch(url, {
-      method: 'POST',
-      headers: { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: 'body=' + encodeURIComponent(body),
-    })
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        if (!data.ok) { alert(data.error || 'Failed to send.'); return; }
-        var thread = document.getElementById('thread-' + msgId);
-        var bubble = document.createElement('div');
-        bubble.className = 'reply-bubble reply-bubble--self';
-        bubble.innerHTML =
-          '<span class="reply-bubble__sender">' + data.sender + '</span>' +
-          '<p class="reply-bubble__text">' + escapeHtml(data.body) + '</p>' +
-          '<span class="reply-bubble__time">' + data.created_at + '</span>';
-        thread.appendChild(bubble);
-
-        // Update reply count
-        var replyBtn = document.querySelector('.inbox-reply-btn[data-msg-id="' + msgId + '"]');
-        if (replyBtn) {
-          var countSpan = replyBtn.querySelector('.reply-count');
-          if (countSpan) {
-            countSpan.textContent = '(' + (parseInt(countSpan.textContent.replace(/\D/g,''), 10) + 1) + ')';
-          } else {
-            var s = document.createElement('span');
-            s.className = 'reply-count';
-            s.textContent = '(1)';
-            replyBtn.appendChild(s);
-          }
-        }
-        onSuccess(msgId);
-      })
-      .finally(function () {
-        btn.disabled = false;
-        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Send';
-      });
-  }
-
   function escapeHtml(str) {
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 })();

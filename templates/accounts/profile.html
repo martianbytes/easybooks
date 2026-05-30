@@ -307,7 +307,7 @@
           {% if recent_listings %}
           <div class="pdb-listings-grid">
             {% for book in recent_listings %}
-            <div class="pdb-listing-card">
+            <div class="pdb-listing-card pdb-status-{{ book.status }}">
               <div class="pdb-listing-img-wrap">
                 {% if book.condition %}
                 <span class="pdb-condition-badge pdb-cond-{{ book.condition|lower }}">{{ book.get_condition_display }}</span>
@@ -324,7 +324,7 @@
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                   </a>
                   <button type="button" class="pdb-overlay-btn pdb-overlay-del" title="Delete"
-                          style="background:white; border:none; cursor:pointer; padding:0; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow: 0 2px 6px rgba(0,0,0,0.15);"
+                          style="background:white; border:none; cursor:pointer; padding:0; box-shadow: 0 2px 6px rgba(0,0,0,0.15);"
                           data-delete-trigger
                           data-title="{{ book.title }}"
                           data-action="{% url 'books:delete' book.seller.username book.slug %}">
@@ -336,16 +336,14 @@
                     </svg>
                   </button>
                 </div>
-                <span class="pdb-status-badge pdb-status-{{ book.status }}">{{ book.get_status_display }}</span>
               </div>
               <div class="pdb-listing-body">
-                <p class="pdb-listing-genre">{{ book.get_category_display }}</p>
                 <h3 class="pdb-listing-title">
                   <a href="{% url 'books:detail' book.seller.username book.slug %}" class="pdb-listing-title-link">{{ book.title }}</a>
                 </h3>
-                <p class="pdb-listing-author">
-                  {% for author in book.authors.all %}{{ author.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}
-                </p>
+                <p class="pdb-listing-genre"><span class="pdb-listing-label">Category:</span> {{ book.get_category_display }}</p>
+                <p class="pdb-listing-author"><span class="pdb-listing-label">Author:</span> {% for author in book.authors.all %}{{ author.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</p>
+                <p class="pdb-listing-status-label">{{ book.get_status_display }}</p>
                 <hr class="pdb-listing-divider" />
                 <p class="pdb-listing-price">Rs {{ book.asking_price|floatformat:2 }}</p>
               </div>

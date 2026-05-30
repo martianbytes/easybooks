@@ -18,12 +18,7 @@
   <div class="container">
     <h1 class="checkout-title">Place Order</h1>
     <p class="checkout-subtitle">Send a purchase request to the seller</p>
-
-    {% if messages %} {% for message in messages %}
-    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-    {% endfor %} {% endif %}
-
-    <form method="POST" action="{% url 'books:checkout' book.seller.username book.slug %}">
+<form method="POST" action="{% url 'books:checkout' book.seller.username book.slug %}">
       {% csrf_token %}
 
       <div class="checkout-layout">

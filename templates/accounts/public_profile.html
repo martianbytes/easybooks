@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="public-profile-container">
+
+  <!-- Profile Header -->
+  <div class="public-profile-header">
+    <div class="public-avatar">{{ profile_user.username|first|upper }}</div>
+    <div class="public-profile-info">
+      <h1 class="public-profile-name">{{ profile_user.get_full_name|default:profile_user.username }}</h1>
+      <p class="public-profile-username">@{{ profile_user.username }}</p>
+      <p class="public-profile-meta">Member seller</p>
+    </div>
+  </div>
+
+  <!-- Listings -->
+  <div class="public-profile-listings">
+    <h2 class="public-profile-section-title">Listed Books</h2>
+    {% if listings %}
+    <div class="public-listings-grid">
+      {% for book in listings %}
+      <a href="{% url 'books:detail' book.seller.username book.slug %}" class="public-listing-card">
+        {% if book.cover_image %}
+        <img src="{{ book.cover_image }}" alt="{{ book.title }}" class="public-listing-img" />
+        {% elif book.images.first %}
+        <img src="{{ book.images.first.image.url }}" alt="{{ book.title }}" class="public-listing-img" />
+        {% else %}
+        <div class="public-listing-img-placeholder">📖</div>
+        {% endif %}
+        <div class="public-listing-info">
+          <p class="public-listing-category">{{ book.get_category_display }}</p>
+          <p class="public-listing-title">{{ book.title }}</p>
+          <p class="public-listing-author">
+            {% for author in book.authors.all %}{{ author.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+          </p>
+          <p class="public-listing-price">Rs {{ book.asking_price|floatformat:2 }}</p>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p>This seller has no active listings.</p>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

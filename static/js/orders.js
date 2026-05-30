@@ -1,12 +1,12 @@
 (function () {
-  // Toggle "Complete via Other Method" form visibility
   document.querySelectorAll('[data-toggle-other-form]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var targetId = btn.getAttribute('data-toggle-other-form');
-      var form = document.getElementById(targetId);
-      if (form) {
-        form.classList.toggle('order-other-form--visible');
-      }
+      var panel = document.getElementById(targetId);
+      if (!panel) return;
+      var isVisible = panel.style.display !== 'none';
+      panel.style.display = isVisible ? 'none' : 'block';
+      btn.classList.toggle('obtn--outline', !isVisible);
     });
   });
 })();

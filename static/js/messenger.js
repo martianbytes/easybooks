@@ -165,7 +165,12 @@
       // Only re-render if this conv is still active
       if (String(activeConvId) !== String(convId)) return;
 
-      renderBubbles(data.messages, data.book_title, data.book_url);
+      // Use the conversation-level book (from the sidebar button data attrs) as fallback
+      const convItem = document.querySelector(`.msng-conv-item[data-conv-id="${convId}"]`);
+      const convBookTitle = convItem ? convItem.dataset.bookTitle : "";
+      const convBookUrl   = convItem ? convItem.dataset.bookUrl   : "";
+
+      renderBubbles(data.messages, convBookTitle, convBookUrl);
 
       // Update preview in list
       const lastMsg = data.messages[data.messages.length - 1];
@@ -189,8 +194,12 @@
       return;
     }
 
+    // Always show the conversation-level book pill at the very top
+    if (bookTitle) {
+      bubblesEl.appendChild(buildBookPill(bookTitle, bookUrl));
+    }
+
     let lastDate = "";
-    let lastBookTitle = null;
 
     messages.forEach(msg => {
       // Date separator
@@ -201,12 +210,6 @@
         sep.className = "msng-date-sep";
         sep.textContent = day;
         bubblesEl.appendChild(sep);
-      }
-
-      // Book context pill — only when book changes
-      if (msg.book_title && msg.book_title !== lastBookTitle) {
-        lastBookTitle = msg.book_title;
-        bubblesEl.appendChild(buildBookPill(msg.book_title, msg.book_url));
       }
 
       bubblesEl.appendChild(buildBubble(msg));

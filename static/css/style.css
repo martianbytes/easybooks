@@ -8330,6 +8330,9 @@ input[type="password"], input[type="text"] {
   margin: 8px auto 14px;
   width: fit-content;
   max-width: 70%;
+  min-width: 0;
+  flex-shrink: 0;
+  align-self: center;
   padding: 5px 13px 5px 10px;
   border-radius: 999px;
   background: var(--color-surface-raised, #f0f2f5);
@@ -8342,13 +8345,17 @@ input[type="password"], input[type="text"] {
   text-overflow: ellipsis;
   cursor: default;
   user-select: none;
+  box-sizing: border-box;
 }
-.msng-book-pill a {
+.msng-book-pill a,
+.msng-book-pill span {
   color: var(--color-primary-600);
   text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
+  flex-shrink: 1;
 }
 .msng-book-pill a:hover { text-decoration: underline; }
 .msng-book-pill__icon {

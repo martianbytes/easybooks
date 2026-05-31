@@ -27,7 +27,7 @@
           <div class="hero-genres">
             <span>Popular:</span>
             {% for genre in popular_genres %}
-              <a href="{% url 'books:browse' %}?category={{ genre.id }}">{{ genre.name }}</a>
+              <a href="{% url 'books:browse' %}?genre={{ genre.id }}">{{ genre.name }}</a>
             {% endfor %}
           </div>
         </div>

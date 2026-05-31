@@ -305,6 +305,10 @@ class BrowseView(ListView):
             except ValueError:
                 pass
 
+        author = self.request.GET.get("author")
+        if author:
+            queryset = queryset.filter(authors__id=author)        
+
         seller = self.request.GET.get("seller")
         if seller:
             queryset = queryset.filter(seller__username=seller)

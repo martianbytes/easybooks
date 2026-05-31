@@ -371,15 +371,17 @@
       {% for rel in related_books %}
       <div class="card">
         <div class="card-content">
-          <div class="card-img-wrap">
+          <div style="position:relative;">
             <img src="{{ rel.cover_image }}" alt="{{ rel.title }}" class="cover-img" />
+            {% if rel.condition %}
+            <span class="book-card-condition book-card-cond-{{ rel.condition|lower }}">{{ rel.get_condition_display }}</span>
+            {% endif %}
           </div>
           <h3 class="book-title">{{ rel.title }}</h3>
-          <p class="author-name">{{ rel.author }}</p>
-          <div class="card-price-row">
-            <p class="price">Rs.{{ rel.price }}</p>
-          </div>
-          <a href="{% url 'books:detail' rel.seller.username rel.slug %}" class="feature-btn-buy-now">View Details</a>
+          <p class="author-name">by {{ rel.authors.all|join:", " }}</p>
+          <p class="book-category">{{ rel.get_category_display }}</p>
+          <p class="price">Rs.{{ rel.asking_price }}</p>
+          <a href="{% url 'books:detail' rel.seller.username rel.slug %}" class="feature-btn-buy-now">Buy Now</a>
         </div>
       </div>
       {% endfor %}

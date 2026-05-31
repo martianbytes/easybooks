@@ -1,5 +1,5 @@
 from django.views.generic import TemplateView, ListView, CreateView, DetailView
-from django.db.models import Sum
+from django.db.models import Sum, F
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy, reverse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -355,7 +355,10 @@ class BookDetailView(DetailView):
     slug_url_kwarg = "slug"
 
     def get_object(self) -> Book:
-        return cast(Book, super().get_object())
+        obj = cast(Book, super().get_object())
+        Book.objects.filter(pk=obj.pk).update(views=F('views') + 1)
+        obj.refresh_from_db(fields=['views'])
+        return obj
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

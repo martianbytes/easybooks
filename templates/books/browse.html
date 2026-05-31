@@ -114,10 +114,10 @@
                   <span class="book-card-condition book-card-cond-{{ book.condition|lower }}">{{ book.get_condition_display }}</span>
                   {% endif %}
                 </div>
-                <h1 class="book-title">{{ book.title }}</h1>
+                <h1 class="book-title">{{ book.title|truncatechars:25 }}</h1>
                 {% if book.authors.all %}
                   <p class="author-name">
-                    {% for author in book.authors.all %}{% if not forloop.first %}, {% endif %}{{ author.name }}{% endfor %}
+                    {{ book.authors.all|join:", "|truncatechars:20 }}
                   </p>
                 {% endif %}
                 <p class="price">Rs. {{ book.asking_price }}</p>

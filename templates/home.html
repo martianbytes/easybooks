@@ -57,8 +57,8 @@
                 <span class="book-card-condition book-card-cond-{{ book.condition|lower }}">{{ book.get_condition_display }}</span>
                 {% endif %}
               </div>
-              <h3 class="book-title">{{ book.title }}</h3>
-              <p class="author-name">by {{ book.authors.all|join:", " }}</p>
+              <h3 class="book-title">{{ book.title|truncatechars:25 }}</h3>
+              <p class="author-name">by {{ book.authors.all|join:", "|truncatechars:20 }}</p>
               <p class="book-category">{{ book.category|title }}</p>
               <p class="price">Rs.{{ book.asking_price }}</p>
               <a href="{% url 'books:detail' book.seller.username book.slug %}" class="feature-btn-buy-now">Buy Now</a>
@@ -94,8 +94,8 @@
                 <span class="book-card-condition book-card-cond-{{ book.condition|lower }}">{{ book.get_condition_display }}</span>
                 {% endif %}
               </div>
-              <h3 class="book-title">{{ book.title }}</h3>
-              <p class="author-name">by {{ book.authors.all|join:", " }}</p>
+              <h3 class="book-title">{{ book.title|truncatechars:25 }}</h3>
+              <p class="author-name">by {{ book.authors.all|join:", "|truncatechars:20 }}</p>
               <p class="book-category">{{ book.category|title }}</p>
               <p class="price">Rs.{{ book.asking_price }}</p>
               <a href="{% url 'books:detail' book.seller.username book.slug %}" class="feature-btn-buy-now">Buy Now</a>
@@ -131,8 +131,8 @@
                 <span class="book-card-condition book-card-cond-{{ book.condition|lower }}">{{ book.get_condition_display }}</span>
                 {% endif %}
               </div>
-              <h3 class="book-title">{{ book.title }}</h3>
-              <p class="author-name">by {{ book.authors.all|join:", " }}</p>
+              <h3 class="book-title">{{ book.title|truncatechars:25 }}</h3>
+              <p class="author-name">by {{ book.authors.all|join:", "|truncatechars:20 }}</p>
               <p class="book-category">{{ book.category|title }}</p>
               <p class="price">Rs.{{ book.asking_price }}</p>
               <a href="{% url 'books:detail' book.seller.username book.slug %}" class="feature-btn-buy-now">Buy Now</a>

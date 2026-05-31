@@ -772,6 +772,7 @@ a {
   border: 1px solid var(--border-default);
   border-radius: var(--radius-full);
   transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
 .hero-genres a:hover {
@@ -833,7 +834,7 @@ a {
 .cards-container {
   display: grid;
   /* grid-template-columns: repeat(4, 1fr); */
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: var(--space-8);
 }
 

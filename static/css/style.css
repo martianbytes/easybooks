@@ -879,6 +879,12 @@ a {
   letter-spacing: var(--leading-tight);
 }
 
+.card-content .book-category {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
 .card-content .price {
   color: var(--color-primary-700);
   font-weight: var(--weight-semibold);

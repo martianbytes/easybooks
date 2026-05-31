@@ -58,7 +58,8 @@
                 {% endif %}
               </div>
               <h3 class="book-title">{{ book.title }}</h3>
-              <p class="author-name">{{ book.author }}</p>
+              <p class="author-name">by {{ book.authors.all|join:", " }}</p>
+              <p class="book-category">{{ book.category|title }}</p>
               <p class="price">Rs.{{ book.asking_price }}</p>
               <a href="{% url 'books:detail' book.seller.username book.slug %}" class="feature-btn-buy-now">Buy Now</a>
             </div>
@@ -94,7 +95,8 @@
                 {% endif %}
               </div>
               <h3 class="book-title">{{ book.title }}</h3>
-              <p class="author-name">{{ book.author }}</p>
+              <p class="author-name">by {{ book.authors.all|join:", " }}</p>
+              <p class="book-category">{{ book.category|title }}</p>
               <p class="price">Rs.{{ book.asking_price }}</p>
               <a href="{% url 'books:detail' book.seller.username book.slug %}" class="feature-btn-buy-now">Buy Now</a>
             </div>
@@ -130,7 +132,8 @@
                 {% endif %}
               </div>
               <h3 class="book-title">{{ book.title }}</h3>
-              <p class="author-name">{{ book.author }}</p>
+              <p class="author-name">by {{ book.authors.all|join:", " }}</p>
+              <p class="book-category">{{ book.category|title }}</p>
               <p class="price">Rs.{{ book.asking_price }}</p>
               <a href="{% url 'books:detail' book.seller.username book.slug %}" class="feature-btn-buy-now">Buy Now</a>
             </div>

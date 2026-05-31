@@ -165,7 +165,12 @@
       // Only re-render if this conv is still active
       if (String(activeConvId) !== String(convId)) return;
 
-      renderBubbles(data.messages, data.book_title, data.book_url);
+      // Use the conversation-level book (from the sidebar button data attrs) as fallback
+      const convItem = document.querySelector(`.msng-conv-item[data-conv-id="${convId}"]`);
+      const convBookTitle = convItem ? convItem.dataset.bookTitle : "";
+      const convBookUrl   = convItem ? convItem.dataset.bookUrl   : "";
+
+      renderBubbles(data.messages, convBookTitle, convBookUrl);
 
       // Update preview in list
       const lastMsg = data.messages[data.messages.length - 1];
@@ -189,8 +194,15 @@
       return;
     }
 
+    // Seed with conv-level book so first pill always shows even if msg.book_title is null
+    let lastBookTitle = bookTitle || null;
+    let lastBookUrl   = bookUrl   || null;
+
+    if (lastBookTitle) {
+      bubblesEl.appendChild(buildBookPill(lastBookTitle, lastBookUrl));
+    }
+
     let lastDate = "";
-    let lastBookTitle = null;
 
     messages.forEach(msg => {
       // Date separator
@@ -203,10 +215,11 @@
         bubblesEl.appendChild(sep);
       }
 
-      // Book context pill — only when book changes
+      // New pill whenever the book changes mid-conversation
       if (msg.book_title && msg.book_title !== lastBookTitle) {
         lastBookTitle = msg.book_title;
-        bubblesEl.appendChild(buildBookPill(msg.book_title, msg.book_url));
+        lastBookUrl   = msg.book_url;
+        bubblesEl.appendChild(buildBookPill(lastBookTitle, lastBookUrl));
       }
 
       bubblesEl.appendChild(buildBubble(msg));

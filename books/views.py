@@ -343,7 +343,8 @@ class BrowseView(ListView):
 class SubscribeView(CreateView):
     def post(self, request):
         email = request.POST.get("email")
-        return JsonResponse({"status": "success"})
+        messages.success(request, "Thanks for subscribing! We'll keep you posted.")
+        return redirect("books:home")
 
 
 class BookDetailView(DetailView):

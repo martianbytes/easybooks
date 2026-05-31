@@ -224,7 +224,7 @@
                 {% for t in recent_sales %}
                 <li class="dash-recent-item">
                   <div class="dash-recent-info">
-                    <a href="{% url 'books:detail' t.book.seller.username t.book.slug %}" class="dash-recent-title">{{ t.book.title|truncatechars:28 }}</a>
+                    <a href="{% url 'books:detail' t.book.seller.username t.book.slug %}" class="dash-recent-title">{{ t.book.title|truncatechars:25 }}</a>
                     <span class="dash-recent-date">{{ t.created_at|date:"M d, Y" }}</span>
                   </div>
                   <span class="dash-recent-amount dash-recent-amount--green">+Rs {{ t.price|floatformat:2 }}</span>
@@ -266,7 +266,7 @@
                 {% for t in recent_purchases %}
                 <li class="dash-recent-item">
                   <div class="dash-recent-info">
-                    <a href="{% url 'books:detail' t.book.seller.username t.book.slug %}" class="dash-recent-title">{{ t.book.title|truncatechars:28 }}</a>
+                    <a href="{% url 'books:detail' t.book.seller.username t.book.slug %}" class="dash-recent-title">{{ t.book.title|truncatechars:25 }}</a>
                     <span class="dash-recent-date">{{ t.created_at|date:"M d, Y" }}</span>
                   </div>
                   <span class="dash-recent-amount dash-recent-amount--red">−Rs {{ t.price|floatformat:2 }}</span>
@@ -339,10 +339,10 @@
               </div>
               <div class="pdb-listing-body">
                 <h3 class="pdb-listing-title">
-                  <a href="{% url 'books:detail' book.seller.username book.slug %}" class="pdb-listing-title-link">{{ book.title }}</a>
+                  <a href="{% url 'books:detail' book.seller.username book.slug %}" class="pdb-listing-title-link">{{ book.title|truncatechars:25 }}</a>
                 </h3>
                 <p class="pdb-listing-genre"><span class="pdb-listing-label">Category:</span> {{ book.get_category_display }}</p>
-                <p class="pdb-listing-author"><span class="pdb-listing-label">Author:</span> {% for author in book.authors.all %}{{ author.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</p>
+                <p class="pdb-listing-author"><span class="pdb-listing-label">Author:</span> {{ book.authors.all|join:", "|truncatechars:14 }}</p>
                 <p class="pdb-listing-status-label">{{ book.get_status_display }}</p>
                 <hr class="pdb-listing-divider" />
                 <p class="pdb-listing-price">Rs {{ book.asking_price|floatformat:2 }}</p>

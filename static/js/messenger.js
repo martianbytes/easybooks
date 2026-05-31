@@ -194,9 +194,12 @@
       return;
     }
 
-    // Always show the conversation-level book pill at the very top
-    if (bookTitle) {
-      bubblesEl.appendChild(buildBookPill(bookTitle, bookUrl));
+    // Seed with conv-level book so first pill always shows even if msg.book_title is null
+    let lastBookTitle = bookTitle || null;
+    let lastBookUrl   = bookUrl   || null;
+
+    if (lastBookTitle) {
+      bubblesEl.appendChild(buildBookPill(lastBookTitle, lastBookUrl));
     }
 
     let lastDate = "";
@@ -210,6 +213,13 @@
         sep.className = "msng-date-sep";
         sep.textContent = day;
         bubblesEl.appendChild(sep);
+      }
+
+      // New pill whenever the book changes mid-conversation
+      if (msg.book_title && msg.book_title !== lastBookTitle) {
+        lastBookTitle = msg.book_title;
+        lastBookUrl   = msg.book_url;
+        bubblesEl.appendChild(buildBookPill(lastBookTitle, lastBookUrl));
       }
 
       bubblesEl.appendChild(buildBubble(msg));

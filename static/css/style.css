@@ -772,6 +772,7 @@ a {
   border: 1px solid var(--border-default);
   border-radius: var(--radius-full);
   transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
 .hero-genres a:hover {

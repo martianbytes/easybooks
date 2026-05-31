@@ -476,6 +476,14 @@ class AuthorCreateView(LoginRequiredMixin, View):
         if not re.match(r"^[a-zA-Z0-9\s\.\-\'\,]+$", name):
             return JsonResponse({"ok": False, "error": "Author name contains invalid characters."}, status=400)
 
+        if not re.match(r"^[a-zA-Z]", name):
+            return JsonResponse({"ok": False, "error": "Author name must start with a letter."}, status=400)
+
+        if re.search(r"([^a-zA-Z0-9\s])\1{2,}", name):
+            return JsonResponse({"ok": False, "error": "Author name cannot have repeated special characters like '......'."}, status=400)
+
+        if len(name) > 100:
+            return JsonResponse({"ok": False, "error": "Author name is too long (max 100 characters)."}, status=400)
         author, created = Author.objects.get_or_create(name=name)
         return JsonResponse({"ok": True, "id": author.pk, "name": author.name, "created": created})
 

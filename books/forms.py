@@ -368,7 +368,7 @@ class BookForm(forms.ModelForm):
                 "City name must be at least 2 characters long."
             )
 
-        if not re.match(r"^[a-zA-Z\s\-]+$", city):
+        if not re.match(r"^[a-zA-Z0-9\s\-]+$", city):
             raise forms.ValidationError(
                 "City name can only contain letters, spaces, and hyphens."
             )

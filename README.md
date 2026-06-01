@@ -1,4 +1,4 @@
-# 📚 EasyBooks
+# EasyBooks
 
 A peer-to-peer marketplace for buying and selling used books, built with Django. Users can list books, browse by genre, chat with sellers, pay via eSewa, and manage orders — all in one place.
 
@@ -18,21 +18,12 @@ A peer-to-peer marketplace for buying and selling used books, built with Django.
 
 ---
 
-## Prerequisites
-
-Make sure you have these installed before starting:
-
-- [Python 3.10+](https://www.python.org/downloads/)
-- [Git](https://git-scm.com/)
-- pip (comes with Python)
-
-
 ## Getting Started
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/easybooks.git
+git clone git@github.com:martianbytes/easybooks.git
 cd easybooks
 ```
 

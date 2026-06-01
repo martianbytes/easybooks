@@ -1,6 +1,7 @@
 # ============================================================
 # accounts/forms.py
 # ============================================================
+import os  
 import re
 from django import forms
 from django.contrib.auth.models import User
@@ -129,6 +130,104 @@ class UserRegistrationForm(UserCreationForm):
         return last_name
 
 class ProfileUpdateForm(forms.ModelForm):
+    """Form for updating user profile — with styled widget attrs."""
+
+    class Meta:
+        model = Profile
+        fields = ["avatar", "bio", "phone", "city", "district"]
+        widgets = {
+            "bio": forms.Textarea(
+                attrs={
+                    "placeholder": "Tell readers a little about yourself…",
+                    "rows": 4,
+                }
+            ),
+            "phone": forms.TextInput(
+                attrs={
+                    "placeholder": "e.g. +977 98xxxxxxxx",
+                    "type": "tel",
+                }
+            ),
+            "city": forms.TextInput(attrs={"placeholder": "e.g. Bharatpur"}),
+            "district": forms.TextInput(attrs={"placeholder": "e.g. Chitwan"}),
+        }
+
+    def clean_avatar(self):
+        avatar = self.cleaned_data.get("avatar")
+        if not avatar:
+            return avatar  # optional field, skip if not uploaded
+
+        # Must be called on a new upload, not the existing saved file
+        if hasattr(avatar, "size"):
+            if avatar.size > 2 * 1024 * 1024:  # 2 MB
+                raise forms.ValidationError("Avatar image must be under 2 MB.")
+
+        if hasattr(avatar, "name"):
+            ext = os.path.splitext(avatar.name)[1].lower()
+            allowed = [".jpg", ".jpeg", ".png", ".webp"]
+            if ext not in allowed:
+                raise forms.ValidationError(
+                    "Only JPG, PNG, or WebP images are allowed."
+                )
+
+        return avatar
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get("phone") or ""
+        phone = phone.strip()
+
+        if not phone:
+            return phone  # optional field
+
+        # Allow +977 98XXXXXXXX or plain 10-digit numbers
+        if not re.match(r"^(\+977[\s-]?)?[0-9]{7,15}$", phone):
+            raise forms.ValidationError(
+                "Enter a valid phone number (e.g. +977 9812345678)."
+            )
+
+        return phone
+
+    def clean_bio(self):
+        bio = self.cleaned_data.get("bio") or ""
+        bio = bio.strip()
+
+        if len(bio) > 500:
+            raise forms.ValidationError(
+                "Bio cannot exceed 500 characters."
+            )
+
+        return bio
+
+    def clean_city(self):
+        city = self.cleaned_data.get("city") or ""
+        city = city.strip()
+
+        if not city:
+            return city  # optional
+
+        if len(city) < 2:
+            raise forms.ValidationError("City name must be at least 2 characters.")
+
+        if not re.match(r"^[a-zA-Z0-9\s\-]+$", city):
+            raise forms.ValidationError(
+                "City can only contain letters, spaces, and hyphens."
+            )
+
+        return city
+
+    def clean_district(self):
+        district = self.cleaned_data.get("district") or ""
+        district = district.strip()
+
+        if not district:
+            return district  # optional
+
+        if not re.match(r"^[a-zA-Z\s\-]+$", district):
+            raise forms.ValidationError(
+                "District can only contain letters, spaces, and hyphens."
+            )
+
+        return district
     """Form for updating user profile — with styled widget attrs."""
 
     class Meta:

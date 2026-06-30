@@ -3,6 +3,7 @@ from datetime import datetime
 from django import forms
 from django.forms import inlineformset_factory
 from .models import Book, BookImage, Transaction, Author
+from .nsfw import check_image_nsfw
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -448,6 +449,14 @@ class BookImageForm(forms.ModelForm):
         self.fields["image"].required = False
         self.fields["caption"].required = False
         # image_type default is set per-slot via formset initial in the view
+
+    def clean_image(self):
+        image = self.cleaned_data.get("image")
+        # Only screen new uploads (InMemoryUploadedFile / TemporaryUploadedFile),
+        # not existing saved FileField values returned unchanged by the form.
+        if image and hasattr(image, "chunks"):
+            check_image_nsfw(image)
+        return image
 
 
 # ─────────────────────────────────────────────────────────────────────────────

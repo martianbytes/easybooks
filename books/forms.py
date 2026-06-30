@@ -120,14 +120,14 @@ class BookForm(forms.ModelForm):
                 attrs={
                     "placeholder": "e.g. 850",
                     "min": 0,
-                    "step": "0.01",
+                    "step": "1",
                 }
             ),
             "asking_price": forms.NumberInput(
                 attrs={
                     "placeholder": "e.g. 400",
                     "min": 0,
-                    "step": "0.01",
+                    "step": "1",
                 }
             ),
             "is_negotiable": forms.CheckboxInput(),

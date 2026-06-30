@@ -2,6 +2,7 @@ import re
 from datetime import datetime
 from django import forms
 from django.forms import inlineformset_factory
+from django.core.exceptions import ValidationError
 from .models import Book, BookImage, Transaction, Author
 from .nsfw import check_image_nsfw
 
@@ -455,7 +456,17 @@ class BookImageForm(forms.ModelForm):
         # Only screen new uploads (InMemoryUploadedFile / TemporaryUploadedFile),
         # not existing saved FileField values returned unchanged by the form.
         if image and hasattr(image, "chunks"):
-            check_image_nsfw(image)
+            try:
+                result = check_image_nsfw(image)
+            except ValidationError:
+                # propagate explicit ValidationError from the checker
+                raise
+            except Exception:
+                # don't block upload on unexpected screening errors
+                return image
+            # support check_image_nsfw returning a truthy value for flagged images
+            if result:
+                raise ValidationError("This image contains content that violates our policies.")
         return image
 
 

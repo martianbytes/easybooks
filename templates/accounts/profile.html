@@ -71,7 +71,7 @@
               {% if profile.avatar %}
               <img src="{{ profile.avatar.url }}" alt="{{ profile.full_name }}" class="pdb-avatar" />
               {% else %}
-              <div class="pdb-avatar-fallback">{{ profile.user.username|first|upper }}</div>
+              <img src="{% static 'images/default-avatar.png' %}" alt="Default Avatar" class="pdb-avatar" />
               {% endif %}
             </div>
             <div class="pdb-identity">

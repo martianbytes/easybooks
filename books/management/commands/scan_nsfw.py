@@ -154,16 +154,36 @@ class Command(BaseCommand):
         return scanned, flagged
 
     def _delete_book_image(self, obj, abs_path):
-        """Delete the file from disk and the BookImage DB record."""
+        """Delete the physical file from disk and cascade delete the entire parent Book."""
         try:
-            os.remove(abs_path)
+            if os.path.exists(abs_path):
+                os.remove(abs_path)
         except OSError as exc:
             self.stdout.write(
                 self.style.WARNING(f"    Could not remove file: {exc}")
             )
-        obj.delete()
+
+        # Capture references before wiping from database
+        book_instance = obj.book
+        book_title = getattr(book_instance, "title", "<untitled>")
+
+        try:
+            book_instance.delete()
+        except Exception as exc:
+            self.stdout.write(
+                self.style.WARNING(f"    Could not delete Book record: {exc}")
+            )
+            # Fallback: try to remove the BookImage DB record if book deletion failed
+            try:
+                obj.delete()
+            except Exception as exc2:
+                self.stdout.write(
+                    self.style.WARNING(f"    Could not delete BookImage record: {exc2}")
+                )
+            return
+
         self.stdout.write(
-            self.style.SUCCESS(f"    Deleted DB record + file.")
+            self.style.SUCCESS(f"    Completely removed book listing: '{book_title}' due to NSFW content.")
         )
 
     # ── Avatars ───────────────────────────────────────────────────────────────

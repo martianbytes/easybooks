@@ -475,25 +475,57 @@ class BookImageForm(forms.ModelForm):
 # ─────────────────────────────────────────────────────────────────────────────
 class BookImageBaseFormSet(BaseInlineFormSet):
     """
-    Custom formset that prevents empty extra slots from being saved as blank
-    BookImage rows. We do this in save_new_objects() rather than has_changed()
-    because cleaned_data is guaranteed available at save time — unlike
-    has_changed() which is called before full_clean().
+    Keeps blank extra slots out of the DB and requires a real cover image.
     """
+
+    def clean(self):
+        super().clean()
+
+        cover_form = None
+        valid_image_forms = []
+
+        for form in self.forms:
+            if not hasattr(form, "cleaned_data"):
+                continue
+
+            if form.cleaned_data.get("DELETE"):
+                continue
+
+            has_image = bool(
+                form.cleaned_data.get("image") or getattr(form.instance, "image", None)
+            )
+            if not has_image:
+                continue
+
+            valid_image_forms.append(form)
+
+            if form.cleaned_data.get("image_type") == "cover":
+                cover_form = form
+
+        if cover_form:
+            return
+
+        # If the user uploaded at least one valid image, promote the first one to cover.
+        if valid_image_forms:
+            valid_image_forms[0].cleaned_data["image_type"] = "cover"
+            return
+
+        raise ValidationError("A cover image is required.")
 
     def save_new_objects(self, commit=True):
         self.new_objects = []
         for form in self.extra_forms:
             if not form.has_changed():
                 continue
-            if self.can_delete and self._should_delete_form(form):
+
+            has_image = bool(form.cleaned_data.get("image"))
+            if self.can_delete and self._should_delete_form(form) and not has_image:  # type: ignore[attr-defined]
                 continue
-            # Skip slots where no image file was actually uploaded.
-            # This prevents blank BookImage rows when the user only touched
-            # the image_type dropdown without selecting a photo.
-            if not form.cleaned_data.get("image"):
+
+            if not has_image:
                 continue
-            self.new_objects.append(self.save_new_object(form, commit))
+
+            self.new_objects.append(self.save_new(form, commit=commit))
         return self.new_objects
 
 

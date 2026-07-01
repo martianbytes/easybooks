@@ -17,13 +17,7 @@
   <div class="container">
 
     {# ── Errors above the card ── #}
-    {% comment %} {% if book_form.non_field_errors or image_formset.non_form_errors %}
-      <div class="ebf-alert">
-        {{ book_form.non_field_errors }}
-        {{ image_formset.non_form_errors }}
-      </div>
-    {% endif %} {% endcomment %}
-    {% if book_form.errors or image_formset.non_form_errors %}
+    {% if book_form.errors %}
   <div class="ebf-alert">
     <ul>
       {% for field in book_form %}
@@ -34,8 +28,20 @@
       {% for error in book_form.non_field_errors %}
         <li>{{ error }}</li>
       {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+
+    {% if image_formset.non_form_errors or image_formset.errors %}
+  <div class="ebf-alert" id="image-error-summary">
+    <ul>
       {% for error in image_formset.non_form_errors %}
         <li>{{ error }}</li>
+      {% endfor %}
+      {% for form in image_formset %}
+        {% for error in form.image.errors %}
+          <li>Image {{ forloop.parentloop.counter }}: {{ error }}</li>
+        {% endfor %}
       {% endfor %}
     </ul>
   </div>
@@ -284,9 +290,6 @@
               Add up to 8 photos. The first slot is the <strong>cover image</strong> <span style="color:#e53e3e;">*</span> (required).
             </p>
 
-            {% if cover_error %}
-            <div class="ebf-alert" id="cover-error-msg">{{ cover_error }}</div>
-            {% endif %}
 
             <div class="img-grid" id="img-grid">
               {% for form in image_formset %}
@@ -338,10 +341,6 @@
                 </div>
 
                 <div style="display:none">{{ form.image }}</div>
-                {% if form.image.errors %}
-  <div class="ebf-alert">{% for e in form.image.errors %}{{ e }}{% endfor %}</div>
-{% endif %}
-
                 <textarea name="{{ form.image.html_name }}_dataurl"
                   id="dataurl-{{ forloop.counter0 }}"
                   style="display:none"></textarea>

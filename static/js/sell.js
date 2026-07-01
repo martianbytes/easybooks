@@ -233,6 +233,8 @@ function clearImageSlot(event, idx) {
   if (ph) ph.style.display = 'flex';
   if (btn) btn.style.display = 'none';
   zone?.classList.remove('has-image');
+
+  // Mark deleted until a new real file is chosen.
   if (del) del.checked = true;
 }
 
@@ -254,6 +256,10 @@ function clearImageSlot(event, idx) {
     const removeBtn = document.getElementById(`remove-${idx}`);
     const zone = document.getElementById(`zone-${idx}`);
     const dataUrl = document.getElementById(`dataurl-${idx}`);
+    const del = slot.querySelector('input[type="checkbox"][name$="-DELETE"]');
+
+    // IMPORTANT: picking a new file cancels the earlier delete.
+    if (del) del.checked = false;
 
     const reader = new FileReader();
     reader.onload = () => {
@@ -263,33 +269,12 @@ function clearImageSlot(event, idx) {
       if (removeBtn) removeBtn.style.display = 'inline-flex';
       zone?.classList.add('has-image');
       if (dataUrl) dataUrl.value = src;
-      // Clear cover error once slot 0 is filled
+
       if (idx === '0') {
-        const errEl = document.getElementById('cover-error-msg');
-        if (errEl) errEl.remove();
+        document.getElementById('cover-error-msg')?.remove();
       }
     };
     reader.readAsDataURL(input.files[0]);
-  });
-})();
-
-(function bindConditionCards() {
-  const cards = document.querySelectorAll('.condition-card');
-  const hidden = document.getElementById('id_condition');
-  if (!cards.length || !hidden) return;
-
-  cards.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      cards.forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      hidden.value = btn.dataset.value || '';
-      hidden.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-  });
-
-  const current = hidden.value;
-  cards.forEach((btn) => {
-    btn.classList.toggle('active', btn.dataset.value === current);
   });
 })();
 
@@ -308,11 +293,15 @@ function clearImageSlot(event, idx) {
     const placeholder = document.getElementById(`placeholder-${idx}`);
     const removeBtn = document.getElementById(`remove-${idx}`);
     const zone = document.getElementById(`zone-${idx}`);
+    const del = document.querySelector(
+      `.image-form-group[data-index="${idx}"] input[type="checkbox"][name$="-DELETE"]`
+    );
 
     if (preview) { preview.src = src; preview.style.display = 'block'; }
     if (placeholder) placeholder.style.display = 'none';
     if (removeBtn) removeBtn.style.display = 'inline-flex';
     zone?.classList.add('has-image');
+    if (del) del.checked = false;
   });
 })();
 
@@ -371,29 +360,6 @@ function clearImageSlot(event, idx) {
       return;
     }
 
-    // Validate cover image (slot 0 must have an image)
-    const zone0 = document.getElementById('zone-0');
-    const dataurl0 = document.getElementById('dataurl-0');
-    const fileInput0 = zone0?.closest('.image-form-group')?.querySelector('input[type="file"]');
-    const hasCover = zone0?.classList.contains('has-image') ||
-                     (dataurl0 && dataurl0.value.startsWith('data:image/')) ||
-                     (fileInput0 && fileInput0.files && fileInput0.files.length > 0);
-
-    if (!hasCover) {
-      e.preventDefault();
-      // Show error near the cover slot
-      let errEl = document.getElementById('cover-error-msg');
-      if (!errEl) {
-        errEl = document.createElement('div');
-        errEl.id = 'cover-error-msg';
-        errEl.className = 'ebf-alert';
-        const grid = document.getElementById('img-grid');
-        grid?.parentElement?.insertBefore(errEl, grid);
-      }
-      errEl.textContent = 'A cover image is required.';
-      errEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      zone0?.classList.add('img-zone--cover-shake');
-      setTimeout(() => zone0?.classList.remove('img-zone--cover-shake'), 600);
-    }
+    // Cover validation must be done server-side.
   });
 })();

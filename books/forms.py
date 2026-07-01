@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 from django import forms
-from django.forms import inlineformset_factory
+from django.forms import inlineformset_factory, BaseInlineFormSet
 from django.core.exceptions import ValidationError
 from .models import Book, BookImage, Transaction, Author
 from .nsfw import check_image_nsfw
@@ -451,18 +451,6 @@ class BookImageForm(forms.ModelForm):
         self.fields["caption"].required = False
         # image_type default is set per-slot via formset initial in the view
 
-    def has_changed(self):
-        """
-        Prevent empty extra slots from being saved as blank BookImage rows.
-        Changing the 'image_type' dropdown on an unused slot (no file picked,
-        no existing instance) should NOT count as a change — otherwise the
-        formset saves a BookImage with no file attached, which later crashes
-        any template doing `book.images.first.image.url`.
-        """
-        if not self.instance.pk and not self.cleaned_data.get("image"):
-            return False
-        return super().has_changed()
-
     def clean_image(self):
         image = self.cleaned_data.get("image")
         # Only screen new uploads (InMemoryUploadedFile / TemporaryUploadedFile),
@@ -485,10 +473,35 @@ class BookImageForm(forms.ModelForm):
 # ─────────────────────────────────────────────────────────────────────────────
 # Inline formset – up to 8 images, 3 extra blank slots
 # ─────────────────────────────────────────────────────────────────────────────
+class BookImageBaseFormSet(BaseInlineFormSet):
+    """
+    Custom formset that prevents empty extra slots from being saved as blank
+    BookImage rows. We do this in save_new_objects() rather than has_changed()
+    because cleaned_data is guaranteed available at save time — unlike
+    has_changed() which is called before full_clean().
+    """
+
+    def save_new_objects(self, commit=True):
+        self.new_objects = []
+        for form in self.extra_forms:
+            if not form.has_changed():
+                continue
+            if self.can_delete and self._should_delete_form(form):
+                continue
+            # Skip slots where no image file was actually uploaded.
+            # This prevents blank BookImage rows when the user only touched
+            # the image_type dropdown without selecting a photo.
+            if not form.cleaned_data.get("image"):
+                continue
+            self.new_objects.append(self.save_new_object(form, commit))
+        return self.new_objects
+
+
 BookImageFormSet = inlineformset_factory(
     Book,
     BookImage,
     form=BookImageForm,
+    formset=BookImageBaseFormSet,
     extra=3,
     max_num=8,
     can_delete=True,

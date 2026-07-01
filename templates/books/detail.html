@@ -377,8 +377,8 @@
             <span class="book-card-condition book-card-cond-{{ rel.condition|lower }}">{{ rel.get_condition_display }}</span>
             {% endif %}
           </div>
-          <h3 class="book-title">{{ rel.title }}</h3>
-          <p class="author-name">by {{ rel.authors.all|join:", " }}</p>
+          <h3 class="book-title">{{ rel.title | truncatechars:25 }}</h3>
+          <p class="author-name">by {{ rel.authors.all|join:", " | truncatechars:14 }}</p>
           <p class="book-category">{{ rel.get_category_display }}</p>
           <p class="price">Rs.{{ rel.asking_price }}</p>
           <a href="{% url 'books:detail' rel.seller.username rel.slug %}" class="feature-btn-buy-now">Buy Now</a>

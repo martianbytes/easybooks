@@ -57,9 +57,9 @@ NSFW_LABELS = {
     "BUTTOCKS_EXPOSED",
     "ANUS_EXPOSED",
     "ANUS_COVERED",
-    # temporarily added to test , the above is for genuine adult contents
+    # temporarily adding these two below
     "MALE_BREAST_EXPOSED",
-    "BELLY_EXPOSED",
+    "BELLY_EXPOSED"
 }
 
 NSFW_CONFIDENCE_THRESHOLD = 0.6

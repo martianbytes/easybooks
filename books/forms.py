@@ -451,6 +451,18 @@ class BookImageForm(forms.ModelForm):
         self.fields["caption"].required = False
         # image_type default is set per-slot via formset initial in the view
 
+    def has_changed(self):
+        """
+        Prevent empty extra slots from being saved as blank BookImage rows.
+        Changing the 'image_type' dropdown on an unused slot (no file picked,
+        no existing instance) should NOT count as a change — otherwise the
+        formset saves a BookImage with no file attached, which later crashes
+        any template doing `book.images.first.image.url`.
+        """
+        if not self.instance.pk and not self.cleaned_data.get("image"):
+            return False
+        return super().has_changed()
+
     def clean_image(self):
         image = self.cleaned_data.get("image")
         # Only screen new uploads (InMemoryUploadedFile / TemporaryUploadedFile),

@@ -22,7 +22,7 @@
         <div class="about-page-card">
           <h3 class="about-page-heading" style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--color-primary-400);">About this listing</h3>
           <div class="contact-seller-book-row">
-            {% if book.images.first %}
+            {% if book.images.first.image %}
             <img src="{{ book.images.first.image.url }}" alt="{{ book.title }}" class="contact-seller-book-img" />
             {% else %}
             <div class="contact-seller-book-img" style="display:flex;align-items:center;justify-content:center;font-size:2rem;background:var(--color-linen-100);">📖</div>

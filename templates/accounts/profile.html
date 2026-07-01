@@ -314,7 +314,7 @@
                 {% endif %}
                 {% if book.cover_image %}
                 <img src="{{ book.cover_image }}" alt="{{ book.title }}" class="pdb-listing-img" />
-                {% elif book.images.first %}
+                {% elif book.images.first.image %}
                 <img src="{{ book.images.first.image.url }}" alt="{{ book.title }}" class="pdb-listing-img" />
                 {% else %}
                 <div class="pdb-listing-img-placeholder">📖</div>

@@ -211,6 +211,21 @@ function updatePricePreview() {
   updatePricePreview();
 })();
 
+(function bindConditionCards() {
+  const cards = document.querySelectorAll('.condition-card');
+  const hiddenInput = document.getElementById('id_condition');
+  if (!cards.length || !hiddenInput) return;
+
+  cards.forEach((card) => {
+    card.addEventListener('click', () => {
+      hiddenInput.value = card.dataset.value || '';
+      cards.forEach((c) => c.classList.remove('active'));
+      card.classList.add('active');
+      document.getElementById('id_condition')?.dispatchEvent(new Event('change'));
+    });
+  });
+})();
+
 function triggerImagePicker(zoneEl) {
   const fileInput = zoneEl?.closest('.image-form-group')?.querySelector('input[type="file"]');
   if (fileInput) fileInput.click();
@@ -270,9 +285,11 @@ function clearImageSlot(event, idx) {
       zone?.classList.add('has-image');
       if (dataUrl) dataUrl.value = src;
 
-      if (idx === '0') {
-        document.getElementById('cover-error-msg')?.remove();
-      }
+      // Clear any stale error banner/inline errors left over from a
+      // previous failed submission (e.g. NSFW flag / cover required),
+      // since the user has now picked a new image for this slot.
+      document.getElementById('image-error-summary')?.remove();
+      slot.querySelectorAll('.ebf-alert, .img-slot__error').forEach(el => el.remove());
     };
     reader.readAsDataURL(input.files[0]);
   });
@@ -343,6 +360,28 @@ function clearImageSlot(event, idx) {
   });
 })();
 
+function reconcileImageDeleteFlags() {
+  // Safety net: a slot's DELETE checkbox may still be checked from an
+  // earlier "X" press (e.g. after a flagged image forced a re-render).
+  // If the slot now has real image data — either a freshly chosen file
+  // or a restored/entered base64 dataurl — DELETE must not be checked,
+  // or the formset will silently drop that image (and, if it was the
+  // cover slot, wrongly report "A cover image is required.").
+  document.querySelectorAll('.image-form-group').forEach((slot) => {
+    const fileInput = slot.querySelector('input[type="file"]');
+    const dataUrl = slot.querySelector('textarea[name$="_dataurl"]');
+    const del = slot.querySelector('input[type="checkbox"][name$="-DELETE"]');
+    if (!del) return;
+
+    const hasFile = !!(fileInput && fileInput.files && fileInput.files[0]);
+    const hasDataUrl = !!(dataUrl && dataUrl.value && dataUrl.value.startsWith('data:image/'));
+
+    if ((hasFile || hasDataUrl) && del.checked) {
+      del.checked = false;
+    }
+  });
+}
+
 (function bindFormSubmitValidation() {
   const form = document.getElementById('sell-form');
   if (!form) return;
@@ -359,6 +398,8 @@ function clearImageSlot(event, idx) {
       document.getElementById('author-input')?.focus();
       return;
     }
+
+    reconcileImageDeleteFlags();
 
     // Cover validation must be done server-side.
   });

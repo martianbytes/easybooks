@@ -549,56 +549,6 @@ class BookUpsertView(LoginRequiredMixin, View):
         )
 
         if book_form.is_valid() and image_forms.is_valid():
-            # Check that a cover image is provided (new listing or existing cover kept)
-            cover_provided = False
-            if editing:
-                # Editing: cover is OK if existing cover image not being deleted
-                from .models import BookImage
-                existing_cover = BookImage.objects.filter(
-                    book=instance, image_type='cover'
-                ).exists()
-                if existing_cover:
-                    # Check it's not being marked for deletion
-                    for form in image_forms:
-                        if (form.instance.pk and
-                                form.instance.image_type == 'cover' and
-                                form.cleaned_data.get('DELETE')):
-                            existing_cover = False
-                            break
-                cover_provided = existing_cover
-
-            # Also check new upload in slot 0 (first form = cover slot)
-            if not cover_provided:
-                first_form = image_forms.forms[0] if image_forms.forms else None
-                if first_form:
-                    has_file = bool(first_form.cleaned_data.get('image'))
-                    # Also check data URL submitted for slot 0
-                    dataurl_key = f"{IMAGE_FORMSET_PREFIX}-0-image_dataurl"
-                    has_dataurl = bool(request.POST.get(dataurl_key, '').startswith('data:image/'))
-                    cover_provided = has_file or has_dataurl
-
-            if not cover_provided:
-                from django.forms.utils import ErrorList
-                # Inject error into the first image form so it renders inline
-                first_form = image_forms.forms[0] if image_forms.forms else None
-                cover_error = "A cover image is required."
-                if first_form:
-                    first_form.add_error('image', cover_error)
-                return render(
-                    request,
-                    self.template_name,
-                    _sell_context(
-                        book_form=book_form,
-                        image_forms=image_forms,
-                        image_data_urls=_collect_dataurl_values(request.POST),
-                        editing=editing,
-                        book=instance,
-                        preselected_author_id=0,
-                        author_error="",
-                        cover_error=cover_error,
-                    ),
-                )
-
             with transaction.atomic():
                 book = book_form.save(commit=False)
                 if not editing:

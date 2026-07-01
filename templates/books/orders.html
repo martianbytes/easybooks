@@ -26,7 +26,7 @@
 
         <!-- Book thumbnail -->
         <a href="{% url 'books:detail' order.book.seller.username order.book.slug %}" class="ocard__thumb-link">
-          {% if order.book.images.first %}
+          {% if order.book.images.first.image %}
           <img src="{{ order.book.images.first.image.url }}" alt="{{ order.book.title }}" class="ocard__thumb" />
           {% else %}
           <div class="ocard__thumb ocard__thumb--empty">📖</div>

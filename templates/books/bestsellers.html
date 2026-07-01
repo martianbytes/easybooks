@@ -15,7 +15,7 @@
       {% for book in books %}
       <a href="{% url 'books:detail' book.seller.username book.slug %}" class="book-card">
         <div class="book-card-img-wrap">
-          {% if book.images.first %}
+          {% if book.images.first.image %}
           <img src="{{ book.images.first.image.url }}" alt="{{ book.title }}" class="book-card-img" />
           {% else %}
           <div class="book-card-img-placeholder">📖</div>

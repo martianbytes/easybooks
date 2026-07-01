@@ -81,8 +81,13 @@
           <form method="post" enctype="multipart/form-data" novalidate class="pdb-edit-form">
             {% csrf_token %}
 
-            {% if form.non_field_errors %}
+            {% if form.errors %}
             <div class="pdb-form-errors">
+              {% for field in form %}
+                {% for error in field.errors %}
+                <p>{{ field.label }}: {{ error }}</p>
+                {% endfor %}
+              {% endfor %}
               {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
             </div>
             {% endif %}

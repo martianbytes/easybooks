@@ -74,7 +74,7 @@
 
           {% for item in available_items %}
           <div class="summary-book">
-            {% if item.book.images.first %}
+            {% if item.book.images.first.image %}
             <img src="{{ item.book.images.first.image.url }}" alt="{{ item.book.title }}" class="summary-book-img" />
             {% elif item.book.cover_image %}
             <img src="{{ item.book.cover_image }}" alt="{{ item.book.title }}" class="summary-book-img" />

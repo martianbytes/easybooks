@@ -7,6 +7,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from .models import Profile, SellerReview
+from books.nsfw import check_image_nsfw
 
 
 class UserRegistrationForm(UserCreationForm):
@@ -169,6 +170,10 @@ class ProfileUpdateForm(forms.ModelForm):
                 raise forms.ValidationError(
                     "Only JPG, PNG, or WebP images are allowed."
                 )
+
+        # Screen for NSFW content on new uploads only
+        if hasattr(avatar, "chunks"):
+            check_image_nsfw(avatar)
 
         return avatar
 

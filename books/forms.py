@@ -1,8 +1,10 @@
 import re
 from datetime import datetime
 from django import forms
-from django.forms import inlineformset_factory
+from django.forms import inlineformset_factory, BaseInlineFormSet
+from django.core.exceptions import ValidationError
 from .models import Book, BookImage, Transaction, Author
+from .nsfw import check_image_nsfw
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -120,14 +122,14 @@ class BookForm(forms.ModelForm):
                 attrs={
                     "placeholder": "e.g. 850",
                     "min": 0,
-                    "step": "0.01",
+                    "step": "1",
                 }
             ),
             "asking_price": forms.NumberInput(
                 attrs={
                     "placeholder": "e.g. 400",
                     "min": 0,
-                    "step": "0.01",
+                    "step": "1",
                 }
             ),
             "is_negotiable": forms.CheckboxInput(),
@@ -449,14 +451,89 @@ class BookImageForm(forms.ModelForm):
         self.fields["caption"].required = False
         # image_type default is set per-slot via formset initial in the view
 
+    def clean_image(self):
+        image = self.cleaned_data.get("image")
+        # Only screen new uploads (InMemoryUploadedFile / TemporaryUploadedFile),
+        # not existing saved FileField values returned unchanged by the form.
+        if image and hasattr(image, "chunks"):
+            try:
+                result = check_image_nsfw(image)
+            except ValidationError:
+                # propagate explicit ValidationError from the checker
+                raise
+            except Exception:
+                # don't block upload on unexpected screening errors
+                return image
+            # support check_image_nsfw returning a truthy value for flagged images
+            if result:
+                raise ValidationError("This image contains content that violates our policies.")
+        return image
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Inline formset – up to 8 images, 3 extra blank slots
 # ─────────────────────────────────────────────────────────────────────────────
+class BookImageBaseFormSet(BaseInlineFormSet):
+    """
+    Keeps blank extra slots out of the DB and requires a real cover image.
+    """
+
+    def clean(self):
+        super().clean()
+
+        cover_form = None
+        valid_image_forms = []
+
+        for form in self.forms:
+            if not hasattr(form, "cleaned_data"):
+                continue
+
+            if form.cleaned_data.get("DELETE"):
+                continue
+
+            has_image = bool(
+                form.cleaned_data.get("image") or getattr(form.instance, "image", None)
+            )
+            if not has_image:
+                continue
+
+            valid_image_forms.append(form)
+
+            if form.cleaned_data.get("image_type") == "cover":
+                cover_form = form
+
+        if cover_form:
+            return
+
+        # If the user uploaded at least one valid image, promote the first one to cover.
+        if valid_image_forms:
+            valid_image_forms[0].cleaned_data["image_type"] = "cover"
+            return
+
+        raise ValidationError("A cover image is required.")
+
+    def save_new_objects(self, commit=True):
+        self.new_objects = []
+        for form in self.extra_forms:
+            if not form.has_changed():
+                continue
+
+            has_image = bool(form.cleaned_data.get("image"))
+            if self.can_delete and self._should_delete_form(form) and not has_image:  # type: ignore[attr-defined]
+                continue
+
+            if not has_image:
+                continue
+
+            self.new_objects.append(self.save_new(form, commit=commit))
+        return self.new_objects
+
+
 BookImageFormSet = inlineformset_factory(
     Book,
     BookImage,
     form=BookImageForm,
+    formset=BookImageBaseFormSet,
     extra=3,
     max_num=8,
     can_delete=True,

@@ -368,6 +368,8 @@ a {
   font-size: var(--text-xl);
   color: #fff;
   letter-spacing: var(--tracking-tight);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .nav-logo-link {
@@ -390,6 +392,7 @@ a {
   display: flex;
   align-items: center;
   gap: var(--space-1);
+  flex-shrink: 0;
 }
 
 .navbar a {
@@ -397,6 +400,7 @@ a {
   font-weight: var(--weight-medium);
   color: rgba(255, 255, 255, 0.8);
   padding: var(--space-2) var(--space-3);
+  white-space: nowrap;
   transition:
     color var(--transition-fast),
     background var(--transition-fast);
@@ -431,6 +435,8 @@ a {
   border-radius: var(--radius-full);
   padding: var(--space-2) var(--space-4);
   transition: all var(--transition-fast);
+  min-width: 0;
+  flex-shrink: 1;
 }
 
 .search-bar:focus-within {

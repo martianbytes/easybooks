@@ -17,15 +17,30 @@
               ><em>Easy<span>Books</span></em></a
             >
           </div>
-          <ul class="navbar-nav">
-            <li><a href="{% url 'books:browse' %}">Browse</a></li>
-            <li><a href="{% url 'books:browse' %}?sort=newest">New Arrival</a></li>
-            <li><a href="{% url 'books:bestsellers' %}">BestSellers</a></li>
-            <li><a href="{% url 'books:genres' %}">Genres</a></li>
-            <li><a href="{% url 'books:authors' %}">Authors</a></li>
-            <li><a href="{% url 'books:sell' %}">Sell</a></li>
-          </ul>
-          <div class="navbar-actions">
+
+          <button
+            type="button"
+            class="navbar-toggle"
+            id="navbar-toggle"
+            aria-label="Toggle menu"
+            aria-expanded="false"
+            aria-controls="navbar-menu"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+
+          <div class="navbar-menu" id="navbar-menu">
+            <ul class="navbar-nav">
+              <li><a href="{% url 'books:browse' %}">Browse</a></li>
+              <li><a href="{% url 'books:browse' %}?sort=newest">New Arrival</a></li>
+              <li><a href="{% url 'books:bestsellers' %}">BestSellers</a></li>
+              <li><a href="{% url 'books:genres' %}">Genres</a></li>
+              <li><a href="{% url 'books:authors' %}">Authors</a></li>
+              <li><a href="{% url 'books:sell' %}">Sell</a></li>
+            </ul>
+            <div class="navbar-actions">
             <form
               class="search-bar"
               method="get"
@@ -115,10 +130,13 @@
               >Register</a
             >
             {% endif %}
+            </div>
           </div>
         </div>
       </div>
     </nav>
+
+    <script src="{% static 'js/navbar.js' %}"></script>
 
     {% comment %} all other contents here {% endcomment %}
     {% if messages %}
